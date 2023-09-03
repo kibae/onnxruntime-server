@@ -1,0 +1,6 @@
+scikit-learn
+pandas
+torch
+onnx
+onnxruntime
+transformers
