@@ -63,5 +63,5 @@
 
 # TODO
 
-- [ ] Support for CUDA
-- [ ] Support for Windows
+- [ ] CUDA Support
+- [ ] Windows Support 
