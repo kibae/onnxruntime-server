@@ -4,7 +4,8 @@
 # ONNX Runtime Server
 
 - [ONNX: Open Neural Network Exchange](https://onnxruntime.ai/)
-- Export machine learning models learned in various ML environments to ONNX files and provide inference services using ONNX Runtime Server.
+- Export machine learning models learned in various ML environments to ONNX files and provide inference services using
+  ONNX Runtime Server.
 - Provides inference and management functions via TCP or HTTP/HTTPS APIs.
 - This project is part of the pg_onnx project. pg_onnx is an extension that allows you to perform inference using data
   within PostgreSQL.
@@ -25,15 +26,16 @@
 ### 1. [ONNX Runtime](https://onnxruntime.ai/)
 
 - Linux
-    - Download binary from [ONNX Runtime Releases](https://github.com/microsoft/onnxruntime/releases)
-    - Extract the downloaded file to `/usr/local/onnxruntime`
-    - Add `/usr/local/onnxruntime/lib` to `LD_LIBRARY_PATH` or `/etc/ld.so.conf.d/onnxruntime.conf`
+    - Use `download-onnxruntime-linux.sh` script
+        - This script downloads the latest version of the binary and install to `/usr/local/onnxruntime`.
+        - Also, add `/usr/local/onnxruntime/lib` to `/etc/ld.so.conf.d/onnxruntime.conf` and run `ldconfig`.
+    - Or manually download binary from [ONNX Runtime Releases](https://github.com/microsoft/onnxruntime/releases).
 - Mac
   ```shell
   brew install onnxruntime
   ```
 
-### 2. Boost
+### 2. [Boost](https://www.boost.org/)
 
 - Linux
   ```shell
