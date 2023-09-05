@@ -62,5 +62,6 @@ add_subdirectory(standalone)
 # test
 find_package(GTest)
 if (GTEST_FOUND)
+    enable_testing()
     add_subdirectory(test)
 endif ()
