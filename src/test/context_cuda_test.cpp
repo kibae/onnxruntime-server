@@ -5,7 +5,7 @@
 #include "test_common.hpp"
 
 TEST(test_onnxruntime_server_context_cuda, BertSquadModelTest) {
-	Orts::onnx::session_key key("sample", 2);
+	Orts::onnx::session_key key("sample", "2");
 	Orts::onnx::session session(key, model2_path.string(), json::parse(R"({"cuda": true})"));
 
 	std::cout << session.to_json().dump(2) << "\n";
