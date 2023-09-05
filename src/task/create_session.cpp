@@ -12,9 +12,10 @@ Orts::task::create_session::create_session(onnx::session_manager *onnx_session_m
 }
 
 Orts::task::create_session::create_session(
-	Orts::onnx::session_manager *onnx_session_manager, std::string model_name, int model_version, json data, json option
+	Orts::onnx::session_manager *onnx_session_manager, std::string model_name, std::string model_version, json data,
+	json option
 )
-	: session_task(onnx_session_manager, std::move(model_name), model_version, std::move(data)),
+	: session_task(onnx_session_manager, std::move(model_name), std::move(model_version), std::move(data)),
 	  option(std::move(option)) {
 }
 

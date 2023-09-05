@@ -5,7 +5,7 @@
 #include "test_common.hpp"
 
 TEST(test_onnxruntime_server_context, SimpleModelTest) {
-	Orts::onnx::session_key key("sample", 1);
+	Orts::onnx::session_key key("sample", "1");
 	Orts::onnx::session session(key, model1_path.string());
 
 	Orts::onnx::execution::context ctx(&session, R"({"x":[[1]],"y":[[2]],"z":[[3]]})");
@@ -23,7 +23,7 @@ TEST(test_onnxruntime_server_context, SimpleModelTest) {
 }
 
 TEST(test_onnxruntime_server_context, SimpleModelBatchTest) {
-	Orts::onnx::session_key key("sample", 1);
+	Orts::onnx::session_key key("sample", "1");
 	Orts::onnx::session session(key, model1_path.string());
 
 	Orts::onnx::execution::context ctx(&session, R"({"x":[[1],[2],[3]],"y":[[2],[3],[4]],"z":[[3],[4],[5]]})");
@@ -41,7 +41,7 @@ TEST(test_onnxruntime_server_context, SimpleModelBatchTest) {
 }
 
 TEST(test_onnxruntime_server_context, BertSquadModelTest) {
-	Orts::onnx::session_key key("sample", 2);
+	Orts::onnx::session_key key("sample", "2");
 	Orts::onnx::session session(key, model2_path.string());
 
 	std::cout << session.to_json().dump(2) << "\n";

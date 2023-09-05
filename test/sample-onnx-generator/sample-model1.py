@@ -74,11 +74,12 @@ def main():
         model_to_save,
         (torch.tensor(x[:1], dtype=torch.float32), torch.tensor(y[:1], dtype=torch.float32),
          torch.tensor(z[:1], dtype=torch.float32)),
-        "../fixture/sample-model1.onnx",
+        "../fixture/sample/1/model.onnx",
         export_params=True,
         input_names=['x', 'y', 'z'],
         output_names=['output'],
-        dynamic_axes={'x': {0: 'batch_size'}, 'y': {0: 'batch_size'}, 'z': {0: 'batch_size'}, 'output': {0: 'batch_size'}},
+        dynamic_axes={'x': {0: 'batch_size'}, 'y': {0: 'batch_size'}, 'z': {0: 'batch_size'},
+                      'output': {0: 'batch_size'}},
         verbose=True,
     )
 

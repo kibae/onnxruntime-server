@@ -42,13 +42,14 @@ TEST(test_onnxruntime_server_tcp, TcpServerTest) {
 	Orts::config config;
 	config.model_bin_getter = test_model_bin_getter;
 
+	boost::asio::io_context io_context;
 	Orts::onnx::session_manager manager(config.model_bin_getter);
 	Orts::builtin_thread_pool worker_pool(config.num_threads);
-	Orts::transport::tcp::tcp_server server(config, &manager, &worker_pool);
+	Orts::transport::tcp::tcp_server server(io_context, config, &manager, &worker_pool);
 	ASSERT_GT(server.port(), 0);
 
 	bool running = true;
-	std::thread server_thread([&server, &running]() { server.run(&running, 500); });
+	std::thread server_thread([&io_context, &running]() { test_server_run(io_context, &running); });
 
 	TIME_MEASURE_INIT
 
@@ -62,23 +63,23 @@ TEST(test_onnxruntime_server_tcp, TcpServerTest) {
 	}
 
 	{ // API: Create session
-		json body = json::parse(R"({"model":"sample","version":1})");
+		json body = json::parse(R"({"model":"sample","version":"1"})");
 		TIME_MEASURE_START
 		auto res_json = tcp_request(server.port(), Orts::task::type::CREATE_SESSION, body);
 		TIME_MEASURE_STOP
 		std::cout << "API: Create session\n" << res_json.dump(2) << "\n";
 		ASSERT_EQ(res_json["model"], "sample");
-		ASSERT_EQ(res_json["version"], 1);
+		ASSERT_EQ(res_json["version"], "1");
 	}
 
 	{ // API: Get session
-		json body = json::parse(R"({"model":"sample","version":1})");
+		json body = json::parse(R"({"model":"sample","version":"1"})");
 		TIME_MEASURE_START
-		auto res_json = tcp_request(server.port(), Orts::task::type::CREATE_SESSION, body);
+		auto res_json = tcp_request(server.port(), Orts::task::type::GET_SESSION, body);
 		TIME_MEASURE_STOP
 		std::cout << "API: Get session\n" << res_json.dump(2) << "\n";
 		ASSERT_EQ(res_json["model"], "sample");
-		ASSERT_EQ(res_json["version"], 1);
+		ASSERT_EQ(res_json["version"], "1");
 	}
 
 	{ // API: List session
@@ -88,11 +89,11 @@ TEST(test_onnxruntime_server_tcp, TcpServerTest) {
 		std::cout << "API: List sessions\n" << res_json.dump(2) << "\n";
 		ASSERT_EQ(res_json.size(), 1);
 		ASSERT_EQ(res_json[0]["model"], "sample");
-		ASSERT_EQ(res_json[0]["version"], 1);
+		ASSERT_EQ(res_json[0]["version"], "1");
 	}
 
 	{ // API: Execute session
-		auto input = json::parse(R"({"model":"sample","version":1,"data":{"x":[[1]],"y":[[2]],"z":[[3]]}})");
+		auto input = json::parse(R"({"model":"sample","version":"1","data":{"x":[[1]],"y":[[2]],"z":[[3]]}})");
 		TIME_MEASURE_START
 		auto res_json = tcp_request(server.port(), Orts::task::type::EXECUTE_SESSION, input);
 		TIME_MEASURE_STOP
@@ -103,7 +104,7 @@ TEST(test_onnxruntime_server_tcp, TcpServerTest) {
 	}
 
 	{ // API: Destroy session
-		json body = json::parse(R"({"model":"sample","version":1})");
+		json body = json::parse(R"({"model":"sample","version":"1"})");
 		TIME_MEASURE_START
 		auto res_json = tcp_request(server.port(), Orts::task::type::DESTROY_SESSION, body);
 		TIME_MEASURE_STOP

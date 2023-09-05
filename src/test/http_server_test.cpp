@@ -5,23 +5,22 @@
 #include "../transport/http/http_server.hpp"
 #include "test_common.hpp"
 
-#include <fstream>
-#include <sstream>
-
 beast::http::response<beast::http::dynamic_body>
 http_request(beast::http::verb method, const std::string &target, short port, std::string body);
 
 TEST(test_onnxruntime_server_http, HttpServerTest) {
 	Orts::config config;
+	config.https_port = 0;
 	config.model_bin_getter = test_model_bin_getter;
 
+	boost::asio::io_context io_context;
 	Orts::onnx::session_manager manager(config.model_bin_getter);
 	Orts::builtin_thread_pool worker_pool(config.num_threads);
-	Orts::transport::http::http_server server(config, &manager, &worker_pool);
+	Orts::transport::http::http_server server(io_context, config, &manager, &worker_pool);
 	ASSERT_EQ(server.port(), config.http_port);
 
 	bool running = true;
-	std::thread server_thread([&server, &running]() { server.run(&running, 500); });
+	std::thread server_thread([&io_context, &running]() { test_server_run(io_context, &running); });
 
 	TIME_MEASURE_INIT
 
@@ -42,7 +41,7 @@ TEST(test_onnxruntime_server_http, HttpServerTest) {
 	}
 
 	{ // API: Create session
-		json body = json::parse(R"({"model":"sample","version":1})");
+		json body = json::parse(R"({"model":"sample","version":"1"})");
 		TIME_MEASURE_START
 		auto res = http_request(boost::beast::http::verb::post, "/api/sessions", server.port(), body.dump());
 		TIME_MEASURE_STOP
@@ -50,7 +49,7 @@ TEST(test_onnxruntime_server_http, HttpServerTest) {
 		json res_json = json::parse(boost::beast::buffers_to_string(res.body().data()));
 		std::cout << "API: Create session\n" << res_json.dump(2) << "\n";
 		ASSERT_EQ(res_json["model"], "sample");
-		ASSERT_EQ(res_json["version"], 1);
+		ASSERT_EQ(res_json["version"], "1");
 	}
 
 	{ // API: Get session
@@ -61,7 +60,7 @@ TEST(test_onnxruntime_server_http, HttpServerTest) {
 		json res_json = json::parse(boost::beast::buffers_to_string(res.body().data()));
 		std::cout << "API: Get session\n" << res_json.dump(2) << "\n";
 		ASSERT_EQ(res_json["model"], "sample");
-		ASSERT_EQ(res_json["version"], 1);
+		ASSERT_EQ(res_json["version"], "1");
 	}
 
 	{ // API: List session
@@ -73,7 +72,7 @@ TEST(test_onnxruntime_server_http, HttpServerTest) {
 		std::cout << "API: List sessions\n" << res_json.dump(2) << "\n";
 		ASSERT_EQ(res_json.size(), 1);
 		ASSERT_EQ(res_json[0]["model"], "sample");
-		ASSERT_EQ(res_json[0]["version"], 1);
+		ASSERT_EQ(res_json[0]["version"], "1");
 	}
 
 	{ // API: Execute session

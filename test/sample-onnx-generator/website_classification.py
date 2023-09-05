@@ -37,7 +37,7 @@ def main():
     torch.onnx.export(
         model,
         (input_ids, attention_mask),
-        "../fixture/website_classification.onnx",
+        "../fixture/sample/2/model.onnx",
         input_names=['input_ids', 'onnx::Equal_1'],
         output_names=['output'],
         dynamic_axes={'input_ids': {0: 'batch_size'}, 'onnx::Equal_1': {0: 'batch_size'}, 'output': {0: 'batch_size'}},

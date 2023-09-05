@@ -11,9 +11,9 @@ Orts::task::get_session::get_session(onnx::session_manager *onnx_session_manager
 }
 
 Orts::task::get_session::get_session(
-	Orts::onnx::session_manager *onnx_session_manager, std::string model_name, int model_version
+	Orts::onnx::session_manager *onnx_session_manager, std::string model_name, std::string model_version
 )
-	: session_task(onnx_session_manager, std::move(model_name), model_version) {
+	: session_task(onnx_session_manager, std::move(model_name), std::move(model_version)) {
 }
 
 json Orts::task::get_session::run() {

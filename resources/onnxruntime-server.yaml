@@ -1,0 +1,16 @@
+server:
+  tcp:
+    use: true
+    port: 8001
+  http:
+    use: true
+    port: 80
+  https:
+    use: false
+    port: 443
+    cert: /etc/ssl/certs/server.crt
+    key: /etc/ssl/certs/server.key
+  worker:
+    num_threads: 4
+  model:
+    dir: models

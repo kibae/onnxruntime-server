@@ -6,8 +6,8 @@
 
 #include "../onnxruntime_server.hpp"
 
-Orts::onnx::session_key::session_key(std::string model_name, int model_version)
-	: model_name(std::move(model_name)), model_version(model_version) {
+Orts::onnx::session_key::session_key(std::string model_name, std::string model_version)
+	: model_name(std::move(model_name)), model_version(std::move(model_version)) {
 }
 
 bool Orts::onnx::session_key::operator<(const Orts::onnx::session_key &other) const {

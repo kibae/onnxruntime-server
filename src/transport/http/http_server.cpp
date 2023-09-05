@@ -5,10 +5,11 @@
 #include "http_server.hpp"
 
 onnxruntime_server::transport::http::http_server::http_server(
-	const onnxruntime_server::config &config, onnxruntime_server::onnx::session_manager *onnx_session_manager,
+	boost::asio::io_context &io_context, const onnxruntime_server::config &config,
+	onnxruntime_server::onnx::session_manager *onnx_session_manager,
 	onnxruntime_server::builtin_thread_pool *worker_pool
 )
-	: server(onnx_session_manager, worker_pool, config.http_port) {
+	: server(io_context, onnx_session_manager, worker_pool, config.http_port) {
 	acceptor.set_option(boost::asio::socket_base::reuse_address(true));
 }
 

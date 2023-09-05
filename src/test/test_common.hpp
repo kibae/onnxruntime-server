@@ -16,25 +16,27 @@ boost::filesystem::path current_file_dir = current_file_path.parent_path();
 boost::filesystem::path root_dir = current_file_dir.parent_path().parent_path();
 boost::filesystem::path test_dir = root_dir / "test";
 
-auto model1_path = test_dir / "fixture" / "sample-model1.onnx";
-// https://huggingface.co/alimazhar-110/website_classification
-auto model2_path = test_dir / "fixture" / "website_classification.onnx";
+auto model1_path = test_dir / "fixture" / "sample" / "1" / "model.onnx";
+auto model2_path = test_dir / "fixture" / "sample" / "2" / "model.onnx";
 
-std::string test_model_bin_getter(const std::string &model_name, int model_version) {
+std::string test_model_bin_getter(const std::string &model_name, const std::string &model_version) {
 	std::string model_path;
-	switch (model_version) {
-	case 1:
+	if (model_version == "1")
 		model_path = model1_path.string();
-		break;
-	case 2:
+	else if (model_version == "2")
 		model_path = model2_path.string();
-		break;
-	}
 
 	std::ifstream file(model_path, std::ios::binary);
 	std::stringstream buffer;
 	buffer << file.rdbuf();
 	return buffer.str();
+}
+
+void test_server_run(boost::asio::io_context &io_context, bool *running) {
+	auto timeout = std::chrono::milliseconds{500};
+	while (*running) {
+		io_context.run_for(timeout);
+	}
 }
 
 #define TIME_MEASURE_INIT auto start_time_point = std::chrono::high_resolution_clock::now();

@@ -5,9 +5,10 @@
 #include "../onnxruntime_server.hpp"
 
 Orts::transport::server::server(
-	Orts::onnx::session_manager *onnx_session_manager, Orts::builtin_thread_pool *worker_pool, int port
+	boost::asio::io_context &io_context, Orts::onnx::session_manager *onnx_session_manager,
+	Orts::builtin_thread_pool *worker_pool, int port
 )
-	: io_context(), acceptor(io_context, asio::endpoint(asio::v4(), port)), socket(io_context),
+	: io_context(io_context), acceptor(io_context, asio::endpoint(asio::v4(), port)), socket(io_context),
 	  onnx_session_manager(onnx_session_manager), worker_pool(worker_pool) {
 
 	assigned_port = acceptor.local_endpoint().port();
@@ -16,7 +17,6 @@ Orts::transport::server::server(
 }
 
 Orts::transport::server::~server() {
-	io_context.stop();
 	socket.close();
 }
 
@@ -27,13 +27,6 @@ void Orts::transport::server::accept() {
 		}
 		accept();
 	});
-}
-
-void Orts::transport::server::run(bool *running, long long timeout_millis) {
-	auto timeout = std::chrono::milliseconds{timeout_millis};
-	while (*running) {
-		io_context.run_for(timeout);
-	}
 }
 
 Orts::builtin_thread_pool *Orts::transport::server::get_worker_pool() {

@@ -42,7 +42,7 @@ else ()
 endif ()
 
 # boost
-find_package(Boost COMPONENTS serialization system filesystem REQUIRED)
+find_package(Boost COMPONENTS serialization system filesystem program_options REQUIRED)
 
 # openssl
 find_package(OpenSSL)

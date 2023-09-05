@@ -20,56 +20,65 @@ onnxruntime_server::transport::http::http_session_base<Session>::handle_request(
 			return res;
 		};
 
-	auto target = std::string(req.target());
+	try {
+		auto target = std::string(req.target());
 
-	std::regex re(R"(/api/sessions/([^/]+)/([0-9]+))");
-	std::smatch match;
-	if ((req.method() == boost::beast::http::verb::get || req.method() == boost::beast::http::verb::post ||
-		 req.method() == boost::beast::http::verb::delete_) &&
-		std::regex_match(target, match, re) && match.size() > 1) {
-		auto model = match[1].str();
-		auto version = std::stoi(match[2].str());
+		std::regex re(R"(/api/sessions/([^/]+)/([^/]+))");
+		std::smatch match;
+		if ((req.method() == boost::beast::http::verb::get || req.method() == boost::beast::http::verb::post ||
+			 req.method() == boost::beast::http::verb::delete_) &&
+			std::regex_match(target, match, re) && match.size() > 1) {
+			auto model = match[1].str();
+			auto version = match[2].str();
 
-		// API: Execute sessions
-		if (req.method() == boost::beast::http::verb::post) {
-			auto task = task::execute_session(get_onnx_session_manager(), model, version, req.body());
-			auto res = task.run();
-			return simple_response(beast::http::status::ok, CONTENT_TYPE_JSON, res.dump());
+			// API: Execute sessions
+			if (req.method() == boost::beast::http::verb::post) {
+				auto task = task::execute_session(get_onnx_session_manager(), model, version, req.body());
+				auto res = task.run();
+				return simple_response(beast::http::status::ok, CONTENT_TYPE_JSON, res.dump());
+			}
+
+			// API: Get sessions
+			if (req.method() == boost::beast::http::verb::get) {
+				auto task = task::get_session(get_onnx_session_manager(), model, version);
+				auto res = task.run();
+				return simple_response(beast::http::status::ok, CONTENT_TYPE_JSON, res.dump());
+			}
+
+			// API: Destroy sessions
+			if (req.method() == boost::beast::http::verb::delete_) {
+				auto task = task::destroy_session(get_onnx_session_manager(), model, version);
+				auto res = task.run();
+				return simple_response(beast::http::status::ok, CONTENT_TYPE_JSON, res.dump());
+			}
 		}
 
-		// API: Get sessions
-		if (req.method() == boost::beast::http::verb::get) {
-			auto task = task::get_session(get_onnx_session_manager(), model, version);
-			auto res = task.run();
-			return simple_response(beast::http::status::ok, CONTENT_TYPE_JSON, res.dump());
+		if (target == "/api/sessions") {
+			// API: List sessions
+			if (req.method() == boost::beast::http::verb::get) {
+				auto task = task::list_session(get_onnx_session_manager());
+				auto res = task.run();
+				return simple_response(beast::http::status::ok, CONTENT_TYPE_JSON, res.dump());
+			}
+
+			// API: Create session
+			if (req.method() == boost::beast::http::verb::post) {
+				auto task = task::create_session(get_onnx_session_manager(), req.body());
+				auto res = task.run();
+				return simple_response(beast::http::status::ok, CONTENT_TYPE_JSON, res.dump());
+			}
 		}
 
-		// API: Destroy sessions
-		if (req.method() == boost::beast::http::verb::delete_) {
-			auto task = task::destroy_session(get_onnx_session_manager(), model, version);
-			auto res = task.run();
-			return simple_response(beast::http::status::ok, CONTENT_TYPE_JSON, res.dump());
-		}
+		if (target == "/health")
+			return simple_response(beast::http::status::ok, CONTENT_TYPE_PLAIN_TEXT, "OK");
+
+		return simple_response(beast::http::status::not_found, CONTENT_TYPE_PLAIN_TEXT, "Not Found");
+	} catch (std::exception &e) {
+		std::cerr << "onnxruntime_server::transport::http::http_session_base::handle_request: " << e.what()
+				  << std::endl;
+		return simple_response(
+			beast::http::status::internal_server_error, CONTENT_TYPE_PLAIN_TEXT,
+			std::string("Internal Error: ") + (e.what())
+		);
 	}
-
-	if (target == "/api/sessions") {
-		// API: List sessions
-		if (req.method() == boost::beast::http::verb::get) {
-			auto task = task::list_session(get_onnx_session_manager());
-			auto res = task.run();
-			return simple_response(beast::http::status::ok, CONTENT_TYPE_JSON, res.dump());
-		}
-
-		// API: Create session
-		if (req.method() == boost::beast::http::verb::post) {
-			auto task = task::create_session(get_onnx_session_manager(), req.body());
-			auto res = task.run();
-			return simple_response(beast::http::status::ok, CONTENT_TYPE_JSON, res.dump());
-		}
-	}
-
-	if (target == "/health")
-		return simple_response(beast::http::status::ok, CONTENT_TYPE_PLAIN_TEXT, "OK");
-
-	return simple_response(beast::http::status::not_found, CONTENT_TYPE_PLAIN_TEXT, "Not Found");
 }

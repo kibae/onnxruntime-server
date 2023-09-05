@@ -42,7 +42,8 @@ namespace onnxruntime_server::transport::tcp {
 
 	  public:
 		tcp_server(
-			const class config &config, onnx::session_manager *onnx_session_manager, builtin_thread_pool *worker_pool
+			boost::asio::io_context &io_context, const class config &config,
+			onnx::session_manager *onnx_session_manager, builtin_thread_pool *worker_pool
 		);
 		void remove_session(const std::shared_ptr<tcp_session> &session);
 	};

@@ -31,7 +31,7 @@ using json = nlohmann::json;
  * namespace shorthand: Orts
  */
 namespace onnxruntime_server {
-	typedef std::string (*model_bin_getter_t)(const std::string &, int);
+	typedef std::function<std::string(const std::string &, const std::string &)> model_bin_getter_t;
 
 	namespace onnx {
 		class value_info {
@@ -52,9 +52,9 @@ namespace onnxruntime_server {
 		class session_key {
 		  public:
 			std::string model_name;
-			int model_version = 0;
+			std::string model_version = 0;
 
-			session_key(std::string model_name, int model_version);
+			session_key(std::string model_name, std::string model_version);
 
 			bool operator<(const session_key &other) const;
 		};
@@ -117,13 +117,15 @@ namespace onnxruntime_server {
 				return sessions;
 			}
 
-			session *get_session(const std::string &model_name, int model_version);
+			session *get_session(const std::string &model_name, const std::string &model_version);
 			session *get_session(const session_key &key);
-			session *create_session(const std::string &model_name, int model_version, const json &option);
+			session *
+			create_session(const std::string &model_name, const std::string &model_version, const json &option);
 			session *create_session(
-				const std::string &model_name, int model_version, const std::string &bin, const json &option
+				const std::string &model_name, const std::string &model_version, const std::string &bin,
+				const json &option
 			);
-			void remove_session(const std::string &model_name, int model_version);
+			void remove_session(const std::string &model_name, const std::string &model_version);
 			void remove_session(const session_key &key);
 		};
 
@@ -181,14 +183,18 @@ namespace onnxruntime_server {
 
 		  public:
 			std::string model_name;
-			int model_version = 0;
+			std::string model_version;
 			json data;
 
 			session_task(onnx::session_manager *onnx_session_manager, const std::string &buf);
 			session_task(
-				onnx::session_manager *onnx_session_manager, std::string model_name, int model_version, json data
+				onnx::session_manager *onnx_session_manager, std::string model_name, std::string model_version,
+				json data
 			);
-			session_task(onnx::session_manager *onnx_session_manager, const std::string &model_name, int model_version);
+			session_task(
+				onnx::session_manager *onnx_session_manager, const std::string &model_name,
+				const std::string &model_version
+			);
 		};
 
 		class create_session : public session_task {
@@ -197,8 +203,8 @@ namespace onnxruntime_server {
 
 			explicit create_session(onnx::session_manager *onnx_session_manager, const std::string &buf);
 			explicit create_session(
-				onnx::session_manager *onnx_session_manager, std::string model_name, int model_version, json data,
-				json option
+				onnx::session_manager *onnx_session_manager, std::string model_name, std::string model_version,
+				json data, json option
 			);
 			json run() override;
 		};
@@ -207,7 +213,8 @@ namespace onnxruntime_server {
 		  public:
 			explicit execute_session(onnx::session_manager *onnx_session_manager, const std::string &buf);
 			explicit execute_session(
-				onnx::session_manager *onnx_session_manager, std::string model_name, int model_version, json data
+				onnx::session_manager *onnx_session_manager, std::string model_name, std::string model_version,
+				json data
 			);
 			json run() override;
 		};
@@ -216,7 +223,7 @@ namespace onnxruntime_server {
 		  public:
 			explicit get_session(onnx::session_manager *onnx_session_manager, const std::string &buf);
 			explicit get_session(
-				onnx::session_manager *onnx_session_manager, std::string model_name, int model_version
+				onnx::session_manager *onnx_session_manager, std::string model_name, std::string model_version
 			);
 			json run() override;
 		};
@@ -233,7 +240,7 @@ namespace onnxruntime_server {
 		  public:
 			explicit destroy_session(onnx::session_manager *onnx_session_manager, const std::string &buf);
 			explicit destroy_session(
-				onnx::session_manager *onnx_session_manager, std::string model_name, int model_version
+				onnx::session_manager *onnx_session_manager, std::string model_name, std::string model_version
 			);
 			json run() override;
 		};
@@ -248,14 +255,15 @@ namespace onnxruntime_server {
 		short tcp_port = 0;
 
 		bool use_http = true;
-		short http_port = 8080;
+		short http_port = 80;
 
-		bool use_https = true;
+		bool use_https = false;
 		short https_port = 443;
 		std::string https_cert;
 		std::string https_key;
 
 		long num_threads = 4;
+		std::string model_dir;
 		model_bin_getter_t model_bin_getter{};
 	};
 
@@ -264,7 +272,7 @@ namespace onnxruntime_server {
 			void accept();
 
 		  protected:
-			boost::asio::io_context io_context;
+			boost::asio::io_context &io_context;
 			asio::socket socket;
 			asio::acceptor acceptor;
 			uint_least16_t assigned_port = 0;
@@ -275,10 +283,11 @@ namespace onnxruntime_server {
 			virtual void client_connected(asio::socket socket) = 0;
 
 		  public:
-			server(onnx::session_manager *onnx_session_manager, builtin_thread_pool *worker_pool, int port);
+			server(
+				boost::asio::io_context &io_context, onnx::session_manager *onnx_session_manager,
+				builtin_thread_pool *worker_pool, int port
+			);
 			~server();
-
-			void run(bool *running, long long timeout_millis);
 
 			builtin_thread_pool *get_worker_pool();
 			onnx::session_manager *get_onnx_session_manager();

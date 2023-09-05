@@ -14,7 +14,8 @@ Orts::onnx::session_manager::~session_manager() {
 	}
 }
 
-Orts::onnx::session *Orts::onnx::session_manager::get_session(const std::string &model_name, int model_version) {
+Orts::onnx::session *
+Orts::onnx::session_manager::get_session(const std::string &model_name, const std::string &model_version) {
 	auto key = session_key(model_name, model_version);
 	return get_session(key);
 }
@@ -27,13 +28,14 @@ Orts::onnx::session *Orts::onnx::session_manager::get_session(const Orts::onnx::
 	return it->second;
 }
 
-Orts::onnx::session *
-Orts::onnx::session_manager::create_session(const std::string &model_name, int model_version, const json &option) {
+Orts::onnx::session *Orts::onnx::session_manager::create_session(
+	const std::string &model_name, const std::string &model_version, const json &option
+) {
 	return create_session(model_name, model_version, model_bin_getter(model_name, model_version), option);
 }
 
 Orts::onnx::session *Orts::onnx::session_manager::create_session(
-	const std::string &model_name, int model_version, const std::string &bin, const json &option
+	const std::string &model_name, const std::string &model_version, const std::string &bin, const json &option
 ) {
 	auto key = session_key(model_name, model_version);
 	{
@@ -50,7 +52,7 @@ Orts::onnx::session *Orts::onnx::session_manager::create_session(
 	return nullptr;
 }
 
-void Orts::onnx::session_manager::remove_session(const std::string &model_name, int model_version) {
+void Orts::onnx::session_manager::remove_session(const std::string &model_name, const std::string &model_version) {
 	auto key = session_key(model_name, model_version);
 	remove_session(key);
 }

@@ -68,7 +68,8 @@ namespace onnxruntime_server::transport::http {
 
 	  public:
 		http_server(
-			const class config &config, onnx::session_manager *onnx_session_manager, builtin_thread_pool *worker_pool
+			boost::asio::io_context &io_context, const class config &config,
+			onnx::session_manager *onnx_session_manager, builtin_thread_pool *worker_pool
 		);
 		void remove_session(const std::shared_ptr<http_session> &session);
 	};
@@ -104,7 +105,8 @@ namespace onnxruntime_server::transport::http {
 
 	  public:
 		https_server(
-			const class config &config, onnx::session_manager *onnx_session_manager, builtin_thread_pool *worker_pool
+			boost::asio::io_context &io_context, const class config &config,
+			onnx::session_manager *onnx_session_manager, builtin_thread_pool *worker_pool
 		);
 		void remove_session(const std::shared_ptr<https_session> &session);
 	};
