@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 cd "$(dirname "$0")" || exit
-mkdir -p external/onnxruntime || exit
 
 echo
 echo "Select onnxruntime version to download:"
@@ -26,10 +25,6 @@ echo "Downloading $item"
 echo
 
 wget "$item"
-
-echo
-echo "Extracting $FILENAME to external/onnxruntime"
-echo
 
 sudo mkdir -p /usr/local/onnxruntime
 sudo tar vzxf "$FILENAME" -C /usr/local/onnxruntime --strip-components=1
