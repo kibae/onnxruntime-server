@@ -1,9 +1,10 @@
+### Health check
 GET {{host}}/health
 
-###
+### List sessions
 GET {{host}}/api/sessions
 
-###
+### Create session 1
 POST {{host}}/api/sessions
 Content-Type: application/json
 
@@ -12,7 +13,7 @@ Content-Type: application/json
   "version": "1"
 }
 
-###
+### Create session 2
 POST {{host}}/api/sessions
 Content-Type: application/json
 
@@ -21,7 +22,19 @@ Content-Type: application/json
   "version": "2"
 }
 
-###
+### Create session 2 using CUDA
+POST {{host}}/api/sessions
+Content-Type: application/json
+
+{
+  "model": "sample",
+  "version": "2",
+  "option": {
+    "cuda": true
+  }
+}
+
+### Execute session 1
 POST {{host}}/api/sessions/sample/1
 Content-Type: application/json
 
@@ -32,7 +45,7 @@ Content-Type: application/json
 }
 
 
-###
+### Execute session 1 with batch
 POST {{host}}/api/sessions/sample/1
 Content-Type: application/json
 
@@ -42,7 +55,7 @@ Content-Type: application/json
   "z": [[3], [4], [5]]
 }
 
-###
+### Execute session 2
 POST {{host}}/api/sessions/sample/2
 Content-Type: application/json
 
@@ -149,3 +162,7 @@ Content-Type: application/json
     ]
   ]
 }
+
+### Destroy session 2
+DELETE {{host}}/api/sessions/sample/2
+
