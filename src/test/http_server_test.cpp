@@ -10,7 +10,7 @@ http_request(beast::http::verb method, const std::string &target, short port, st
 
 TEST(test_onnxruntime_server_http, HttpServerTest) {
 	Orts::config config;
-	config.https_port = 0;
+	config.http_port = 0;
 	config.model_bin_getter = test_model_bin_getter;
 
 	boost::asio::io_context io_context;
