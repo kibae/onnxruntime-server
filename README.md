@@ -4,9 +4,7 @@
 # ONNX Runtime Server
 
 - [ONNX: Open Neural Network Exchange](https://onnxruntime.ai/)
-- Export machine learning models learned in various ML environments to ONNX files and provide inference services using
-  ONNX Runtime Server.
-- Provides inference and management functions via TCP or HTTP/HTTPS APIs.
+- The ONNX Runtime Server is a server that provides TCP and HTTP/HTTPS REST APIs for ONNX inference.
 - This project is part of the pg_onnx project. pg_onnx is an extension that allows you to perform inference using data
   within PostgreSQL.
 
