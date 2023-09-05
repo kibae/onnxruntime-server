@@ -63,6 +63,13 @@ def main():
     model_to_save = SimpleModel()
     model_to_save.load_state_dict(state_dict)
 
+    print("Test code expect")
+    print(model_to_save(
+        torch.tensor([[1], [2], [3]], dtype=torch.float32),
+        torch.tensor([[2], [3], [4]], dtype=torch.float32),
+        torch.tensor([[3], [4], [5]], dtype=torch.float32)
+    ))
+
     torch.onnx.export(
         model_to_save,
         (torch.tensor(x[:1], dtype=torch.float32), torch.tensor(y[:1], dtype=torch.float32),
@@ -70,8 +77,8 @@ def main():
         "../fixture/sample-model1.onnx",
         export_params=True,
         input_names=['x', 'y', 'z'],
-        dynamic_axes={'x': {0: 'batch_size'}, 'y': {0: 'batch_size'}, 'z': {0: 'batch_size'}, 'output': {0: 'batch_size'}},
         output_names=['output'],
+        dynamic_axes={'x': {0: 'batch_size'}, 'y': {0: 'batch_size'}, 'z': {0: 'batch_size'}, 'output': {0: 'batch_size'}},
         verbose=True,
     )
 

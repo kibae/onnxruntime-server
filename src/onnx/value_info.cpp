@@ -19,7 +19,7 @@ std::string Orts::onnx::value_info::type_to_string() const {
 			str += ",";
 		str += std::to_string(dim);
 	}
-	return type_name() + "(" + str + ")";
+	return type_name() + "[" + str + "]";
 }
 
 const char *Orts::onnx::value_info::type_name(ONNXTensorElementDataType element_type) {
@@ -61,6 +61,25 @@ const char *Orts::onnx::value_info::type_name(ONNXTensorElementDataType element_
 	default:
 		return "unknown";
 	}
+}
+
+json::array_t values_fit_shape(json::array_t &values, std::vector<int64_t> &shape, size_t depth) {
+	depth--;
+	if (depth <= 0)
+		return values;
+
+	auto dim = shape[depth];
+	json::array_t result;
+
+	for (size_t i = 0; i < values.size(); i += dim) {
+		json::array_t row;
+		for (size_t p = i; p < i + dim; p++) {
+			row.emplace_back(values[p]);
+		}
+		result.emplace_back(row);
+	}
+
+	return values_fit_shape(result, shape, depth);
 }
 
 #define GET_TENSOR_DATA(type)                                                                                          \
@@ -122,5 +141,6 @@ json::array_t Orts::onnx::value_info::get_tensor_data(Ort::Value &tensors) const
 		break;
 	}
 
-	return values;
+	auto dims = tensors.GetTensorTypeAndShapeInfo().GetShape();
+	return values_fit_shape(values, dims, dims.size());
 }

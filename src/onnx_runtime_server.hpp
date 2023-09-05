@@ -18,7 +18,7 @@
 #include "utils/half_fp.hpp"
 #include "utils/json.hpp"
 
-#include <core/session/onnxruntime_cxx_api.h>
+#include <onnxruntime_cxx_api.h>
 
 using asio = boost::asio::ip::tcp;
 using json = nlohmann::json;
@@ -45,6 +45,7 @@ namespace onnx_runtime_server {
 			[[nodiscard]] std::string type_name() const;
 			[[nodiscard]] std::string type_to_string() const;
 			static const char *type_name(ONNXTensorElementDataType element_type);
+
 			json::array_t get_tensor_data(Ort::Value &tensors) const;
 		};
 
@@ -144,7 +145,7 @@ namespace onnx_runtime_server {
 			class context {
 			  private:
 				Ort::MemoryInfo memory_info;
-				session *session;
+				onnx_runtime_server::onnx::session *session;
 				std::map<std::string, input_value *> inputs;
 
 			  public:
@@ -267,12 +268,11 @@ namespace onnx_runtime_server {
 			boost::asio::io_context io_context;
 			asio::socket socket;
 			asio::acceptor acceptor;
-
 			uint_least16_t assigned_port = 0;
 
 			onnx::session_manager *onnx_session_manager;
-			builtin_thread_pool *worker_pool;
 
+			builtin_thread_pool *worker_pool;
 			virtual void client_connected(asio::socket socket) = 0;
 
 		  public:

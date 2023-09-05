@@ -46,20 +46,24 @@ void onnx_runtime_server::transport::http::http_session::on_read(beast::error_co
 	do_write(handle_request());
 }
 
-void onnx_runtime_server::transport::http::http_session::do_write(beast::http::message_generator &&msg) {
-	beast::async_write(stream, std::move(msg), beast::bind_front_handler(&http_session::on_write, shared_from_this()));
-}
+void onnx_runtime_server::transport::http::http_session::do_write(
+	std::shared_ptr<beast::http::response<beast::http::string_body>> msg
+) {
+	beast::http::async_write(
+		stream, *msg,
+		[self = shared_from_this(), msg](beast::error_code ec, std::size_t bytes_transferred) {
+			if (ec) {
+				std::cerr << "onnx_runtime_server::transport::http::http_session_base::do_write: " << ec.message()
+						  << std::endl;
+				return self->close();
+			}
 
-void onnx_runtime_server::transport::http::http_session::on_write(beast::error_code ec, std::size_t bytes_transferred) {
-	if (ec) {
-		std::cerr << "onnx_runtime_server::transport::http::http_session_base::do_write: " << ec.message() << std::endl;
-		return close();
-	}
+			if (!self->req.keep_alive())
+				return self->close();
 
-	if (!req.keep_alive())
-		return close();
-
-	do_read();
+			self->do_read();
+		}
+	);
 }
 
 void onnx_runtime_server::transport::http::http_session::close() {

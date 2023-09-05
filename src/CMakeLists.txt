@@ -26,9 +26,20 @@ set(SOURCE_FILES
         transport/http/http_session.cpp
 )
 
-find_package(PkgConfig REQUIRED)
-# onnxruntime
-pkg_check_modules(onnxruntime REQUIRED libonnxruntime)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+
+# cuda, onnxruntime
+find_package(CUDA)
+if (CUDA_FOUND)
+    message(STATUS "CUDA support found. Compiling with CUDA support.")
+    enable_language(CUDA)
+    add_definitions(-DHAS_CUDA)
+#    set(SOURCE_FILES ${SOURCE_FILES} onnx/execution/cuda_session.cpp)
+    find_package(ONNXRuntime COMPONENTS cuda REQUIRED)
+else ()
+    message(STATUS "CUDA support not found. Compiling without CUDA support.")
+    find_package(ONNXRuntime REQUIRED)
+endif ()
 
 # boost
 find_package(Boost COMPONENTS serialization system filesystem REQUIRED)
@@ -40,21 +51,11 @@ if (OPENSSL_FOUND)
     set(SOURCE_FILES ${SOURCE_FILES} transport/http/https_server.cpp transport/http/https_session.cpp)
 endif ()
 
-# cuda
-find_package(CUDA)
-if (CUDA_FOUND)
-    message(STATUS "CUDA support found. Compiling with CUDA support.")
-    enable_language(CUDA)
-    add_definitions(-DHAS_CUDA)
-    set(SOURCE_FILES ${SOURCE_FILES} onnx/execution/cuda_session.cpp)
-else ()
-    message(STATUS "CUDA support not found. Compiling without CUDA support.")
-endif ()
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
-include_directories(${Boost_INCLUDE_DIR} ${onnxruntime_INCLUDE_DIRS} ${OPENSSL_INCLUDE_DIR})
-link_directories(${Boost_LIBRARY_DIRS} ${onnxruntime_LIBRARY_DIRS} ${OPENSSL_LIBRARY_DIRS})
-target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} ${onnxruntime_LIBRARIES} ${OPENSSL_LIBRARIES})
+include_directories(${Boost_INCLUDE_DIR} ${ONNX_RUNTIME_INCLUDE_DIR} ${OPENSSL_INCLUDE_DIR})
+link_directories(${Boost_LIBRARY_DIRS} ${ONNX_RUNTIME_LIBRARY_DIR} ${OPENSSL_LIBRARY_DIRS})
+target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} ${ONNX_RUNTIME_LIBRARIES} ${OPENSSL_LIBRARIES})
 
 add_subdirectory(standalone)
 
