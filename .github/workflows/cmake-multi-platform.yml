@@ -51,7 +51,7 @@ jobs:
         if: startsWith(matrix.os, 'debian') || startsWith(matrix.os, 'ubuntu')
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -yq build-essential clang-11 cmake libboost-all-dev libssl-dev
+          sudo apt-get install -yq build-essential clang-11 cmake libboost-all-dev libssl-dev libgtest-dev
           ./.github/actions/download-onnxruntime-linux.sh
 
       - name: Set reusable strings
