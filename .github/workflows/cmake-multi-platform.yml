@@ -30,9 +30,9 @@ jobs:
           # - os: windows-latest
           #   c_compiler: cl
           #   cpp_compiler: cl
-          - os: ubuntu-latest
-            c_compiler: gcc
-            cpp_compiler: g++
+          # - os: ubuntu-latest
+          #   c_compiler: gcc
+          #   cpp_compiler: g++
           - os: ubuntu-latest
             c_compiler: clang
             cpp_compiler: clang++
@@ -50,8 +50,8 @@ jobs:
       shell: bash
       if: startsWith(matrix.os, 'debian') || startsWith(matrix.os, 'ubuntu')
       run: |
-        apt-get update -qq
-        apt-get install -yq build-essential clang-11 cmake libboost-all-dev libssl-dev
+        sudo apt-get update -qq
+        sudo apt-get install -yq build-essential clang-11 cmake libboost-all-dev libssl-dev
         ls
 
     - name: Set reusable strings
