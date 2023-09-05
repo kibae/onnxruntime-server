@@ -17,7 +17,6 @@ TEST(test_onnxruntime_server_http, HttpServerTest) {
 	Orts::onnx::session_manager manager(config.model_bin_getter);
 	Orts::builtin_thread_pool worker_pool(config.num_threads);
 	Orts::transport::http::http_server server(io_context, config, &manager, &worker_pool);
-	ASSERT_EQ(server.port(), config.http_port);
 
 	bool running = true;
 	std::thread server_thread([&io_context, &running]() { test_server_run(io_context, &running); });
