@@ -13,7 +13,6 @@ TEST(test_onnxruntime_server_http, HttpsServerTest) {
 	config.https_port = 0;
 	config.https_cert = (test_dir / "ssl" / "server-cert.pem").string();
 	config.https_key = (test_dir / "ssl" / "server-key.pem").string();
-
 	config.model_bin_getter = test_model_bin_getter;
 
 	boost::asio::io_context io_context;

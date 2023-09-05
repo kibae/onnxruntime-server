@@ -10,14 +10,13 @@ http_request(beast::http::verb method, const std::string &target, short port, st
 
 TEST(test_onnxruntime_server_http, HttpServerTest) {
 	Orts::config config;
-	config.https_port = 0;
+	config.http_port = 0;
 	config.model_bin_getter = test_model_bin_getter;
 
 	boost::asio::io_context io_context;
 	Orts::onnx::session_manager manager(config.model_bin_getter);
 	Orts::builtin_thread_pool worker_pool(config.num_threads);
 	Orts::transport::http::http_server server(io_context, config, &manager, &worker_pool);
-	ASSERT_EQ(server.port(), config.http_port);
 
 	bool running = true;
 	std::thread server_thread([&io_context, &running]() { test_server_run(io_context, &running); });
