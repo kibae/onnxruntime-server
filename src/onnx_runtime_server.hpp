@@ -62,6 +62,7 @@ namespace onnx_runtime_server {
 		class session {
 		  private:
 			Ort::Env env;
+			Ort::SessionOptions session_options;
 			Ort::Session *ort_session{};
 			std::chrono::system_clock::time_point created_at;
 			std::chrono::system_clock::time_point last_executed_at;
@@ -79,19 +80,17 @@ namespace onnx_runtime_server {
 			std::vector<std::string> _outputNames;
 			std::vector<const char *> outputNames;
 
-			// TODO: CUDA support
+			json _option = json::object();
 
 			void init();
 
-			explicit session(session_key key);
+			explicit session(session_key key, const json &option);
 
 		  public:
 			session_key key;
-			session(session_key key, const std::string &path, const Ort::SessionOptions &session_options);
-			session(
-				session_key key, const void *model_data, size_t modal_data_length,
-				const Ort::SessionOptions &session_options
-			);
+			session(session_key key, const std::string &path);
+			session(session_key key, const std::string &path, const json &option);
+			session(session_key key, const void *model_data, size_t modal_data_length, const json &option);
 			~session();
 
 			std::vector<Ort::Value>
@@ -120,10 +119,10 @@ namespace onnx_runtime_server {
 
 			session *get_session(const std::string &model_name, int model_version);
 			session *get_session(const session_key &key);
-			// TODO: CUDA support
-			session *get_or_create_session(const std::string &model_name, int model_version);
-			session *create_session(const std::string &model_name, int model_version);
-			session *create_session(const std::string &model_name, int model_version, const std::string &bin);
+			session *create_session(const std::string &model_name, int model_version, const json &option);
+			session *create_session(
+				const std::string &model_name, int model_version, const std::string &bin, const json &option
+			);
 			void remove_session(const std::string &model_name, int model_version);
 			void remove_session(const session_key &key);
 		};

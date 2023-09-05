@@ -32,7 +32,7 @@ select item in $RAW_LIST; do
 
   sudo mkdir -p /usr/local/onnxruntime
   sudo tar vzxf "$FILENAME" -C /usr/local/onnxruntime --strip-components=1
-  sudo sh -c 'echo "/usr/local/onnxruntime" > /etc/ld.so.conf.d/onnxruntime.conf'
+  sudo sh -c 'echo "/usr/local/onnxruntime/lib" > /etc/ld.so.conf.d/onnxruntime.conf'
   sudo ldconfig
 
   rm -f "$FILENAME"

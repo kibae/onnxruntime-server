@@ -15,7 +15,7 @@ Orts::task::execute_session::execute_session(
 }
 
 json Orts::task::execute_session::run() {
-	auto session = onnx_session_manager->get_or_create_session(model_name, model_version);
+	auto session = onnx_session_manager->get_session(model_name, model_version);
 	if (session == nullptr) {
 		throw std::runtime_error("session not found");
 	}

@@ -6,28 +6,43 @@
 
 #include "../onnx_runtime_server.hpp"
 
-Orts::onnx::session::session(session_key key)
-	: key(std::move(key)), created_at(std::chrono::system_clock::now()), allocator() {
+#ifdef HAS_CUDA
+#include "cuda/session_options.cpp"
+#endif
+
+Orts::onnx::session::session(session_key key, const json &option)
+	: key(std::move(key)), created_at(std::chrono::system_clock::now()), allocator(), session_options() {
+	_option["cuda"] = false;
+
+	if (option.contains("cuda") && (!option["cuda"].is_boolean() || option["cuda"].get<bool>())) {
+#ifdef HAS_CUDA
+		_option["cuda"] = append_cuda_session_options(session_options, option);
+#else
+		throw std::runtime_error("CUDA is not supported");
+#endif
+	}
 }
 
-Orts::onnx::session::session(session_key key, const std::string &path, const Ort::SessionOptions &session_options)
-	: session(std::move(key)) {
-
+Orts::onnx::session::session(session_key key, const std::string &path) : session(std::move(key), json::object()) {
 	ort_session = new Ort::Session(env, path.c_str(), session_options);
-
 	init();
 }
 
-Orts::onnx::session::session(
-	session_key key, const void *model_data, size_t modal_data_length, const Ort::SessionOptions &session_options
-)
-	: session(std::move(key)) {
-	ort_session = new Ort::Session(env, model_data, modal_data_length, session_options);
+Orts::onnx::session::session(session_key key, const std::string &path, const json &option)
+	: session(std::move(key), option) {
+	ort_session = new Ort::Session(env, path.c_str(), session_options);
+	init();
+}
 
+Orts::onnx::session::session(session_key key, const void *model_data, size_t modal_data_length, const json &option)
+	: session(std::move(key), option) {
+	ort_session = new Ort::Session(env, model_data, modal_data_length, session_options);
 	init();
 }
 
 void Orts::onnx::session::init() {
+	assert(ort_session != nullptr);
+
 	// input metadata
 	inputCount = ort_session->GetInputCount();
 	for (size_t i = 0; i < inputCount; i++) {
@@ -76,6 +91,8 @@ const std::vector<Orts::onnx::value_info> &Orts::onnx::session::outputs() const 
 
 std::vector<Ort::Value>
 Orts::onnx::session::run(const Ort::MemoryInfo &memory_info, const std::vector<Ort::Value> &input_values) {
+	assert(ort_session != nullptr);
+
 	if (input_values.empty() || input_values.size() != inputCount) {
 		throw std::runtime_error("params size is not same as: " + std::to_string(inputCount));
 	}
@@ -106,6 +123,7 @@ json onnx_runtime_server::onnx::session::to_json() const {
 		outputs[output.name] = output.type_to_string();
 	}
 	dict["outputs"] = outputs;
+	dict["option"] = _option;
 
 	return dict;
 }

@@ -4,45 +4,9 @@
 #include "../onnx_runtime_server.hpp"
 #include "test_common.hpp"
 
-TEST(test_onnx_runtime_server_context, SimpleModelTest) {
-	Orts::onnx::session_key key("sample", 1);
-	Orts::onnx::session session(key, model1_path.string());
-
-	Orts::onnx::execution::context ctx(&session, R"({"x":[[1]],"y":[[2]],"z":[[3]]})");
-
-	TIME_MEASURE_INIT
-	TIME_MEASURE_START
-	auto result = ctx.run();
-	TIME_MEASURE_STOP
-	auto json = ctx.tensors_to_json(result);
-	std::cout << json.dump(4) << "\n";
-
-	ASSERT_EQ(json.contains("output"), true);
-	ASSERT_EQ(json["output"].size(), 1);
-	ASSERT_GT(json["output"][0], 0);
-}
-
-TEST(test_onnx_runtime_server_context, SimpleModelBatchTest) {
-	Orts::onnx::session_key key("sample", 1);
-	Orts::onnx::session session(key, model1_path.string());
-
-	Orts::onnx::execution::context ctx(&session, R"({"x":[[1],[2],[3]],"y":[[2],[3],[4]],"z":[[3],[4],[5]]})");
-
-	TIME_MEASURE_INIT
-	TIME_MEASURE_START
-	auto result = ctx.run();
-	TIME_MEASURE_STOP
-	auto json = ctx.tensors_to_json(result);
-	std::cout << json.dump(4) << "\n";
-
-	ASSERT_EQ(json.contains("output"), true);
-	ASSERT_EQ(json["output"].size(), 3);
-	ASSERT_GT(json["output"][0], 0);
-}
-
-TEST(test_onnx_runtime_server_context, BertSquadModelTest) {
+TEST(test_onnx_runtime_server_context_cuda, BertSquadModelTest) {
 	Orts::onnx::session_key key("sample", 2);
-	Orts::onnx::session session(key, model2_path.string());
+	Orts::onnx::session session(key, model2_path.string(), json::parse(R"({"cuda": true})"));
 
 	std::cout << session.to_json().dump(2) << "\n";
 
