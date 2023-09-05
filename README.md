@@ -1,6 +1,5 @@
-
 > [!NOTE]
-> $${\color{red}In development}$$
+> In development
 
 
 # ONNX Runtime Server
