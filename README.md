@@ -2,6 +2,9 @@
 > In development
 
 # ONNX Runtime Server
+[![Github CI](https://github.com/kibae/onnxruntime-server/actions/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/kibae/onnxruntime-server/actions/workflows/cmake-multi-platform.yml)
+[![License](https://img.shields.io/github/license/kibae/onnxruntime-server)](https://github.com/kibae/onnxruntime-server/blob/main/LICENSE)
+
 
 - [ONNX: Open Neural Network Exchange](https://onnxruntime.ai/)
 - The ONNX Runtime Server is a server that provides TCP and HTTP/HTTPS REST APIs for ONNX inference.
