@@ -55,7 +55,7 @@
   brew install cmake
   ```
 
-### 4. Cuda(optional, for GPU)
+### 4. CUDA(optional, for GPU)
 
 - Linux
   ```shell
