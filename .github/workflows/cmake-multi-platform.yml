@@ -48,7 +48,7 @@ jobs:
     - uses: actions/checkout@v3
     - name: Prepare container (apt)
       shell: bash
-      if: startsWith(matrix.image, 'debian:') || startsWith(matrix.image, 'ubuntu:')
+      if: startsWith(matrix.image, 'debian') || startsWith(matrix.image, 'ubuntu')
       run: |
         apt-get update -qq
         apt-get install -yq build-essential clang-11 cmake libboost-all-dev libssl-dev
