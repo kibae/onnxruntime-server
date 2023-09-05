@@ -1,4 +1,7 @@
-`In development`
+
+> [!NOTE]
+> $${\color{red}In development}$$
+
 
 # ONNX Runtime Server
 
@@ -8,9 +11,20 @@
 - This project is part of the pg_onnx project. pg_onnx is an extension that allows you to perform inference using data
   within PostgreSQL.
 
+----
+
+- [Requirements](#requirements)
+    - [1. ONNX Runtime](#1-onnx-runtime)
+    - [2. Boost](#2-boost)
+    - [3. CMake](#3-cmake)
+    - [4. Cuda(optional, for GPU)](#4-cudaoptional-for-gpu)
+    - [5. OpenSSL(optional, for HTTPS)](#5-openssloptional-for-https)
+
+----
+
 # Requirements
 
-## [ONNX Runtime](https://onnxruntime.ai/)
+### 1. [ONNX Runtime](https://onnxruntime.ai/)
 
 - Linux
     - Download binary from [ONNX Runtime Releases](https://github.com/microsoft/onnxruntime/releases)
@@ -21,7 +35,7 @@
   brew install onnxruntime
   ```
 
-## Boost
+### 2. Boost
 
 - Linux
   ```shell
@@ -32,14 +46,25 @@
   brew install boost
   ```
 
-## Cuda(optional, for GPU)
+### 3. [CMake](https://cmake.org/)
+
+- Linux
+  ```shell
+  sudo apt install cmake
+  ```
+- Mac
+  ```shell
+  brew install cmake
+  ```
+
+### 4. Cuda(optional, for GPU)
 
 - Linux
   ```shell
   sudo apt install nvidia-cuda-toolkit
   ```
 
-## OpenSSL(optional, for HTTPS)
+### 5. OpenSSL(optional, for HTTPS)
 
 - Linux
   ```shell
@@ -49,17 +74,6 @@
   ```shell
   brew install openssl
   ```
-
-## [CMake](https://cmake.org/)
-
-- Linux
-  ```shell
-  sudo apt install cmake
-  ```
-- Mac
-  ```shell
-    brew install cmake
-    ```
 
 # TODO
 
