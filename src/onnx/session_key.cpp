@@ -4,7 +4,7 @@
 
 #include <utility>
 
-#include "../onnx_runtime_server.hpp"
+#include "../onnxruntime_server.hpp"
 
 Orts::onnx::session_key::session_key(std::string model_name, int model_version)
 	: model_name(std::move(model_name)), model_version(model_version) {

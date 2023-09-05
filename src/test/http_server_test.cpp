@@ -11,7 +11,7 @@
 beast::http::response<beast::http::dynamic_body>
 http_request(beast::http::verb method, const std::string &target, short port, std::string body);
 
-TEST(test_onnx_runtime_server_http, HttpServerTest) {
+TEST(test_onnxruntime_server_http, HttpServerTest) {
 	Orts::config config;
 	config.model_bin_getter = test_model_bin_getter;
 

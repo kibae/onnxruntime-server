@@ -4,7 +4,7 @@
 
 #include <utility>
 
-#include "../onnx_runtime_server.hpp"
+#include "../onnxruntime_server.hpp"
 
 #ifdef HAS_CUDA
 #include "cuda/session_options.cpp"
@@ -104,7 +104,7 @@ Orts::onnx::session::run(const Ort::MemoryInfo &memory_info, const std::vector<O
 	);
 }
 
-json onnx_runtime_server::onnx::session::to_json() const {
+json onnxruntime_server::onnx::session::to_json() const {
 	json::object_t dict;
 	dict["model"] = key.model_name;
 	dict["version"] = key.model_version;

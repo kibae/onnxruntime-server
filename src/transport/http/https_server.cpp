@@ -4,9 +4,9 @@
 
 #include "http_server.hpp"
 
-onnx_runtime_server::transport::http::https_server::https_server(
-	const onnx_runtime_server::config &config, onnx_runtime_server::onnx::session_manager *onnx_session_manager,
-	onnx_runtime_server::builtin_thread_pool *worker_pool
+onnxruntime_server::transport::http::https_server::https_server(
+	const onnxruntime_server::config &config, onnxruntime_server::onnx::session_manager *onnx_session_manager,
+	onnxruntime_server::builtin_thread_pool *worker_pool
 )
 	: server(onnx_session_manager, worker_pool, config.https_port), ctx(boost::asio::ssl::context::sslv23) {
 	boost::system::error_code ec;
@@ -28,12 +28,12 @@ onnx_runtime_server::transport::http::https_server::https_server(
 		throw std::runtime_error("Failed to load SSL private key: " + ec.message());
 }
 
-void onnx_runtime_server::transport::http::https_server::client_connected(asio::socket socket) {
+void onnxruntime_server::transport::http::https_server::client_connected(asio::socket socket) {
 	auto session = std::make_shared<https_session>(std::move(socket), this, ctx);
 	sessions.push_back(session);
 	session->run();
 }
 
-void onnx_runtime_server::transport::http::https_server::remove_session(const std::shared_ptr<https_session> &session) {
+void onnxruntime_server::transport::http::https_server::remove_session(const std::shared_ptr<https_session> &session) {
 	sessions.remove(session);
 }

@@ -2,7 +2,7 @@
 // Created by Kibae Shin on 2023/09/01.
 //
 
-#include "../onnx_runtime_server.hpp"
+#include "../onnxruntime_server.hpp"
 
 Orts::onnx::session_manager::session_manager(model_bin_getter_t model_bin_getter) : model_bin_getter(model_bin_getter) {
 	assert(model_bin_getter != nullptr);

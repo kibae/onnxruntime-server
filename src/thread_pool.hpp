@@ -5,7 +5,7 @@
 #include <queue>
 #include <thread>
 
-namespace onnx_runtime_server {
+namespace onnxruntime_server {
 	class builtin_thread_pool {
 	  public:
 		explicit builtin_thread_pool(long threads) {
@@ -31,6 +31,7 @@ namespace onnx_runtime_server {
 				});
 			}
 		}
+
 		~builtin_thread_pool() {
 			stop = true;
 			condition.notify_all();
@@ -62,6 +63,6 @@ namespace onnx_runtime_server {
 		std::condition_variable condition;
 		std::atomic_bool stop = false;
 	};
-} // namespace onnx_runtime_server
+} // namespace onnxruntime_server
 
 #endif // ONNX_RUNTIME_SERVER_THREAD_POOL_HPP

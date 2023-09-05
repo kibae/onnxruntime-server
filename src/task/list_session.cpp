@@ -2,7 +2,7 @@
 // Created by Kibae Shin on 2023/09/01.
 //
 
-#include "../onnx_runtime_server.hpp"
+#include "../onnxruntime_server.hpp"
 
 Orts::task::list_session::list_session(onnx::session_manager *onnx_session_manager)
 	: onnx_session_manager(onnx_session_manager) {

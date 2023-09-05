@@ -1,10 +1,10 @@
 //
 // Created by Kibae Shin on 2023/09/02.
 //
-#include "../onnx_runtime_server.hpp"
+#include "../onnxruntime_server.hpp"
 #include "test_common.hpp"
 
-TEST(test_onnx_runtime_server_context_cuda, BertSquadModelTest) {
+TEST(test_onnxruntime_server_context_cuda, BertSquadModelTest) {
 	Orts::onnx::session_key key("sample", 2);
 	Orts::onnx::session session(key, model2_path.string(), json::parse(R"({"cuda": true})"));
 

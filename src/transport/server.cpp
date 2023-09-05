@@ -2,7 +2,7 @@
 // Created by Kibae Shin on 2023/08/31.
 //
 
-#include "../onnx_runtime_server.hpp"
+#include "../onnxruntime_server.hpp"
 
 Orts::transport::server::server(
 	Orts::onnx::session_manager *onnx_session_manager, Orts::builtin_thread_pool *worker_pool, int port

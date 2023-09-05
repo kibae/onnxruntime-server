@@ -24,13 +24,13 @@ using asio = boost::asio::ip::tcp;
 using json = nlohmann::json;
 
 /**
- * onnx_runtime_server is a namespace that provides a server that can execute ONNX models.
+ * onnxruntime_server is a namespace that provides a server that can execute ONNX models.
  * The server is implemented using Boost.Asio and can be used for both TCP(tcp/tcp_server.hpp) and
  * HTTP(http/http_server.hpp).
  *
  * namespace shorthand: Orts
  */
-namespace onnx_runtime_server {
+namespace onnxruntime_server {
 	typedef std::string (*model_bin_getter_t)(const std::string &, int);
 
 	namespace onnx {
@@ -144,7 +144,7 @@ namespace onnx_runtime_server {
 			class context {
 			  private:
 				Ort::MemoryInfo memory_info;
-				onnx_runtime_server::onnx::session *session;
+				onnxruntime_server::onnx::session *session;
 				std::map<std::string, input_value *> inputs;
 
 			  public:
@@ -287,8 +287,8 @@ namespace onnx_runtime_server {
 
 	} // namespace transport
 
-} // namespace onnx_runtime_server
+} // namespace onnxruntime_server
 
-namespace Orts = onnx_runtime_server;
+namespace Orts = onnxruntime_server;
 
 #endif // ONNX_RUNTIME_SERVER_HPP

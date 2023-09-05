@@ -2,7 +2,7 @@
 // Created by Kibae Shin on 2023/09/02.
 //
 
-#include "../onnx_runtime_server.hpp"
+#include "../onnxruntime_server.hpp"
 
 Orts::onnx::value_info::value_info(std::string name, ONNXTensorElementDataType element_type, std::vector<int64_t> shape)
 	: name(std::move(name)), element_type(element_type), shape(std::move(shape)) {

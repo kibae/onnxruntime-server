@@ -12,7 +12,7 @@ json tcp_request(short port, int16_t type, json body) {
 	socket.connect(endpoint);
 
 	auto data = body.dump();
-	struct onnx_runtime_server::transport::tcp::protocol_header header = {};
+	struct onnxruntime_server::transport::tcp::protocol_header header = {};
 	header.type = htons(type);
 	header.length = htonl(data.size());
 
@@ -38,7 +38,7 @@ json tcp_request(short port, int16_t type, json body) {
 	return json::parse(res_data);
 }
 
-TEST(test_onnx_runtime_server_tcp, TcpServerTest) {
+TEST(test_onnxruntime_server_tcp, TcpServerTest) {
 	Orts::config config;
 	config.model_bin_getter = test_model_bin_getter;
 

@@ -2,7 +2,7 @@
 // Created by Kibae Shin on 2023/09/02.
 //
 
-#include "../../onnx_runtime_server.hpp"
+#include "../../onnxruntime_server.hpp"
 
 Orts::onnx::execution::context::context(Orts::onnx::session *session, const json &json_str)
 	: memory_info(Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault)), session(session) {

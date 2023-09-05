@@ -3,19 +3,19 @@
 //
 #include "tcp_server.hpp"
 
-onnx_runtime_server::transport::tcp::tcp_session::tcp_session(asio::socket socket, tcp_server *server)
+onnxruntime_server::transport::tcp::tcp_session::tcp_session(asio::socket socket, tcp_server *server)
 	: socket(std::move(socket)), server(server) {
 }
 
-onnx_runtime_server::transport::tcp::tcp_session::~tcp_session() {
+onnxruntime_server::transport::tcp::tcp_session::~tcp_session() {
 	try {
 		socket.close();
 	} catch (std::exception &e) {
-		std::cerr << "onnx_runtime_server::transport::tcp::tcp_session::~tcp_session: " << e.what() << std::endl;
+		std::cerr << "onnxruntime_server::transport::tcp::tcp_session::~tcp_session: " << e.what() << std::endl;
 	}
 }
 
-void onnx_runtime_server::transport::tcp::tcp_session::close() {
+void onnxruntime_server::transport::tcp::tcp_session::close() {
 	server->remove_session(shared_from_this());
 }
 
@@ -40,7 +40,7 @@ void Orts::transport::tcp::tcp_session::do_read() {
 
 				// check buffer size
 				if (header.length > MAX_BUFFER_LIMIT) {
-					std::cerr << "onnx_runtime_server::transport::session::do_read: Buffer size is too large: "
+					std::cerr << "onnxruntime_server::transport::session::do_read: Buffer size is too large: "
 							  << header.length << std::endl;
 					self->close();
 					return;
@@ -84,7 +84,7 @@ void Orts::transport::tcp::tcp_session::do_task(Orts::transport::tcp::protocol_h
 			response.append(res_json);
 			self->do_write(response);
 		} catch (std::exception &e) {
-			std::cerr << "onnx_runtime_server::transport::session::do_read: " << e.what() << std::endl;
+			std::cerr << "onnxruntime_server::transport::session::do_read: " << e.what() << std::endl;
 
 			auto res_json = json({{"error", std::string(e.what())}}).dump();
 			struct protocol_header res_header = {0, 0};
@@ -99,7 +99,7 @@ void Orts::transport::tcp::tcp_session::do_task(Orts::transport::tcp::protocol_h
 	});
 }
 
-void onnx_runtime_server::transport::tcp::tcp_session::do_write(const std::string &buf) {
+void onnxruntime_server::transport::tcp::tcp_session::do_write(const std::string &buf) {
 	socket.async_write_some(
 		boost::asio::buffer(buf),
 		[self = shared_from_this()](boost::system::error_code ec, std::size_t length) {

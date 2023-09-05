@@ -1,7 +1,7 @@
 //
 // Created by Kibae Shin on 2023/09/02.
 //
-#include "../../onnx_runtime_server.hpp"
+#include "../../onnxruntime_server.hpp"
 
 Orts::onnx::execution::input_value::~input_value() {
 	for (auto &p : deallocators) {
@@ -121,9 +121,8 @@ Orts::onnx::execution::input_value::input_value(
 #undef ORT_VALUE_RETURN
 #undef SHAPE_ARG
 
-std::vector<int64_t> onnx_runtime_server::onnx::execution::input_value::batched_shape(
-	const std::vector<int64_t> &shape, size_t value_count
-) {
+std::vector<int64_t>
+onnxruntime_server::onnx::execution::input_value::batched_shape(const std::vector<int64_t> &shape, size_t value_count) {
 	// check shape contains -1
 	if (std::find(shape.begin(), shape.end(), -1) == shape.end())
 		return shape;

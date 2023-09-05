@@ -5,9 +5,9 @@
 #ifndef ONNX_RUNTIME_SERVER_TCP_SERVER_HPP
 #define ONNX_RUNTIME_SERVER_TCP_SERVER_HPP
 
-#include "../../onnx_runtime_server.hpp"
+#include "../../onnxruntime_server.hpp"
 
-namespace onnx_runtime_server::transport::tcp {
+namespace onnxruntime_server::transport::tcp {
 	struct protocol_header {
 		int16_t type;
 		int32_t length;
@@ -47,6 +47,6 @@ namespace onnx_runtime_server::transport::tcp {
 		void remove_session(const std::shared_ptr<tcp_session> &session);
 	};
 
-} // namespace onnx_runtime_server::transport::tcp
+} // namespace onnxruntime_server::transport::tcp
 
 #endif // ONNX_RUNTIME_SERVER_TCP_SERVER_HPP

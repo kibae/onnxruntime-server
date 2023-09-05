@@ -11,7 +11,7 @@
 beast::http::response<beast::http::dynamic_body>
 http_request(beast::http::verb method, const std::string &target, short port, std::string body);
 
-TEST(test_onnx_runtime_server_http, HttpsServerTest) {
+TEST(test_onnxruntime_server_http, HttpsServerTest) {
 	Orts::config config;
 	config.https_port = 0;
 	config.https_cert = (test_dir / "ssl" / "server-cert.pem").string();

@@ -5,7 +5,7 @@
 #ifndef ONNX_RUNTIME_SERVER_HTTP_SERVER_HPP
 #define ONNX_RUNTIME_SERVER_HTTP_SERVER_HPP
 
-#include "../../onnx_runtime_server.hpp"
+#include "../../onnxruntime_server.hpp"
 
 #include <regex>
 
@@ -19,7 +19,7 @@
 
 namespace beast = boost::beast;
 
-namespace onnx_runtime_server::transport::http {
+namespace onnxruntime_server::transport::http {
 	template <class Session> class http_session_base : public std::enable_shared_from_this<Session> {
 	  protected:
 		beast::flat_buffer buffer;
@@ -110,6 +110,6 @@ namespace onnx_runtime_server::transport::http {
 	};
 
 #endif
-} // namespace onnx_runtime_server::transport::http
+} // namespace onnxruntime_server::transport::http
 
 #endif // ONNX_RUNTIME_SERVER_HTTP_SERVER_HPP
