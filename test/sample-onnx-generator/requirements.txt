@@ -3,4 +3,5 @@ pandas
 torch
 onnx
 onnxruntime
+onnxruntime-gpu
 transformers

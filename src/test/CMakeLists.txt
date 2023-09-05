@@ -8,6 +8,13 @@ add_executable(test_onnx_runtime_server_context context_test.cpp)
 target_link_libraries(test_onnx_runtime_server_context PRIVATE onnxruntime ${Boost_LIBRARIES} onnx_runtime_server GTest::GTest GTest::Main)
 add_test(NAME test_onnx_runtime_server_context COMMAND test_onnx_runtime_server_context)
 
+if (CUDA_FOUND)
+    # test_onnx_runtime_server_context_cuda
+    add_executable(test_onnx_runtime_server_context_cuda context_cuda_test.cpp)
+    target_link_libraries(test_onnx_runtime_server_context_cuda PRIVATE onnxruntime ${Boost_LIBRARIES} onnx_runtime_server GTest::GTest GTest::Main)
+    add_test(NAME test_onnx_runtime_server_context_cuda COMMAND test_onnx_runtime_server_context_cuda)
+endif ()
+
 # test_onnx_runtime_server_tcp
 add_executable(test_onnx_runtime_server_tcp tcp_server_test.cpp)
 target_link_libraries(test_onnx_runtime_server_tcp PRIVATE onnxruntime ${Boost_LIBRARIES} onnx_runtime_server GTest::GTest GTest::Main)

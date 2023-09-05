@@ -13,6 +13,7 @@ http_request(beast::http::verb method, const std::string &target, short port, st
 
 TEST(test_onnx_runtime_server_http, HttpsServerTest) {
 	Orts::config config;
+	config.https_port = 0;
 	config.https_cert = (test_dir / "ssl" / "server-cert.pem").string();
 	config.https_key = (test_dir / "ssl" / "server-key.pem").string();
 
@@ -21,7 +22,6 @@ TEST(test_onnx_runtime_server_http, HttpsServerTest) {
 	Orts::onnx::session_manager manager(config.model_bin_getter);
 	Orts::builtin_thread_pool worker_pool(config.num_threads);
 	Orts::transport::http::https_server server(config, &manager, &worker_pool);
-	ASSERT_EQ(server.port(), config.https_port);
 
 	bool running = true;
 	std::thread server_thread([&server, &running]() { server.run(&running, 500); });

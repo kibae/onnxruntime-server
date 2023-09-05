@@ -1,7 +1,6 @@
 > [!WARNING]
 > In development
 
-
 # ONNX Runtime Server
 
 - [ONNX: Open Neural Network Exchange](https://onnxruntime.ai/)
@@ -60,7 +59,7 @@
 
 - Linux
   ```shell
-  sudo apt install nvidia-cuda-toolkit
+  sudo apt install nvidia-cuda-toolkit nvidia-cudnn
   ```
 
 ### 5. OpenSSL(optional, for HTTPS)
@@ -76,5 +75,5 @@
 
 # TODO
 
-- [ ] CUDA Support
+- [x] CUDA Support
 - [ ] Windows Support 

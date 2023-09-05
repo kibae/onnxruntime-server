@@ -26,12 +26,11 @@ namespace onnx_runtime_server::transport::http {
 		beast::http::request<beast::http::string_body> req;
 
 		virtual onnx::session_manager *get_onnx_session_manager() = 0;
-		beast::http::message_generator handle_request();
+		std::shared_ptr<beast::http::response<beast::http::string_body>> handle_request();
 
 		virtual void do_read() = 0;
 		virtual void on_read(beast::error_code ec, std::size_t bytes_transferred) = 0;
-		virtual void do_write(beast::http::message_generator &&msg) = 0;
-		virtual void on_write(beast::error_code ec, std::size_t bytes_transferred) = 0;
+		virtual void do_write(std::shared_ptr<beast::http::response<beast::http::string_body>> msg) = 0;
 
 	  public:
 		http_session_base();
@@ -51,8 +50,7 @@ namespace onnx_runtime_server::transport::http {
 		onnx::session_manager *get_onnx_session_manager() override;
 		void do_read() override;
 		void on_read(beast::error_code ec, std::size_t bytes_transferred) override;
-		void do_write(beast::http::message_generator &&msg) override;
-		void on_write(beast::error_code ec, std::size_t bytes_transferred) override;
+		void do_write(std::shared_ptr<beast::http::response<beast::http::string_body>> msg) override;
 
 	  public:
 		http_session(asio::socket socket, http_server *server);
@@ -87,8 +85,7 @@ namespace onnx_runtime_server::transport::http {
 		onnx::session_manager *get_onnx_session_manager() override;
 		void do_read() override;
 		void on_read(beast::error_code ec, std::size_t bytes_transferred) override;
-		void do_write(beast::http::message_generator &&msg) override;
-		void on_write(beast::error_code ec, std::size_t bytes_transferred) override;
+		void do_write(std::shared_ptr<beast::http::response<beast::http::string_body>> msg) override;
 
 	  public:
 		https_session(asio::socket socket, https_server *server, boost::asio::ssl::context &ctx);

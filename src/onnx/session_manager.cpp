@@ -27,13 +27,14 @@ Orts::onnx::session *Orts::onnx::session_manager::get_session(const Orts::onnx::
 	return it->second;
 }
 
-Orts::onnx::session *Orts::onnx::session_manager::create_session(const std::string &model_name, int model_version) {
-	return create_session(model_name, model_version, model_bin_getter(model_name, model_version));
+Orts::onnx::session *
+Orts::onnx::session_manager::create_session(const std::string &model_name, int model_version, const json &option) {
+	return create_session(model_name, model_version, model_bin_getter(model_name, model_version), option);
 }
 
-Orts::onnx::session *
-Orts::onnx::session_manager::create_session(const std::string &model_name, int model_version, const std::string &bin) {
-	// TODO: CUDA support
+Orts::onnx::session *Orts::onnx::session_manager::create_session(
+	const std::string &model_name, int model_version, const std::string &bin, const json &option
+) {
 	auto key = session_key(model_name, model_version);
 	{
 		std::lock_guard<std::recursive_mutex> lock(mutex);
@@ -42,26 +43,7 @@ Orts::onnx::session_manager::create_session(const std::string &model_name, int m
 		if (current_session != nullptr)
 			throw std::runtime_error("session already exists");
 
-		auto session = new onnx::session(key, bin.data(), bin.length(), Ort::SessionOptions());
-		sessions.emplace(key, session);
-		return session;
-	}
-	return nullptr;
-}
-
-Orts::onnx::session *
-Orts::onnx::session_manager::get_or_create_session(const std::string &model_name, int model_version) {
-	// TODO: CUDA support
-	auto key = session_key(model_name, model_version);
-	{
-		std::lock_guard<std::recursive_mutex> lock(mutex);
-
-		auto current_session = get_session(key);
-		if (current_session != nullptr)
-			return current_session;
-
-		auto bin = model_bin_getter(model_name, model_version);
-		auto session = new onnx::session(key, bin.data(), bin.length(), Ort::SessionOptions());
+		auto session = new onnx::session(key, bin.data(), bin.length(), option);
 		sessions.emplace(key, session);
 		return session;
 	}

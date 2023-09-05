@@ -47,6 +47,7 @@ void Orts::onnx::execution::context::flat_json_values(
 		json_values->push_back(data);
 	}
 }
+
 std::vector<Ort::Value> Orts::onnx::execution::context::run() {
 	std::vector<Ort::Value> input_values;
 	input_values.reserve(inputs.size());

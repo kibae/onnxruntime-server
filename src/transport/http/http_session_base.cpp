@@ -8,14 +8,15 @@ onnx_runtime_server::transport::http::http_session_base<Session>::http_session_b
 #define CONTENT_TYPE_JSON "application/json"
 
 template <class Session>
-beast::http::message_generator onnx_runtime_server::transport::http::http_session_base<Session>::handle_request() {
+std::shared_ptr<beast::http::response<beast::http::string_body>>
+onnx_runtime_server::transport::http::http_session_base<Session>::handle_request() {
 	auto const simple_response =
 		[this](beast::http::status method, beast::string_view content_type, beast::string_view body) {
-			beast::http::response<beast::http::string_body> res{method, req.version()};
-			res.set(beast::http::field::content_type, content_type);
-			res.keep_alive(req.keep_alive());
-			res.body() = std::string(body);
-			res.prepare_payload();
+			auto res = std::make_shared<beast::http::response<beast::http::string_body>>(method, req.version());
+			res->set(beast::http::field::content_type, content_type);
+			res->keep_alive(req.keep_alive());
+			res->body() = std::string(body);
+			res->prepare_payload();
 			return res;
 		};
 
