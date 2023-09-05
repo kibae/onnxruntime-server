@@ -45,13 +45,15 @@ jobs:
             c_compiler: cl
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
       - name: Prepare container (apt)
         shell: bash
         if: startsWith(matrix.os, 'debian') || startsWith(matrix.os, 'ubuntu')
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -yq build-essential clang-11 cmake libboost-all-dev libssl-dev libgtest-dev git-lfs
+          sudo apt-get install -yq build-essential clang-11 cmake libboost-all-dev libssl-dev libgtest-dev
           ./.github/actions/download-onnxruntime-linux.sh
 
       - name: Set reusable strings
