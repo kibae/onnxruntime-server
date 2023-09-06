@@ -47,7 +47,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          lfs: true
+          lfs: false
       - name: Prepare container (apt)
         shell: bash
         if: startsWith(matrix.os, 'debian') || startsWith(matrix.os, 'ubuntu')
