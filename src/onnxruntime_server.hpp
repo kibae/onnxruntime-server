@@ -15,6 +15,7 @@
 #include <utility>
 
 #include "thread_pool.hpp"
+#include "utils/aixlog.hpp"
 #include "utils/half_fp.hpp"
 #include "utils/json.hpp"
 

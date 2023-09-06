@@ -11,7 +11,6 @@ onnxruntime_server::standalone::standalone() : config() {
 
 int onnxruntime_server::standalone::init_config(int argc, char **argv) {
 	try {
-
 		po::options_description po_desc("ONNX Runtime Server options", 100);
 		po_desc.add_options()("help,h", "Produce help message");
 		po_desc.add_options()("workers", po::value<int>()->default_value(4), "Worker thread pool size. Default: 4");
@@ -44,6 +43,18 @@ int onnxruntime_server::standalone::init_config(int argc, char **argv) {
 		po_https.add_options()("https-key", po::value<std::string>(), "SSL Private key file path for HTTPS");
 		po_desc.add(po_https);
 
+		po::options_description po_log("Logging");
+		po_log.add_options()(
+			"log-file", po::value<std::string>()->default_value(""),
+			"Log file path. If not specified, logs will be printed to stdout"
+		);
+		po_log.add_options()(
+			"log-level", po::value<std::string>()->default_value("info"),
+			"Log level(debug, info, warn, error, fatal). Default: info"
+		);
+
+		po_desc.add(po_log);
+
 		po::variables_map vm;
 		po::store(po::parse_command_line(argc, argv, po_desc), vm);
 		po::notify(vm);
@@ -52,6 +63,14 @@ int onnxruntime_server::standalone::init_config(int argc, char **argv) {
 			std::cout << po_desc << "\n";
 			return 1;
 		}
+
+		// logger AixLog::Log::init
+		auto log_level = vm["log-level"].as<std::string>();
+		if (vm.count("log-file") && !vm["log-file"].as<std::string>().empty()) {
+			auto log_file = vm["log-file"].as<std::string>();
+			AixLog::Log::init<AixLog::SinkFile>(AixLog::Severity::info, log_file);
+		} else
+			AixLog::Log::init<AixLog::SinkCout>(AixLog::Severity::info);
 
 		if (vm.count("workers"))
 			config.num_threads = vm["workers"].as<int>();
@@ -103,7 +122,7 @@ int onnxruntime_server::standalone::init_config(int argc, char **argv) {
 		)
 			throw std::runtime_error("No backend(TCP, HTTP, HTTPS) is enabled");
 	} catch (std::exception &e) {
-		std::cerr << "Error: " << e.what() << "\n";
+		LOG(FATAL, "STARTUP") << "Config process error:\n" << e.what() << std::endl;
 		return 1;
 	}
 
@@ -126,7 +145,7 @@ int onnxruntime_server::standalone::init_config(int argc, char **argv) {
 	config_json["https"]["cert"] = config.https_cert;
 	config_json["https"]["key"] = config.https_key;
 
-	std::cout << "* Config values:\n" << config_json.dump(2) << "\n";
+	LOG(INFO, "STARTUP") << "Config values:\n" << config_json.dump(2) << std::endl;
 
 	config.model_bin_getter = std::bind(&standalone::get_model_bin, this, std::placeholders::_1, std::placeholders::_2);
 
