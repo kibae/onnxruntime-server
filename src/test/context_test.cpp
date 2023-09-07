@@ -17,7 +17,7 @@ TEST(test_onnxruntime_server_context, SimpleModelTest) {
 	auto json = ctx.tensors_to_json(result);
 	std::cout << json.dump(4) << "\n";
 
-	ASSERT_EQ(json.contains("output"), true);
+	ASSERT_TRUE(json.contains("output"));
 	ASSERT_EQ(json["output"].size(), 1);
 	ASSERT_GT(json["output"][0], 0);
 }
@@ -35,7 +35,7 @@ TEST(test_onnxruntime_server_context, SimpleModelBatchTest) {
 	auto json = ctx.tensors_to_json(result);
 	std::cout << json.dump(4) << "\n";
 
-	ASSERT_EQ(json.contains("output"), true);
+	ASSERT_TRUE(json.contains("output"));
 	ASSERT_EQ(json["output"].size(), 3);
 	ASSERT_GT(json["output"][0], 0);
 }

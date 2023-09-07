@@ -82,7 +82,7 @@ TEST(test_onnxruntime_server_http, HttpServerTest) {
 		ASSERT_EQ(res.result(), boost::beast::http::status::ok);
 		json res_json = json::parse(boost::beast::buffers_to_string(res.body().data()));
 		std::cout << "API: Execute sessions\n" << res_json.dump(2) << "\n";
-		ASSERT_EQ(res_json.contains("output"), true);
+		ASSERT_TRUE(res_json.contains("output"));
 		ASSERT_EQ(res_json["output"].size(), 1);
 		ASSERT_GT(res_json["output"][0], 0);
 	}
@@ -94,7 +94,7 @@ TEST(test_onnxruntime_server_http, HttpServerTest) {
 		ASSERT_EQ(res.result(), boost::beast::http::status::ok);
 		json res_json = json::parse(boost::beast::buffers_to_string(res.body().data()));
 		std::cout << "API: Destroy sessions\n" << res_json.dump(2) << "\n";
-		ASSERT_EQ(res_json, true);
+		ASSERT_TRUE(res_json);
 	}
 
 	{ // API: List session

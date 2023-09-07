@@ -33,12 +33,15 @@ class SinkCoutWithFilter : public AixLog::SinkCout {
 	AixLog::Filter _deny;
 
   public:
-	SinkCoutWithFilter(const AixLog::Filter &allow, const AixLog::Filter &deny)
-		: SinkCout(AixLog::Filter()), _allow(allow), _deny(deny) {
+	SinkCoutWithFilter(
+		const AixLog::Filter &allow, const AixLog::Filter &deny,
+		const std::string &format = "%Y-%m-%d %H-%M-%S.#ms [#severity] (#tag_func)"
+	)
+		: SinkCout(AixLog::Filter(), format), _allow(allow), _deny(deny) {
 	}
 
 	void log(const AixLog::Metadata &metadata, const std::string &message) override {
-		if (_allow.match(metadata) && !_deny.match(metadata))
+		if ((_allow.is_empty() || _allow.match(metadata)) && (_deny.is_empty() || !_deny.match(metadata)))
 			SinkCout::log(metadata, message);
 	}
 };
@@ -48,12 +51,15 @@ class SinkFileWithFilter : public AixLog::SinkFile {
 	AixLog::Filter _deny;
 
   public:
-	SinkFileWithFilter(const AixLog::Filter &allow, const AixLog::Filter &deny, const std::string &filename)
-		: SinkFile(AixLog::Filter(), filename), _allow(allow), _deny(deny) {
+	SinkFileWithFilter(
+		const AixLog::Filter &allow, const AixLog::Filter &deny, const std::string &filename,
+		const std::string &format = "%Y-%m-%d %H-%M-%S.#ms [#severity] (#tag_func)"
+	)
+		: SinkFile(AixLog::Filter(), filename, format), _allow(allow), _deny(deny) {
 	}
 
 	void log(const AixLog::Metadata &metadata, const std::string &message) override {
-		if (_allow.match(metadata) && !_deny.match(metadata))
+		if ((_allow.is_empty() || _allow.match(metadata)) && (_deny.is_empty() || !_deny.match(metadata)))
 			SinkFile::log(metadata, message);
 	}
 };

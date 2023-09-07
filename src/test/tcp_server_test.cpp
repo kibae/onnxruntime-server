@@ -58,7 +58,7 @@ TEST(test_onnxruntime_server_tcp, TcpServerTest) {
 		auto res_json = tcp_request(server.port(), -1, "");
 		TIME_MEASURE_STOP
 		std::cout << "API: Raise error\n" << res_json.dump(2) << "\n";
-		ASSERT_EQ(res_json.contains("error"), true);
+		ASSERT_TRUE(res_json.contains("error"));
 		ASSERT_EQ(res_json["error"], "Invalid task type");
 	}
 
@@ -98,7 +98,7 @@ TEST(test_onnxruntime_server_tcp, TcpServerTest) {
 		auto res_json = tcp_request(server.port(), Orts::task::type::EXECUTE_SESSION, input);
 		TIME_MEASURE_STOP
 		std::cout << "API: Execute sessions\n" << res_json.dump(2) << "\n";
-		ASSERT_EQ(res_json.contains("output"), true);
+		ASSERT_TRUE(res_json.contains("output"));
 		ASSERT_EQ(res_json["output"].size(), 1);
 		ASSERT_GT(res_json["output"][0], 0);
 	}
@@ -109,7 +109,7 @@ TEST(test_onnxruntime_server_tcp, TcpServerTest) {
 		auto res_json = tcp_request(server.port(), Orts::task::type::DESTROY_SESSION, body);
 		TIME_MEASURE_STOP
 		std::cout << "API: Destroy sessions\n" << res_json.dump(2) << "\n";
-		ASSERT_EQ(res_json, true);
+		ASSERT_TRUE(res_json);
 	}
 
 	{ // API: List session

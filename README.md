@@ -1,7 +1,7 @@
 # ONNX Runtime Server
+
 [![Github CI](https://github.com/kibae/onnxruntime-server/actions/workflows/cmake-linux.yml/badge.svg)](https://github.com/kibae/onnxruntime-server/actions/workflows/cmake-multi-platform.yml)
 [![License](https://img.shields.io/github/license/kibae/onnxruntime-server)](https://github.com/kibae/onnxruntime-server/blob/main/LICENSE)
-
 
 - [ONNX: Open Neural Network Exchange](https://onnxruntime.ai/)
 - The ONNX Runtime Server is a server that provides TCP and HTTP/HTTPS REST APIs for ONNX inference.
@@ -14,8 +14,9 @@
     - [1. ONNX Runtime](#1-onnx-runtime)
     - [2. Boost](#2-boost)
     - [3. CMake](#3-cmake)
-    - [4. Cuda(optional, for GPU)](#4-cudaoptional-for-gpu)
+    - [4. CUDA(optional, for GPU)](#4-cudaoptional-for-gpu)
     - [5. OpenSSL(optional, for HTTPS)](#5-openssloptional-for-https)
+- [Wiki](#wiki)
 
 ----
 
@@ -73,7 +74,6 @@
   brew install openssl
   ```
 
-# TODO
+# Wiki
 
-- [x] CUDA Support
-- [ ] Windows Support 
+- [TODO](https://github.com/kibae/onnxruntime-server/wiki/TODO)
