@@ -12,6 +12,19 @@ servers:
   - url: http://localhost:8080
     description: Local server
 paths:
+  /health:
+    get:
+      summary: Health check
+      description: Health check
+      operationId: healthCheck
+      responses:
+        '200':
+          description: OK
+          content:
+            plain/text:
+              schema:
+                type: string
+                example: OK
   /api/sessions:
     get:
       tags:

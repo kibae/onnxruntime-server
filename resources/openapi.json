@@ -17,6 +17,26 @@
     "name" : "ONNX Runtime Session"
   } ],
   "paths" : {
+    "/health" : {
+      "get" : {
+        "description" : "Health check",
+        "operationId" : "healthCheck",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "plain/text" : {
+                "schema" : {
+                  "example" : "OK",
+                  "type" : "string"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Health check"
+      }
+    },
     "/api/sessions" : {
       "get" : {
         "description" : "List all sessions",
