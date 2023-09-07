@@ -10,70 +10,131 @@
 
 ----
 
-- [Requirements](#requirements)
-    - [1. ONNX Runtime](#1-onnx-runtime)
-    - [2. Boost](#2-boost)
-    - [3. CMake](#3-cmake)
-    - [4. CUDA(optional, for GPU)](#4-cudaoptional-for-gpu)
-    - [5. OpenSSL(optional, for HTTPS)](#5-openssloptional-for-https)
-- [Wiki](#wiki)
+<!-- TOC -->
+
+- [Build ONNX Runtime Server](#build-onnx-runtime-server)
+    - [Requirements](#requirements)
+    - [Compile and Install](#compile-and-install)
+- [Run the server](#run-the-server)
+    - [Options](#options)
+- [API](#api)
 
 ----
 
-# Requirements
+# Build ONNX Runtime Server
 
-### 1. [ONNX Runtime](https://onnxruntime.ai/)
+## Requirements
 
-- Linux
-    - Use `download-onnxruntime-linux.sh` script
-        - This script downloads the latest version of the binary and install to `/usr/local/onnxruntime`.
-        - Also, add `/usr/local/onnxruntime/lib` to `/etc/ld.so.conf.d/onnxruntime.conf` and run `ldconfig`.
-    - Or manually download binary from [ONNX Runtime Releases](https://github.com/microsoft/onnxruntime/releases).
-- Mac
-  ```shell
-  brew install onnxruntime
-  ```
+- [ONNX Runtime](https://onnxruntime.ai/)
+    - <details>
+      <summary>Linux</summary>
 
-### 2. [Boost](https://www.boost.org/)
+        - Use `download-onnxruntime-linux.sh` script
+            - This script downloads the latest version of the binary and install to `/usr/local/onnxruntime`.
+            - Also, add `/usr/local/onnxruntime/lib` to `/etc/ld.so.conf.d/onnxruntime.conf` and run `ldconfig`.
+        - Or manually download binary from [ONNX Runtime Releases](https://github.com/microsoft/onnxruntime/releases).
+      </details>
+    - <details>
+      <summary>Mac OS</summary>
 
-- Linux
-  ```shell
-  sudo apt install libboost-all-dev
-  ```
-- Mac
-  ```shell
-  brew install boost
-  ```
+        ```shell
+        brew install onnxruntime
+        ```      
+      </details>
 
-### 3. [CMake](https://cmake.org/)
+- [Boost](https://www.boost.org/)
+    - <details>
+      <summary>Ubuntu/Debian</summary>
 
-- Linux
-  ```shell
-  sudo apt install cmake
-  ```
-- Mac
-  ```shell
-  brew install cmake
-  ```
+        ```shell
+        sudo apt install libboost-all-dev
+        ```
+      </details>
+    - <details>
+      <summary>Mac OS</summary>
 
-### 4. CUDA(optional, for GPU)
+        ```shell
+        brew install boost
+        ```      
+      </details>
 
-- Linux
-  ```shell
-  sudo apt install nvidia-cuda-toolkit nvidia-cudnn
-  ```
+- [CMake](https://cmake.org/)
+    - <details>
+      <summary>Ubuntu/Debian</summary>
 
-### 5. OpenSSL(optional, for HTTPS)
+        ```shell
+        sudo apt install cmake
+        ```
+      </details>
+    - <details>
+      <summary>Mac OS</summary>
 
-- Linux
-  ```shell
-  sudo apt install libssl-dev
-  ```
-- Mac
-  ```shell
-  brew install openssl
-  ```
+        ```shell
+        brew install cmake
+        ```      
+      </details>
 
-# Wiki
+- CUDA(*optional, for GPU*)
+    - <details>
+      <summary>Ubuntu/Debian</summary>
 
-- [TODO](https://github.com/kibae/onnxruntime-server/wiki/TODO)
+        ```shell
+        sudo apt install nvidia-cuda-toolkit nvidia-cudnn
+        ```
+      </details>
+
+- OpenSSL(*optional, for HTTPS*)
+    - <details>
+      <summary>Ubuntu/Debian</summary>
+
+        ```shell
+        sudo apt install libssl-dev
+        ```
+      </details>
+    - <details>
+      <summary>Mac OS</summary>
+
+        ```shell
+        brew install openssl
+        ```      
+      </details>
+
+## Compile and Install
+
+```shell
+cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
+cmake --build build --parallel
+sudo cmake --install build --prefix /usr/local/onnxruntime-server
+```
+
+----
+
+# Run the server
+
+- You must enter the path option(`--model-dir`) where the models are located.
+- You need to enable one of the following backends: TCP, HTTP, or HTTPS.
+
+## Options
+
+- Use the `-h`, `--help` option to see a full list of options.
+- All options can be set as environment variables. This can be useful when operating in a container like Docker. But be
+  careful. Command-line options are prioritized over environment variables.
+
+| Option              | Environment                   | Default value | Description                                                                                                                                       |
+|---------------------|-------------------------------|---------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
+| `--workers`         | `ONNX_SERVER_WORKERS`         | 4             | Worker thread pool size                                                                                                                           |
+| `--model-dir`       | `ONNX_SERVER_MODEL_DIR`       | ($cwd)/models | Model directory path<br/>The onnx model files must be located in the following path:<br/>`${model_dir}/${model_name}/${model_version}/model.onnx` |
+| `--tcp-port`        | `ONNX_SERVER_TCP_PORT`        |               | Enable TCP backend and which port number to use.                                                                                                  |
+| `--http-port`       | `ONNX_SERVER_HTTP_PORT`       |               | Enable HTTP backend and which port number to use.                                                                                                 |
+| `--https-port`      | `ONNX_SERVER_HTTPS_PORT`      |               | Enable HTTPS backend and which port number to use.                                                                                                |
+| `--https-cert`      | `ONNX_SERVER_HTTPS_CERT`      |               | SSL Certification file path for HTTPS                                                                                                             |
+| `--https-key`       | `ONNX_SERVER_HTTPS_KEY`       |               | SSL Private key file path for HTTPS                                                                                                               |
+| `--log-level`       | `ONNX_SERVER_LOG_LEVEL`       |               | Log level(debug, info, warn, error, fatal)                                                                                                        |
+| `--log-file`        | `ONNX_SERVER_LOG_FILE`        |               | Log file path.<br/>If not specified, logs will be printed to stdout.                                                                              |
+| `--access-log-file` | `ONNX_SERVER_ACCESS_LOG_FILE` |               | Access log file path.<br/>If not specified, logs will be printed to stdout.                                                                       |
+
+----
+
+# API
+
+- TBD

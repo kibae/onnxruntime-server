@@ -43,7 +43,7 @@ int onnxruntime_server::standalone::init_config(int argc, char **argv) {
 		po::options_description po_https("HTTPS Backend");
 		po_https.add_options()(
 			"https-port", po::value<short>(),
-			"env: ONNX_SERVER_HTTPS_PORT\nEnable HTTPS backend and which port number to use"
+			"env: ONNX_SERVER_HTTPS_PORT\nEnable HTTPS backend and which port number to use."
 		);
 		po_https.add_options()(
 			"https-cert", po::value<std::string>(), "env: ONNX_SERVER_HTTPS_CERT\nSSL Certification file path for HTTPS"
@@ -60,11 +60,11 @@ int onnxruntime_server::standalone::init_config(int argc, char **argv) {
 		);
 		po_log.add_options()(
 			"log-file", po::value<std::string>()->default_value(""),
-			"env: ONNX_SERVER_LOG_FILE\nLog file path.\nIf not specified, logs will be printed to stdout"
+			"env: ONNX_SERVER_LOG_FILE\nLog file path.\nIf not specified, logs will be printed to stdout."
 		);
 		po_log.add_options()(
 			"access-log-file", po::value<std::string>()->default_value(""),
-			"env: ONNX_SERVER_ACCESS_LOG_FILE\nAccess log file path.\nIf not specified, logs will be printed to stdout"
+			"env: ONNX_SERVER_ACCESS_LOG_FILE\nAccess log file path.\nIf not specified, logs will be printed to stdout."
 		);
 		po_desc.add(po_log);
 
@@ -157,9 +157,9 @@ int onnxruntime_server::standalone::init_config(int argc, char **argv) {
 
 		if (config.use_https) {
 			if (config.https_cert.empty())
-				throw std::runtime_error("SSL Certification file path is not specified");
+				throw std::runtime_error("SSL Certification file path is not specified.");
 			if (config.https_key.empty())
-				throw std::runtime_error("SSL Private key file path is not specified");
+				throw std::runtime_error("SSL Private key file path is not specified.");
 		}
 
 		model_root = config.model_dir;

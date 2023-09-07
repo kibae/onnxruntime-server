@@ -52,16 +52,32 @@ if (OPENSSL_FOUND)
 endif ()
 
 
-add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
 include_directories(${Boost_INCLUDE_DIR} ${ONNX_RUNTIME_INCLUDE_DIR} ${OPENSSL_INCLUDE_DIR})
 link_directories(${Boost_LIBRARY_DIRS} ${ONNX_RUNTIME_LIBRARY_DIR} ${OPENSSL_LIBRARY_DIRS})
+
+add_library(${PROJECT_NAME} STATIC SHARED ${SOURCE_FILES})
 target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} ${ONNX_RUNTIME_LIBRARIES} ${OPENSSL_LIBRARIES})
+
+add_library(${PROJECT_NAME}_static STATIC $<TARGET_OBJECTS:${PROJECT_NAME}>)
+target_link_libraries(${PROJECT_NAME}_static ${Boost_LIBRARIES} ${ONNX_RUNTIME_LIBRARIES} ${OPENSSL_LIBRARIES})
 
 add_subdirectory(standalone)
 
 # test
 find_package(GTest)
-if (GTEST_FOUND)
+if (GTEST_FOUND AND NOT CMAKE_BUILD_TYPE STREQUAL "Release")
     enable_testing()
     add_subdirectory(test)
 endif ()
+
+# install
+set_target_properties(onnxruntime_server_standalone PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
+set_target_properties(${PROJECT_NAME}_static PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
+
+install(TARGETS onnxruntime_server_standalone DESTINATION bin)
+install(TARGETS ${PROJECT_NAME} DESTINATION lib)
+install(TARGETS ${PROJECT_NAME}_static DESTINATION lib RENAME ${PROJECT_NAME})
+install(FILES onnxruntime_server.hpp DESTINATION include)
+install(FILES transport/http/http_server.hpp DESTINATION include/transport/http)
+install(FILES transport/tcp/tcp_server.hpp DESTINATION include/transport/tcp)
+install(DIRECTORY utils DESTINATION include/utils)

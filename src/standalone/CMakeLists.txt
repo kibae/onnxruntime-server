@@ -7,4 +7,4 @@ add_executable(${PROJECT_NAME}
         standalone.cpp
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE onnxruntime ${Boost_LIBRARIES} onnxruntime_server)
+target_link_libraries(${PROJECT_NAME} PRIVATE onnxruntime ${Boost_LIBRARIES} onnxruntime_server_static)
