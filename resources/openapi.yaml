@@ -1,0 +1,230 @@
+openapi: 3.0.3
+info:
+  title: ONNX Runtime Server
+  description: |-
+  version: 1.0.0
+externalDocs:
+  description: ONNX Runtime Server
+  url: https://github.com/kibae/onnxruntime-server
+tags:
+  - name: ONNX Runtime Session
+servers:
+  - url: http://localhost:8080
+    description: Local server
+paths:
+  /api/sessions:
+    get:
+      tags:
+        - ONNX Runtime Session
+      summary: List sessions
+      description: List all sessions
+      operationId: listSessions
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ONNXSession'
+    post:
+      tags:
+        - ONNX Runtime Session
+      summary: Create sessions
+      description: Create a new session
+      operationId: createSession
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ONNXSessionCreateRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ONNXSession'
+
+  /api/sessions/{model}/{version}:
+    get:
+      tags:
+        - ONNX Runtime Session
+      summary: Get session
+      description: Get a session
+      operationId: getSession
+      parameters:
+        - name: model
+          in: path
+          description: Model name
+          required: true
+          schema:
+            type: string
+        - name: version
+          in: path
+          description: Model version
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ONNXSession'
+        '404':
+          description: Not Found
+    post:
+      tags:
+        - ONNX Runtime Session
+      summary: Execute session
+      description: Execute a session
+      operationId: executeSession
+      parameters:
+        - name: model
+          in: path
+          description: Model name
+          required: true
+          schema:
+            type: string
+        - name: version
+          in: path
+          description: Model version
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ONNXSessionExecuteRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ONNXSessionExecuteResponse'
+        '404':
+          description: Not Found
+
+    delete:
+      tags:
+        - ONNX Runtime Session
+      summary: Destroy session
+      description: Destroy a session
+      operationId: destroySession
+      parameters:
+        - name: model
+          in: path
+          description: Model name
+          required: true
+          schema:
+            type: string
+        - name: version
+          in: path
+          description: Model version
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '404':
+          description: Not Found
+
+components:
+  schemas:
+    ONNXSession:
+      type: object
+      properties:
+        model:
+          type: string
+          description: Model name
+        version:
+          type: string
+          description: Model version
+        created_at:
+          type: number
+          description: Timestamp when the session was created
+        last_executed_at:
+          type: number
+          description: Timestamp when the session was last executed
+        execution_count:
+          type: integer
+          description: Number of executions
+        inputs:
+          type: object
+          description: Input types
+        outputs:
+          type: object
+          description: Output types
+        option:
+          $ref: '#/components/schemas/ONNXSessionOption'
+    ONNXSessionOption:
+      type: object
+      properties:
+        cuda:
+          oneOf:
+            - type: boolean
+              description: Use CUDA
+            - $ref: '#/components/schemas/ONNXSessionOptionCUDA'
+    ONNXSessionOptionCUDA:
+      type: object
+      properties:
+        device_id:
+          type: integer
+          description: CUDA device ID
+    ONNXSessionCreateRequest:
+      type: object
+      properties:
+        model:
+          type: string
+          description: Model name
+        version:
+          type: string
+          description: Model version
+        option:
+          $ref: '#/components/schemas/ONNXSessionOption'
+    ONNXSessionExecuteRequest:
+      type: object
+      properties:
+        input_name1:
+          type: array
+          description: Input data
+          items:
+            oneOf:
+              - type: number
+              - type: string
+        input_name2:
+          type: array
+          description: Input data
+          items:
+            oneOf:
+              - type: number
+              - type: string
+    ONNXSessionExecuteResponse:
+      type: object
+      properties:
+        output_name1:
+          type: array
+          description: Output data
+          items:
+            oneOf:
+              - type: number
+              - type: string
+        output_name2:
+          type: array
+          description: Output data
+          items:
+            oneOf:
+              - type: number
+              - type: string

@@ -5,6 +5,7 @@ cmake-build-debug*/
 
 build/
 Testing/
+src/test/gen/
 
 # python
 venv/

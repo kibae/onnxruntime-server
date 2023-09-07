@@ -1,0 +1,337 @@
+{
+  "openapi" : "3.0.3",
+  "info" : {
+    "description" : "",
+    "title" : "ONNX Runtime Server",
+    "version" : "1.0.0"
+  },
+  "externalDocs" : {
+    "description" : "ONNX Runtime Server",
+    "url" : "https://github.com/kibae/onnxruntime-server"
+  },
+  "servers" : [ {
+    "description" : "Local server",
+    "url" : "http://localhost:8080"
+  } ],
+  "tags" : [ {
+    "name" : "ONNX Runtime Session"
+  } ],
+  "paths" : {
+    "/api/sessions" : {
+      "get" : {
+        "description" : "List all sessions",
+        "operationId" : "listSessions",
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/ONNXSession"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "List sessions",
+        "tags" : [ "ONNX Runtime Session" ]
+      },
+      "post" : {
+        "description" : "Create a new session",
+        "operationId" : "createSession",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ONNXSessionCreateRequest"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "items" : {
+                    "$ref" : "#/components/schemas/ONNXSession"
+                  },
+                  "type" : "array"
+                }
+              }
+            },
+            "description" : "OK"
+          }
+        },
+        "summary" : "Create sessions",
+        "tags" : [ "ONNX Runtime Session" ]
+      }
+    },
+    "/api/sessions/{model}/{version}" : {
+      "delete" : {
+        "description" : "Destroy a session",
+        "operationId" : "destroySession",
+        "parameters" : [ {
+          "description" : "Model name",
+          "explode" : false,
+          "in" : "path",
+          "name" : "model",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          },
+          "style" : "simple"
+        }, {
+          "description" : "Model version",
+          "explode" : false,
+          "in" : "path",
+          "name" : "version",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          },
+          "style" : "simple"
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "boolean"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "404" : {
+            "description" : "Not Found"
+          }
+        },
+        "summary" : "Destroy session",
+        "tags" : [ "ONNX Runtime Session" ]
+      },
+      "get" : {
+        "description" : "Get a session",
+        "operationId" : "getSession",
+        "parameters" : [ {
+          "description" : "Model name",
+          "explode" : false,
+          "in" : "path",
+          "name" : "model",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          },
+          "style" : "simple"
+        }, {
+          "description" : "Model version",
+          "explode" : false,
+          "in" : "path",
+          "name" : "version",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          },
+          "style" : "simple"
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ONNXSession"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "404" : {
+            "description" : "Not Found"
+          }
+        },
+        "summary" : "Get session",
+        "tags" : [ "ONNX Runtime Session" ]
+      },
+      "post" : {
+        "description" : "Execute a session",
+        "operationId" : "executeSession",
+        "parameters" : [ {
+          "description" : "Model name",
+          "explode" : false,
+          "in" : "path",
+          "name" : "model",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          },
+          "style" : "simple"
+        }, {
+          "description" : "Model version",
+          "explode" : false,
+          "in" : "path",
+          "name" : "version",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          },
+          "style" : "simple"
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/ONNXSessionExecuteRequest"
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ONNXSessionExecuteResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "404" : {
+            "description" : "Not Found"
+          }
+        },
+        "summary" : "Execute session",
+        "tags" : [ "ONNX Runtime Session" ]
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "ONNXSession" : {
+        "properties" : {
+          "model" : {
+            "description" : "Model name",
+            "type" : "string"
+          },
+          "version" : {
+            "description" : "Model version",
+            "type" : "string"
+          },
+          "created_at" : {
+            "description" : "Timestamp when the session was created",
+            "type" : "number"
+          },
+          "last_executed_at" : {
+            "description" : "Timestamp when the session was last executed",
+            "type" : "number"
+          },
+          "execution_count" : {
+            "description" : "Number of executions",
+            "type" : "integer"
+          },
+          "inputs" : {
+            "description" : "Input types",
+            "type" : "object"
+          },
+          "outputs" : {
+            "description" : "Output types",
+            "type" : "object"
+          },
+          "option" : {
+            "$ref" : "#/components/schemas/ONNXSessionOption"
+          }
+        },
+        "type" : "object"
+      },
+      "ONNXSessionOption" : {
+        "properties" : {
+          "cuda" : {
+            "$ref" : "#/components/schemas/ONNXSessionOption_cuda"
+          }
+        },
+        "type" : "object"
+      },
+      "ONNXSessionOptionCUDA" : {
+        "properties" : {
+          "device_id" : {
+            "description" : "CUDA device ID",
+            "type" : "integer"
+          }
+        },
+        "type" : "object"
+      },
+      "ONNXSessionCreateRequest" : {
+        "properties" : {
+          "model" : {
+            "description" : "Model name",
+            "type" : "string"
+          },
+          "version" : {
+            "description" : "Model version",
+            "type" : "string"
+          },
+          "option" : {
+            "$ref" : "#/components/schemas/ONNXSessionOption"
+          }
+        },
+        "type" : "object"
+      },
+      "ONNXSessionExecuteRequest" : {
+        "properties" : {
+          "input_name1" : {
+            "description" : "Input data",
+            "items" : {
+              "$ref" : "#/components/schemas/ONNXSessionExecuteRequest_input_name1_inner"
+            },
+            "type" : "array"
+          },
+          "input_name2" : {
+            "description" : "Input data",
+            "items" : {
+              "$ref" : "#/components/schemas/ONNXSessionExecuteRequest_input_name1_inner"
+            },
+            "type" : "array"
+          }
+        },
+        "type" : "object"
+      },
+      "ONNXSessionExecuteResponse" : {
+        "properties" : {
+          "output_name1" : {
+            "description" : "Output data",
+            "items" : {
+              "$ref" : "#/components/schemas/ONNXSessionExecuteRequest_input_name1_inner"
+            },
+            "type" : "array"
+          },
+          "output_name2" : {
+            "description" : "Output data",
+            "items" : {
+              "$ref" : "#/components/schemas/ONNXSessionExecuteRequest_input_name1_inner"
+            },
+            "type" : "array"
+          }
+        },
+        "type" : "object"
+      },
+      "ONNXSessionOption_cuda" : {
+        "oneOf" : [ {
+          "description" : "Use CUDA",
+          "type" : "boolean"
+        }, {
+          "$ref" : "#/components/schemas/ONNXSessionOptionCUDA"
+        } ]
+      },
+      "ONNXSessionExecuteRequest_input_name1_inner" : {
+        "oneOf" : [ {
+          "type" : "number"
+        }, {
+          "type" : "string"
+        } ]
+      }
+    }
+  }
+}
