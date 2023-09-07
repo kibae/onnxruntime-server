@@ -32,11 +32,15 @@ namespace onnxruntime_server::transport::http {
 		virtual void on_read(beast::error_code ec, std::size_t bytes_transferred) = 0;
 		virtual void do_write(std::shared_ptr<beast::http::response<beast::http::string_body>> msg) = 0;
 
+		std::string _remote_endpoint;
+		onnxruntime_server::task::benchmark request_time;
+
 	  public:
 		http_session_base();
 
 		virtual void run() = 0;
 		virtual void close() = 0;
+		virtual std::string get_remote_endpoint() = 0;
 	};
 
 	class http_server;
@@ -45,12 +49,13 @@ namespace onnxruntime_server::transport::http {
 	  private:
 		http_server *server;
 		beast::tcp_stream stream;
-		std::chrono::time_point<std::chrono::high_resolution_clock> request_time;
 
 		onnx::session_manager *get_onnx_session_manager() override;
 		void do_read() override;
 		void on_read(beast::error_code ec, std::size_t bytes_transferred) override;
 		void do_write(std::shared_ptr<beast::http::response<beast::http::string_body>> msg) override;
+
+		std::string get_remote_endpoint() override;
 
 	  public:
 		http_session(asio::socket socket, http_server *server);
@@ -81,12 +86,13 @@ namespace onnxruntime_server::transport::http {
 	  private:
 		https_server *server;
 		boost::asio::ssl::stream<asio::socket> stream;
-		std::chrono::time_point<std::chrono::high_resolution_clock> request_time;
-		
+
 		onnx::session_manager *get_onnx_session_manager() override;
 		void do_read() override;
 		void on_read(beast::error_code ec, std::size_t bytes_transferred) override;
 		void do_write(std::shared_ptr<beast::http::response<beast::http::string_body>> msg) override;
+
+		std::string get_remote_endpoint() override;
 
 	  public:
 		https_session(asio::socket socket, https_server *server, boost::asio::ssl::context &ctx);

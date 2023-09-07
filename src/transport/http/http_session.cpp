@@ -37,29 +37,29 @@ void onnxruntime_server::transport::http::http_session::on_read(beast::error_cod
 		return close();
 
 	if (ec) {
-		LOG(WARNING) << "transport::http::http_session::do_read: " << ec.message() << std::endl;
+		LOG(WARNING) << get_remote_endpoint() << " transport::http::http_session::do_read: " << ec.message()
+					 << std::endl;
 		return close();
 	}
 
 	stream.expires_never();
 
-	request_time = std::chrono::high_resolution_clock::now();
+	request_time.touch();
 	do_write(handle_request());
 }
 
 void onnxruntime_server::transport::http::http_session::do_write(
 	std::shared_ptr<beast::http::response<beast::http::string_body>> msg
 ) {
-	auto duration =
-		std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - request_time);
-	LOG(INFO, "ACCESS") << stream.socket().remote_endpoint() << " task: " << req.method_string() << " " << req.target()
-						<< " duration: " << duration.count() << std::endl;
+	LOG(INFO, "ACCESS") << get_remote_endpoint() << " task: " << req.method_string() << " " << req.target()
+						<< " duration: " << request_time.get_duration() << std::endl;
 
 	beast::http::async_write(
 		stream, *msg,
 		[self = shared_from_this(), msg](beast::error_code ec, std::size_t bytes_transferred) {
 			if (ec) {
-				LOG(WARNING) << "transport::http::http_session_base::do_write: " << ec.message() << std::endl;
+				LOG(WARNING) << self->get_remote_endpoint()
+							 << " transport::http::http_session_base::do_write: " << ec.message() << std::endl;
 				return self->close();
 			}
 
@@ -73,4 +73,11 @@ void onnxruntime_server::transport::http::http_session::do_write(
 
 void onnxruntime_server::transport::http::http_session::close() {
 	server->remove_session(shared_from_this());
+}
+
+std::string onnxruntime_server::transport::http::http_session::get_remote_endpoint() {
+	if (_remote_endpoint.empty())
+		_remote_endpoint = stream.socket().remote_endpoint().address().to_string() + ":" +
+						   std::to_string(stream.socket().remote_endpoint().port());
+	return _remote_endpoint;
 }

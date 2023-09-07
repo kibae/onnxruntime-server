@@ -4,7 +4,7 @@
 #include "tcp_server.hpp"
 
 onnxruntime_server::transport::tcp::tcp_session::tcp_session(asio::socket socket, tcp_server *server)
-	: socket(std::move(socket)), server(server), request_time(std::chrono::high_resolution_clock::now()) {
+	: socket(std::move(socket)), server(server) {
 }
 
 onnxruntime_server::transport::tcp::tcp_session::~tcp_session() {
@@ -40,7 +40,8 @@ void Orts::transport::tcp::tcp_session::do_read() {
 
 				// check buffer size
 				if (header.length > MAX_BUFFER_LIMIT) {
-					LOG(WARNING) << "transport::session::do_read: Buffer size is too large: " << header.length
+					LOG(WARNING) << self->get_remote_endpoint()
+								 << " transport::session::do_read: Buffer size is too large: " << header.length
 								 << std::endl;
 					self->close();
 					return;
@@ -65,7 +66,7 @@ void Orts::transport::tcp::tcp_session::do_read() {
 #undef MAX_BUFFER_LIMIT
 
 void Orts::transport::tcp::tcp_session::do_task(Orts::transport::tcp::protocol_header header) {
-	request_time = std::chrono::high_resolution_clock::now();
+	request_time.touch();
 
 	// enqueue task to thread pool
 	server->get_worker_pool()->enqueue([self = shared_from_this(), header]() {
@@ -77,11 +78,8 @@ void Orts::transport::tcp::tcp_session::do_task(Orts::transport::tcp::protocol_h
 			);
 			auto result = task->run();
 
-			auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
-				std::chrono::high_resolution_clock::now() - self->request_time
-			);
-			LOG(INFO, "ACCESS") << self->socket.remote_endpoint() << " task: " << task->name()
-								<< " duration: " << duration.count() << std::endl;
+			LOG(INFO, "ACCESS") << self->get_remote_endpoint() << " task: " << task->name()
+								<< " duration: " << self->request_time.get_duration() << std::endl;
 
 			auto res_json = result.dump();
 			struct protocol_header res_header = {0, 0};
@@ -93,7 +91,7 @@ void Orts::transport::tcp::tcp_session::do_task(Orts::transport::tcp::protocol_h
 			response.append(res_json);
 			self->do_write(response);
 		} catch (std::exception &e) {
-			LOG(WARNING) << "transport::session::do_task: " << e.what() << std::endl;
+			LOG(WARNING) << self->get_remote_endpoint() << " transport::session::do_task: " << e.what() << std::endl;
 
 			auto res_json = json({{"error", std::string(e.what())}}).dump();
 			struct protocol_header res_header = {0, 0};
@@ -121,4 +119,11 @@ void onnxruntime_server::transport::tcp::tcp_session::do_write(const std::string
 			}
 		}
 	);
+}
+
+std::string onnxruntime_server::transport::tcp::tcp_session::get_remote_endpoint() {
+	if (_remote_endpoint.empty())
+		_remote_endpoint =
+			socket.remote_endpoint().address().to_string() + ":" + std::to_string(socket.remote_endpoint().port());
+	return _remote_endpoint;
 }

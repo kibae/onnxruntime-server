@@ -21,7 +21,9 @@ namespace onnxruntime_server::transport::tcp {
 		tcp_server *server;
 		char chunk[1024];
 		std::string buffer;
-		std::chrono::time_point<std::chrono::high_resolution_clock> request_time;
+
+		onnxruntime_server::task::benchmark request_time;
+		std::string _remote_endpoint;
 
 	  public:
 		tcp_session(asio::socket socket, tcp_server *server);
@@ -30,8 +32,9 @@ namespace onnxruntime_server::transport::tcp {
 		void close();
 		void do_read();
 		void do_task(protocol_header header);
-
 		void do_write(const std::string &buf);
+
+		std::string get_remote_endpoint();
 	};
 
 	class tcp_server : public server {

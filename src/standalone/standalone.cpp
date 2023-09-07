@@ -86,7 +86,7 @@ int onnxruntime_server::standalone::init_config(int argc, char **argv) {
 		std::shared_ptr<AixLog::Sink> log_file;
 		std::shared_ptr<AixLog::Sink> log_access_file;
 		AixLog::Filter for_access;
-		for_access.add_filter("ACCESS");
+		for_access.add_filter("ACCESS", AixLog::Severity::info);
 
 		if (config.log_file.empty())
 			log_file = std::make_shared<SinkCoutWithFilter>(log_level, for_access);
@@ -96,8 +96,9 @@ int onnxruntime_server::standalone::init_config(int argc, char **argv) {
 		if (config.access_log_file.empty())
 			log_access_file = std::make_shared<SinkCoutWithFilter>(for_access, AixLog::Filter());
 		else
-			log_access_file =
-				std::make_shared<SinkFileWithFilter>(for_access, AixLog::Filter(), config.access_log_file);
+			log_access_file = std::make_shared<SinkFileWithFilter>(
+				for_access, AixLog::Filter(), config.access_log_file, "%Y-%m-%d %H-%M-%S.#ms [#severity]"
+			);
 
 		AixLog::Log::init({log_file, log_access_file});
 

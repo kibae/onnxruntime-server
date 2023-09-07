@@ -171,6 +171,23 @@ namespace onnxruntime_server {
 			GET_SESSION = 22,
 		};
 
+		class benchmark {
+		  private:
+			std::chrono::time_point<std::chrono::high_resolution_clock> time;
+
+		  public:
+			void touch() {
+				time = std::chrono::high_resolution_clock::now();
+			}
+
+			long long get_duration() {
+				return std::chrono::duration_cast<std::chrono::microseconds>(
+						   std::chrono::high_resolution_clock::now() - time
+				)
+					.count();
+			}
+		};
+
 		// abstract
 		class task {
 		  public:
