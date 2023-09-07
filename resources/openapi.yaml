@@ -162,21 +162,27 @@ components:
         model:
           type: string
           description: Model name
+          nullable: false
         version:
           type: string
           description: Model version
+          nullable: false
         created_at:
           type: number
           description: Timestamp when the session was created
+          nullable: false
         last_executed_at:
           type: number
           description: Timestamp when the session was last executed
+          nullable: false
         execution_count:
           type: integer
           description: Number of executions
+          nullable: false
         inputs:
           type: object
           description: Input types
+          nullable: false
           example: {
             "x": "float32[-1,1]",
             "y": "float32[-1,1]",
@@ -185,6 +191,7 @@ components:
         outputs:
           type: object
           description: Output types
+          nullable: false
           example: {
             "output": "float32[-1,1]"
           }
@@ -192,8 +199,10 @@ components:
           $ref: '#/components/schemas/ONNXSessionOption'
     ONNXSessionOption:
       type: object
+      nullable: true
       properties:
         cuda:
+          nullable: true
           oneOf:
             - type: boolean
               description: Use CUDA
@@ -204,15 +213,18 @@ components:
         device_id:
           type: integer
           description: CUDA device ID
+          nullable: false
     ONNXSessionCreateRequest:
       type: object
       properties:
         model:
           type: string
           description: Model name
+          nullable: false
         version:
           type: string
           description: Model version
+          nullable: false
         option:
           $ref: '#/components/schemas/ONNXSessionOption'
     ONNXSessionExecuteRequest:
