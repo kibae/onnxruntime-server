@@ -23,6 +23,7 @@
 
 using asio = boost::asio::ip::tcp;
 using json = nlohmann::json;
+using ordered_json = nlohmann::ordered_json;
 
 /**
  * onnxruntime_server is a namespace that provides a server that can execute ONNX models.
@@ -281,10 +282,10 @@ namespace onnxruntime_server {
 
 	class config {
 	  public:
-		bool use_tcp = true;
+		bool use_tcp = false;
 		short tcp_port = 0;
 
-		bool use_http = true;
+		bool use_http = false;
 		short http_port = 80;
 
 		bool use_https = false;

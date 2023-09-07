@@ -13,6 +13,10 @@ Content-Type: application/json
   "version": "1"
 }
 
+### Get session 1
+GET {{host}}/api/sessions/sample/1
+
+
 ### Create session 2
 POST {{host}}/api/sessions
 Content-Type: application/json
