@@ -21,6 +21,7 @@ namespace onnxruntime_server::transport::tcp {
 		tcp_server *server;
 		char chunk[1024];
 		std::string buffer;
+		std::chrono::time_point<std::chrono::high_resolution_clock> request_time;
 
 	  public:
 		tcp_session(asio::socket socket, tcp_server *server);

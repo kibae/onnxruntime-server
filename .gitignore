@@ -1,6 +1,8 @@
 .idea/
 cmake-build-debug/
 
+*.onnx
+
 Testing/
 
 # python
