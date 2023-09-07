@@ -52,7 +52,8 @@ void onnxruntime_server::transport::http::http_session::do_write(
 	std::shared_ptr<beast::http::response<beast::http::string_body>> msg
 ) {
 	LOG(INFO, "ACCESS") << get_remote_endpoint() << " task: " << req.method_string() << " " << req.target()
-						<< " duration: " << request_time.get_duration() << std::endl;
+						<< " status: " << msg->result_int() << " duration: " << request_time.get_duration()
+						<< std::endl;
 
 	beast::http::async_write(
 		stream, *msg,

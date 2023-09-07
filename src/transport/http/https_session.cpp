@@ -55,8 +55,9 @@ void onnxruntime_server::transport::http::https_session::on_read(beast::error_co
 void onnxruntime_server::transport::http::https_session::do_write(
 	std::shared_ptr<beast::http::response<beast::http::string_body>> msg
 ) {
-	LOG(INFO, "ACCESS") << get_remote_endpoint() << " task: " << req.target()
-						<< " duration: " << request_time.get_duration() << std::endl;
+	LOG(INFO, "ACCESS") << get_remote_endpoint() << " task: " << req.method_string() << " " << req.target()
+						<< " status: " << msg->result_int() << " duration: " << request_time.get_duration()
+						<< std::endl;
 
 	beast::http::async_write(
 		stream, *msg,
