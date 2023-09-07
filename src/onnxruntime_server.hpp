@@ -174,6 +174,7 @@ namespace onnxruntime_server {
 		// abstract
 		class task {
 		  public:
+			virtual std::string name() = 0;
 			virtual json run() = 0;
 		};
 
@@ -207,11 +208,16 @@ namespace onnxruntime_server {
 				onnx::session_manager *onnx_session_manager, std::string model_name, std::string model_version,
 				json data, json option
 			);
+
+			std::string name() override;
+
 			json run() override;
 		};
 
 		class execute_session : public session_task {
 		  public:
+			std::string name() override;
+
 			explicit execute_session(onnx::session_manager *onnx_session_manager, const std::string &buf);
 			explicit execute_session(
 				onnx::session_manager *onnx_session_manager, std::string model_name, std::string model_version,
@@ -222,6 +228,8 @@ namespace onnxruntime_server {
 
 		class get_session : public session_task {
 		  public:
+			std::string name() override;
+
 			explicit get_session(onnx::session_manager *onnx_session_manager, const std::string &buf);
 			explicit get_session(
 				onnx::session_manager *onnx_session_manager, std::string model_name, std::string model_version
@@ -233,12 +241,16 @@ namespace onnxruntime_server {
 			onnx::session_manager *onnx_session_manager;
 
 		  public:
+			std::string name() override;
+
 			explicit list_session(onnx::session_manager *onnx_session_manager);
 			json run() override;
 		};
 
 		class destroy_session : public session_task {
 		  public:
+			std::string name() override;
+
 			explicit destroy_session(onnx::session_manager *onnx_session_manager, const std::string &buf);
 			explicit destroy_session(
 				onnx::session_manager *onnx_session_manager, std::string model_name, std::string model_version
@@ -262,6 +274,10 @@ namespace onnxruntime_server {
 		short https_port = 443;
 		std::string https_cert;
 		std::string https_key;
+
+		std::string log_level;
+		std::string log_file;
+		std::string access_log_file;
 
 		long num_threads = 4;
 		std::string model_dir;

@@ -6,6 +6,10 @@
 
 #include "../onnxruntime_server.hpp"
 
+std::string onnxruntime_server::task::create_session::name() {
+	return "CREATE_SESSION";
+}
+
 Orts::task::create_session::create_session(onnx::session_manager *onnx_session_manager, const std::string &buf)
 	: session_task(onnx_session_manager, buf) {
 	option = raw["option"];

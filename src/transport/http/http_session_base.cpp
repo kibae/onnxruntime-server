@@ -74,8 +74,7 @@ onnxruntime_server::transport::http::http_session_base<Session>::handle_request(
 
 		return simple_response(beast::http::status::not_found, CONTENT_TYPE_PLAIN_TEXT, "Not Found");
 	} catch (std::exception &e) {
-		std::cerr << "onnxruntime_server::transport::http::http_session_base::handle_request: " << e.what()
-				  << std::endl;
+		LOG(WARNING) << "transport::http::http_session_base::handle_request: " << e.what() << std::endl;
 		return simple_response(
 			beast::http::status::internal_server_error, CONTENT_TYPE_PLAIN_TEXT,
 			std::string("Internal Error: ") + (e.what())

@@ -4,6 +4,10 @@
 
 #include "../onnxruntime_server.hpp"
 
+std::string onnxruntime_server::task::execute_session::name() {
+	return "EXECUTE_SESSION";
+}
+
 Orts::task::execute_session::execute_session(onnx::session_manager *onnx_session_manager, const std::string &buf)
 	: session_task(onnx_session_manager, buf) {
 }

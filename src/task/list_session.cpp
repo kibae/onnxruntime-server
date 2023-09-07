@@ -4,6 +4,10 @@
 
 #include "../onnxruntime_server.hpp"
 
+std::string onnxruntime_server::task::list_session::name() {
+	return "LIST_SESSION";
+}
+
 Orts::task::list_session::list_session(onnx::session_manager *onnx_session_manager)
 	: onnx_session_manager(onnx_session_manager) {
 }

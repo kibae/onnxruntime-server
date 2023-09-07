@@ -44,9 +44,9 @@ namespace onnxruntime_server::transport::http {
 	class http_session : public http_session_base<http_session> {
 	  private:
 		http_server *server;
-
-	  protected:
 		beast::tcp_stream stream;
+		std::chrono::time_point<std::chrono::high_resolution_clock> request_time;
+
 		onnx::session_manager *get_onnx_session_manager() override;
 		void do_read() override;
 		void on_read(beast::error_code ec, std::size_t bytes_transferred) override;
@@ -80,9 +80,9 @@ namespace onnxruntime_server::transport::http {
 	class https_session : public http_session_base<https_session> {
 	  private:
 		https_server *server;
-
-	  protected:
 		boost::asio::ssl::stream<asio::socket> stream;
+		std::chrono::time_point<std::chrono::high_resolution_clock> request_time;
+		
 		onnx::session_manager *get_onnx_session_manager() override;
 		void do_read() override;
 		void on_read(beast::error_code ec, std::size_t bytes_transferred) override;

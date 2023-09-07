@@ -14,7 +14,7 @@ onnxruntime_server::transport::http::https_session::~https_session() {
 		stream.shutdown();
 		stream.lowest_layer().close();
 	} catch (std::exception &e) {
-		std::cerr << "onnxruntime_server::transport::http::https_session::~https_session: " << e.what() << std::endl;
+		LOG(WARNING) << "transport::http::https_session::~https_session: " << e.what() << std::endl;
 	}
 }
 
@@ -42,22 +42,27 @@ void onnxruntime_server::transport::http::https_session::on_read(beast::error_co
 		return close();
 
 	if (ec) {
-		std::cerr << "onnxruntime_server::transport::http::https_session::do_read: " << ec.message() << std::endl;
+		LOG(WARNING) << "transport::http::https_session::do_read: " << ec.message() << std::endl;
 		return close();
 	}
 
+	request_time = std::chrono::high_resolution_clock::now();
 	do_write(handle_request());
 }
 
 void onnxruntime_server::transport::http::https_session::do_write(
 	std::shared_ptr<beast::http::response<beast::http::string_body>> msg
 ) {
+	auto duration =
+		std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - request_time);
+	LOG(INFO, "ACCESS") << stream.lowest_layer().remote_endpoint() << " task: " << req.target()
+						<< " duration: " << duration.count() << std::endl;
+
 	beast::http::async_write(
 		stream, *msg,
 		[self = shared_from_this(), msg](beast::error_code ec, std::size_t bytes_transferred) {
 			if (ec) {
-				std::cerr << "onnxruntime_server::transport::http::https_session_base::do_write: " << ec.message()
-						  << std::endl;
+				LOG(WARNING) << "transport::http::https_session_base::do_write: " << ec.message() << std::endl;
 				return self->close();
 			}
 

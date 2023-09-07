@@ -4,14 +4,14 @@
 #include "tcp_server.hpp"
 
 onnxruntime_server::transport::tcp::tcp_session::tcp_session(asio::socket socket, tcp_server *server)
-	: socket(std::move(socket)), server(server) {
+	: socket(std::move(socket)), server(server), request_time(std::chrono::high_resolution_clock::now()) {
 }
 
 onnxruntime_server::transport::tcp::tcp_session::~tcp_session() {
 	try {
 		socket.close();
 	} catch (std::exception &e) {
-		std::cerr << "onnxruntime_server::transport::tcp::tcp_session::~tcp_session: " << e.what() << std::endl;
+		LOG(WARNING) << "transport::tcp::tcp_session::~tcp_session: " << e.what() << std::endl;
 	}
 }
 
@@ -40,8 +40,8 @@ void Orts::transport::tcp::tcp_session::do_read() {
 
 				// check buffer size
 				if (header.length > MAX_BUFFER_LIMIT) {
-					std::cerr << "onnxruntime_server::transport::session::do_read: Buffer size is too large: "
-							  << header.length << std::endl;
+					LOG(WARNING) << "transport::session::do_read: Buffer size is too large: " << header.length
+								 << std::endl;
 					self->close();
 					return;
 				}
@@ -65,6 +65,8 @@ void Orts::transport::tcp::tcp_session::do_read() {
 #undef MAX_BUFFER_LIMIT
 
 void Orts::transport::tcp::tcp_session::do_task(Orts::transport::tcp::protocol_header header) {
+	request_time = std::chrono::high_resolution_clock::now();
+
 	// enqueue task to thread pool
 	server->get_worker_pool()->enqueue([self = shared_from_this(), header]() {
 		try {
@@ -74,6 +76,13 @@ void Orts::transport::tcp::tcp_session::do_task(Orts::transport::tcp::protocol_h
 				self->buffer.substr(sizeof(protocol_header), header.length)
 			);
 			auto result = task->run();
+
+			auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
+				std::chrono::high_resolution_clock::now() - self->request_time
+			);
+			LOG(INFO, "ACCESS") << self->socket.remote_endpoint() << " task: " << task->name()
+								<< " duration: " << duration.count() << std::endl;
+
 			auto res_json = result.dump();
 			struct protocol_header res_header = {0, 0};
 			res_header.type = htons(header.type);
@@ -84,7 +93,7 @@ void Orts::transport::tcp::tcp_session::do_task(Orts::transport::tcp::protocol_h
 			response.append(res_json);
 			self->do_write(response);
 		} catch (std::exception &e) {
-			std::cerr << "onnxruntime_server::transport::session::do_read: " << e.what() << std::endl;
+			LOG(WARNING) << "transport::session::do_task: " << e.what() << std::endl;
 
 			auto res_json = json({{"error", std::string(e.what())}}).dump();
 			struct protocol_header res_header = {0, 0};

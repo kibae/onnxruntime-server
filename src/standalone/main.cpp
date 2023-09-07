@@ -32,14 +32,14 @@ int main(int argc, char *argv[]) {
 			servers.emplace_back(
 				std::make_shared<Orts::transport::tcp::tcp_server>(io_context, server.config, &manager, &worker_pool)
 			);
-			LOG(INFO, "STARTUP") << "TCP Server ready on port " << server.config.tcp_port << std::endl;
+			LOG(INFO) << "TCP Server ready on port: " << server.config.tcp_port << std::endl;
 		}
 
 		if (server.config.use_http) {
 			servers.emplace_back(
 				std::make_shared<Orts::transport::http::http_server>(io_context, server.config, &manager, &worker_pool)
 			);
-			LOG(INFO, "STARTUP") << "HTTP Server ready on port " << server.config.http_port << std::endl;
+			LOG(INFO) << "HTTP Server ready on port: " << server.config.http_port << std::endl;
 		}
 
 #ifdef HAS_OPENSSL
@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
 			servers.emplace_back(
 				std::make_shared<Orts::transport::http::https_server>(io_context, server.config, &manager, &worker_pool)
 			);
-			LOG(INFO, "STARTUP") << "HTTPS Server ready on port " << server.config.https_port << std::endl;
+			LOG(INFO) << "HTTPS Server ready on port: " << server.config.https_port << std::endl;
 		}
 #endif
 
@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
 		servers.clear();
 	}
 
-	LOG(INFO, "SHUTDOWN") << "Terminated" << std::endl;
+	LOG(INFO) << "Terminated" << std::endl;
 
 	return 0;
 }

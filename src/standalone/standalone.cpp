@@ -45,14 +45,17 @@ int onnxruntime_server::standalone::init_config(int argc, char **argv) {
 
 		po::options_description po_log("Logging");
 		po_log.add_options()(
-			"log-file", po::value<std::string>()->default_value(""),
-			"Log file path. If not specified, logs will be printed to stdout"
+			"log-level", po::value<std::string>()->default_value("info"),
+			"Log level(debug, info, warn, error, fatal).\nDefault: info"
 		);
 		po_log.add_options()(
-			"log-level", po::value<std::string>()->default_value("info"),
-			"Log level(debug, info, warn, error, fatal). Default: info"
+			"log-file", po::value<std::string>()->default_value(""),
+			"Log file path.\nIf not specified, logs will be printed to stdout"
 		);
-
+		po_log.add_options()(
+			"access-log-file", po::value<std::string>()->default_value(""),
+			"Access log file path.\nIf not specified, logs will be printed to stdout"
+		);
 		po_desc.add(po_log);
 
 		po::variables_map vm;
@@ -64,13 +67,39 @@ int onnxruntime_server::standalone::init_config(int argc, char **argv) {
 			return 1;
 		}
 
-		// logger AixLog::Log::init
-		auto log_level = vm["log-level"].as<std::string>();
-		if (vm.count("log-file") && !vm["log-file"].as<std::string>().empty()) {
-			auto log_file = vm["log-file"].as<std::string>();
-			AixLog::Log::init<AixLog::SinkFile>(AixLog::Severity::info, log_file);
-		} else
-			AixLog::Log::init<AixLog::SinkCout>(AixLog::Severity::info);
+		config.log_level = vm["log-level"].as<std::string>();
+		config.log_file = vm["log-file"].as<std::string>();
+		config.access_log_file = vm["access-log-file"].as<std::string>();
+
+		std::map<AixLog::Severity, std::string> log_level_map = {
+			{AixLog::Severity::debug, "debug"}, {AixLog::Severity::info, "info"},	{AixLog::Severity::warning, "warn"},
+			{AixLog::Severity::error, "error"}, {AixLog::Severity::fatal, "fatal"},
+		};
+		AixLog::Severity log_level = AixLog::Severity::info;
+		for (auto &level : log_level_map) {
+			if (config.log_level == level.second) {
+				log_level = level.first;
+				break;
+			}
+		}
+
+		std::shared_ptr<AixLog::Sink> log_file;
+		std::shared_ptr<AixLog::Sink> log_access_file;
+		AixLog::Filter for_access;
+		for_access.add_filter("ACCESS");
+
+		if (config.log_file.empty())
+			log_file = std::make_shared<SinkCoutWithFilter>(log_level, for_access);
+		else
+			log_file = std::make_shared<SinkFileWithFilter>(log_level, for_access, config.log_file);
+
+		if (config.access_log_file.empty())
+			log_access_file = std::make_shared<SinkCoutWithFilter>(for_access, AixLog::Filter());
+		else
+			log_access_file =
+				std::make_shared<SinkFileWithFilter>(for_access, AixLog::Filter(), config.access_log_file);
+
+		AixLog::Log::init({log_file, log_access_file});
 
 		if (vm.count("workers"))
 			config.num_threads = vm["workers"].as<int>();
@@ -122,7 +151,7 @@ int onnxruntime_server::standalone::init_config(int argc, char **argv) {
 		)
 			throw std::runtime_error("No backend(TCP, HTTP, HTTPS) is enabled");
 	} catch (std::exception &e) {
-		LOG(FATAL, "STARTUP") << "Config process error:\n" << e.what() << std::endl;
+		LOG(FATAL) << "Config process error:\n" << e.what() << std::endl;
 		return 1;
 	}
 
@@ -145,7 +174,12 @@ int onnxruntime_server::standalone::init_config(int argc, char **argv) {
 	config_json["https"]["cert"] = config.https_cert;
 	config_json["https"]["key"] = config.https_key;
 
-	LOG(INFO, "STARTUP") << "Config values:\n" << config_json.dump(2) << std::endl;
+	config_json["log"] = json::object();
+	config_json["log"]["level"] = config.log_level;
+	config_json["log"]["file"] = config.log_file;
+	config_json["log"]["access_file"] = config.access_log_file;
+
+	LOG(INFO) << "Config values:\n" << config_json.dump(2) << std::endl;
 
 	config.model_bin_getter = std::bind(&standalone::get_model_bin, this, std::placeholders::_1, std::placeholders::_2);
 
