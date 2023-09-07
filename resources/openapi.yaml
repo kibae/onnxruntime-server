@@ -177,9 +177,17 @@ components:
         inputs:
           type: object
           description: Input types
+          example: {
+            "x": "float32[-1,1]",
+            "y": "float32[-1,1]",
+            "z": "float32[-1,1]"
+          }
         outputs:
           type: object
           description: Output types
+          example: {
+            "output": "float32[-1,1]"
+          }
         option:
           $ref: '#/components/schemas/ONNXSessionOption'
     ONNXSessionOption:
@@ -209,6 +217,11 @@ components:
           $ref: '#/components/schemas/ONNXSessionOption'
     ONNXSessionExecuteRequest:
       type: object
+      example: {
+        "x": [ [ 1 ], [ 2 ], [ 3 ] ],
+        "y": [ [ 2 ], [ 3 ], [ 4 ] ],
+        "z": [ [ 3 ], [ 4 ], [ 5 ] ]
+      }
       properties:
         input_name1:
           type: array
@@ -226,6 +239,10 @@ components:
               - type: string
     ONNXSessionExecuteResponse:
       type: object
+      example: {
+        "output": [ [ 0.6492120623588562 ], [ 0.7610487341880798 ], [ 0.8728854656219482 ] ]
+      }
+
       properties:
         output_name1:
           type: array
