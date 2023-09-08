@@ -4,7 +4,7 @@
 [![License](https://img.shields.io/github/license/kibae/onnxruntime-server)](https://github.com/kibae/onnxruntime-server/blob/main/LICENSE)
 
 - [ONNX: Open Neural Network Exchange](https://onnxruntime.ai/)
-- The ONNX Runtime Server is a server that provides TCP and HTTP/HTTPS REST APIs for ONNX inference.
+- **The ONNX Runtime Server is a server that provides TCP and HTTP/HTTPS REST APIs for ONNX inference.**
 - This project is part of the pg_onnx project. pg_onnx is an extension that allows you to perform inference using data
   within PostgreSQL.
 
@@ -27,7 +27,7 @@
 
 - [ONNX Runtime](https://onnxruntime.ai/)
     - <details>
-      <summary>Linux</summary>
+      <summary>![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black) Linux</summary>
 
         - Use `download-onnxruntime-linux.sh` script
             - This script downloads the latest version of the binary and install to `/usr/local/onnxruntime`.
@@ -123,18 +123,19 @@ sudo cmake --install build --prefix /usr/local/onnxruntime-server
   <details>
       <summary>All options</summary>
 
-  | Option              | Environment                   | Description                                                                                                                                                             |
-        |---------------------|-------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-  | `--workers`         | `ONNX_SERVER_WORKERS`         | Worker thread pool size.<br/>Default: `4`                                                                                                                               |
-  | `--model-dir`       | `ONNX_SERVER_MODEL_DIR`       | Model directory path<br/>The onnx model files must be located in the following path:<br/>`${model_dir}/${model_name}/${model_version}/model.onnx`<br/>Default: `models` |
-  | `--tcp-port`        | `ONNX_SERVER_TCP_PORT`        | Enable TCP backend and which port number to use.                                                                                                                        |
-  | `--http-port`       | `ONNX_SERVER_HTTP_PORT`       | Enable HTTP backend and which port number to use.                                                                                                                       |
-  | `--https-port`      | `ONNX_SERVER_HTTPS_PORT`      | Enable HTTPS backend and which port number to use.                                                                                                                      |
-  | `--https-cert`      | `ONNX_SERVER_HTTPS_CERT`      | SSL Certification file path for HTTPS                                                                                                                                   |
-  | `--https-key`       | `ONNX_SERVER_HTTPS_KEY`       | SSL Private key file path for HTTPS                                                                                                                                     |
-  | `--log-level`       | `ONNX_SERVER_LOG_LEVEL`       | Log level(debug, info, warn, error, fatal)                                                                                                                              |
-  | `--log-file`        | `ONNX_SERVER_LOG_FILE`        | Log file path.<br/>If not specified, logs will be printed to stdout.                                                                                                    |
-  | `--access-log-file` | `ONNX_SERVER_ACCESS_LOG_FILE` | Access log file path.<br/>If not specified, logs will be printed to stdout.                                                                                             |
+  | Option                | Environment                     | Description                                                                                                                                                                                      |
+  |-----------------------|---------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+  | `--workers`           | `ONNX_SERVER_WORKERS`           | Worker thread pool size.<br/>Default: `4`                                                                                                                                                        |
+  | `--model-dir`         | `ONNX_SERVER_MODEL_DIR`         | Model directory path<br/>The onnx model files must be located in the following path:<br/>`${model_dir}/${model_name}/${model_version}/model.onnx`<br/>Default: `models`                          |
+  | `--tcp-port`          | `ONNX_SERVER_TCP_PORT`          | Enable TCP backend and which port number to use.                                                                                                                                                 |
+  | `--http-port`         | `ONNX_SERVER_HTTP_PORT`         | Enable HTTP backend and which port number to use.                                                                                                                                                |
+  | `--https-port`        | `ONNX_SERVER_HTTPS_PORT`        | Enable HTTPS backend and which port number to use.                                                                                                                                               |
+  | `--https-cert`        | `ONNX_SERVER_HTTPS_CERT`        | SSL Certification file path for HTTPS                                                                                                                                                            |
+  | `--https-key`         | `ONNX_SERVER_HTTPS_KEY`         | SSL Private key file path for HTTPS                                                                                                                                                              |
+  | `--swagger-url-path`  | `ONNX_SERVER_SWAGGER_URL_PATH`  | Enable Swagger API document for HTTP/HTTPS backend.<br/>This value cannot start with "/api/" and "/health"<br />If not specified, swagger document not provided.<br />eg) /swagger or /api-docs |
+  | `--log-level`         | `ONNX_SERVER_LOG_LEVEL`         | Log level(debug, info, warn, error, fatal)                                                                                                                                                      |
+  | `--log-file`          | `ONNX_SERVER_LOG_FILE`          | Log file path.<br/>If not specified, logs will be printed to stdout.                                                                                                                             |
+  | `--access-log-file`   | `ONNX_SERVER_ACCESS_LOG_FILE`   | Access log file path.<br/>If not specified, logs will be printed to stdout.                                                                                                                      |
 
   </details>
 
