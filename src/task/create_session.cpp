@@ -35,7 +35,7 @@ json Orts::task::create_session::run() {
 	}
 
 	if (session == nullptr) {
-		throw std::runtime_error("session not found");
+		throw not_found_error("session not found");
 	}
 
 	return session->to_json();

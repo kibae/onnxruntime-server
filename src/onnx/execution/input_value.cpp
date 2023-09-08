@@ -114,7 +114,7 @@ Orts::onnx::execution::input_value::input_value(
 	}
 
 	default:
-		throw std::runtime_error("Not supported type: " + info.type_name());
+		throw bad_request_error("Not supported type: " + info.type_name());
 	}
 }
 

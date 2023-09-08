@@ -90,20 +90,26 @@ void Orts::transport::tcp::tcp_session::do_task(Orts::transport::tcp::protocol_h
 			response.append((char *)&res_header, sizeof(res_header));
 			response.append(res_json);
 			self->do_write(response);
+		} catch (Orts::exception &e) {
+			LOG(WARNING) << self->get_remote_endpoint() << " transport::session::do_task: " << e.what() << std::endl;
+			self->send_error(e.type(), e.what());
 		} catch (std::exception &e) {
 			LOG(WARNING) << self->get_remote_endpoint() << " transport::session::do_task: " << e.what() << std::endl;
-
-			auto res_json = json({{"error", std::string(e.what())}}).dump();
-			struct protocol_header res_header = {0, 0};
-			res_header.type = htons(header.type);
-			res_header.length = htonl((int32_t)res_json.size());
-
-			std::string response;
-			response.append((char *)&res_header, sizeof(res_header));
-			response.append(res_json);
-			self->do_write(response);
+			self->send_error("runtime_error", e.what());
 		}
 	});
+}
+
+void onnxruntime_server::transport::tcp::tcp_session::send_error(std::string type, std::string what) {
+	auto res_json = Orts::exception::what_to_json(type, what);
+	struct protocol_header res_header = {0, 0};
+	res_header.type = htons(-1);
+	res_header.length = htonl((int32_t)res_json.size());
+
+	std::string response;
+	response.append((char *)&res_header, sizeof(res_header));
+	response.append(res_json);
+	do_write(response);
 }
 
 void onnxruntime_server::transport::tcp::tcp_session::do_write(const std::string &buf) {

@@ -11,7 +11,7 @@ Orts::task::session_task::session_task(onnx::session_manager *onnx_session_manag
 	raw = json::parse(buf);
 	if (!raw.is_object() || !raw.contains("model") || !raw.contains("version") || !raw["model"].is_string() ||
 		!raw["version"].is_string()) {
-		throw std::runtime_error(
+		throw bad_request_error(
 			"Invalid session task. Must be a JSON object with model(string) and version(string) fields"
 		);
 	}
@@ -54,6 +54,6 @@ Orts::task::create(onnx::session_manager *onnx_session_manager, int16_t type, co
 	case Orts::task::LIST_SESSION:
 		return std::make_shared<Orts::task::list_session>(onnx_session_manager);
 	default:
-		throw std::runtime_error("Invalid task type");
+		throw bad_request_error("Invalid task type");
 	}
 }
