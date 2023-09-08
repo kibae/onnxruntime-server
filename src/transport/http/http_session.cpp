@@ -26,6 +26,10 @@ onnxruntime_server::transport::http::http_session::get_onnx_session_manager() {
 }
 
 void onnxruntime_server::transport::http::http_session::do_read() {
+	if (_remote_endpoint.empty())
+		_remote_endpoint = stream.socket().remote_endpoint().address().to_string() + ":" +
+						   std::to_string(stream.socket().remote_endpoint().port());
+
 	req = {};
 	stream.expires_after(std::chrono::seconds(30));
 
@@ -77,8 +81,9 @@ void onnxruntime_server::transport::http::http_session::close() {
 }
 
 std::string onnxruntime_server::transport::http::http_session::get_remote_endpoint() {
-	if (_remote_endpoint.empty())
-		_remote_endpoint = stream.socket().remote_endpoint().address().to_string() + ":" +
-						   std::to_string(stream.socket().remote_endpoint().port());
 	return _remote_endpoint;
+}
+
+onnxruntime_server::transport::http::swagger &onnxruntime_server::transport::http::http_session::get_swagger() {
+	return server->swagger;
 }

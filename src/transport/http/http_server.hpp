@@ -20,6 +20,19 @@
 namespace beast = boost::beast;
 
 namespace onnxruntime_server::transport::http {
+	class swagger {
+		std::string swagger_url_path;
+		std::shared_ptr<std::string> _cache_index_html = nullptr;
+		std::shared_ptr<std::string> _cache_openapi_yaml = nullptr;
+
+	  public:
+		swagger(const std::string &swagger_url_path);
+
+		bool is_swagger_url(const std::string &url) const;
+		std::shared_ptr<beast::http::response<beast::http::string_body>>
+		get_response(const std::string &url, unsigned http_version);
+	};
+
 	template <class Session> class http_session_base : public std::enable_shared_from_this<Session> {
 	  protected:
 		beast::flat_buffer buffer;
@@ -41,9 +54,27 @@ namespace onnxruntime_server::transport::http {
 		virtual void run() = 0;
 		virtual void close() = 0;
 		virtual std::string get_remote_endpoint() = 0;
+		virtual swagger &get_swagger() = 0;
 	};
 
-	class http_server;
+	class http_session;
+
+	class http_server : public server {
+	  private:
+		std::list<std::shared_ptr<http_session>> sessions;
+
+	  protected:
+		void client_connected(asio::socket socket) override;
+
+	  public:
+		swagger swagger;
+
+		http_server(
+			boost::asio::io_context &io_context, const class config &config,
+			onnx::session_manager *onnx_session_manager, builtin_thread_pool *worker_pool
+		);
+		void remove_session(const std::shared_ptr<http_session> &session);
+	};
 
 	class http_session : public http_session_base<http_session> {
 	  private:
@@ -62,25 +93,29 @@ namespace onnxruntime_server::transport::http {
 		~http_session();
 		void run() override;
 		void close() override;
+		swagger &get_swagger() override;
 	};
 
-	class http_server : public server {
+#ifdef HAS_OPENSSL
+	class https_session;
+
+	class https_server : public server {
 	  private:
-		std::list<std::shared_ptr<http_session>> sessions;
+		std::list<std::shared_ptr<https_session>> sessions;
+		boost::asio::ssl::context ctx;
 
 	  protected:
 		void client_connected(asio::socket socket) override;
 
 	  public:
-		http_server(
+		swagger swagger;
+
+		https_server(
 			boost::asio::io_context &io_context, const class config &config,
 			onnx::session_manager *onnx_session_manager, builtin_thread_pool *worker_pool
 		);
-		void remove_session(const std::shared_ptr<http_session> &session);
+		void remove_session(const std::shared_ptr<https_session> &session);
 	};
-
-#ifdef HAS_OPENSSL
-	class https_server;
 
 	class https_session : public http_session_base<https_session> {
 	  private:
@@ -99,22 +134,7 @@ namespace onnxruntime_server::transport::http {
 		~https_session();
 		void run() override;
 		void close() override;
-	};
-
-	class https_server : public server {
-	  private:
-		std::list<std::shared_ptr<https_session>> sessions;
-		boost::asio::ssl::context ctx;
-
-	  protected:
-		void client_connected(asio::socket socket) override;
-
-	  public:
-		https_server(
-			boost::asio::io_context &io_context, const class config &config,
-			onnx::session_manager *onnx_session_manager, builtin_thread_pool *worker_pool
-		);
-		void remove_session(const std::shared_ptr<https_session> &session);
+		swagger &get_swagger() override;
 	};
 
 #endif

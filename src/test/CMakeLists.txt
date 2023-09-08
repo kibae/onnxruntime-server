@@ -25,6 +25,11 @@ add_executable(test_onnxruntime_server_http http_server_test.cpp)
 target_link_libraries(test_onnxruntime_server_http PRIVATE onnxruntime ${Boost_LIBRARIES} onnxruntime_server GTest::GTest GTest::Main)
 add_test(NAME test_onnxruntime_server_http COMMAND test_onnxruntime_server_http)
 
+# test_onnxruntime_server_http_swagger
+add_executable(test_onnxruntime_server_http_swagger http_swagger_test.cpp)
+target_link_libraries(test_onnxruntime_server_http_swagger PRIVATE onnxruntime ${Boost_LIBRARIES} onnxruntime_server GTest::GTest GTest::Main)
+add_test(NAME test_onnxruntime_server_http_swagger COMMAND test_onnxruntime_server_http_swagger)
+
 if (OPENSSL_FOUND)
     # test_onnxruntime_server_https
     add_executable(test_onnxruntime_server_https https_server_test.cpp)
