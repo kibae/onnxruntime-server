@@ -142,6 +142,7 @@ sudo cmake --install build --prefix /usr/local/onnxruntime-server
 
 # API
 - [HTTP/HTTPS REST API](https://github.com/kibae/onnxruntime-server/wiki/REST-API(HTTP-HTTPS))
+  - [Sample Swagger](https://kibae.github.io/onnxruntime-server/swagger/)
 - [TCP API](https://github.com/kibae/onnxruntime-server/wiki/TCP-API)
 
 
