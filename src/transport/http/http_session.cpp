@@ -84,6 +84,6 @@ std::string onnxruntime_server::transport::http::http_session::get_remote_endpoi
 	return _remote_endpoint;
 }
 
-onnxruntime_server::transport::http::swagger &onnxruntime_server::transport::http::http_session::get_swagger() {
+onnxruntime_server::transport::http::swagger_serve &onnxruntime_server::transport::http::http_session::get_swagger() {
 	return server->swagger;
 }

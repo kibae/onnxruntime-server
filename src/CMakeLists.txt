@@ -24,7 +24,7 @@ set(SOURCE_FILES
         transport/http/http_session_base.cpp
         transport/http/http_server.cpp
         transport/http/http_session.cpp
-        transport/http/swagger.cpp
+        transport/http/swagger_serve.cpp
         transport/http/swagger/swagger_index_html.cpp
         transport/http/swagger/swagger_openapi_yaml.cpp
 )

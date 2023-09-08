@@ -20,13 +20,13 @@
 namespace beast = boost::beast;
 
 namespace onnxruntime_server::transport::http {
-	class swagger {
+	class swagger_serve {
 		std::string swagger_url_path;
 		std::shared_ptr<std::string> _cache_index_html = nullptr;
 		std::shared_ptr<std::string> _cache_openapi_yaml = nullptr;
 
 	  public:
-		swagger(const std::string &swagger_url_path);
+		swagger_serve(const std::string &swagger_url_path);
 
 		bool is_swagger_url(const std::string &url) const;
 		std::shared_ptr<beast::http::response<beast::http::string_body>>
@@ -54,7 +54,7 @@ namespace onnxruntime_server::transport::http {
 		virtual void run() = 0;
 		virtual void close() = 0;
 		virtual std::string get_remote_endpoint() = 0;
-		virtual swagger &get_swagger() = 0;
+		virtual swagger_serve &get_swagger() = 0;
 	};
 
 	class http_session;
@@ -67,7 +67,7 @@ namespace onnxruntime_server::transport::http {
 		void client_connected(asio::socket socket) override;
 
 	  public:
-		swagger swagger;
+		swagger_serve swagger;
 
 		http_server(
 			boost::asio::io_context &io_context, const class config &config,
@@ -93,7 +93,7 @@ namespace onnxruntime_server::transport::http {
 		~http_session();
 		void run() override;
 		void close() override;
-		swagger &get_swagger() override;
+		swagger_serve &get_swagger() override;
 	};
 
 #ifdef HAS_OPENSSL
@@ -108,7 +108,7 @@ namespace onnxruntime_server::transport::http {
 		void client_connected(asio::socket socket) override;
 
 	  public:
-		swagger swagger;
+		swagger_serve swagger;
 
 		https_server(
 			boost::asio::io_context &io_context, const class config &config,
@@ -134,7 +134,7 @@ namespace onnxruntime_server::transport::http {
 		~https_session();
 		void run() override;
 		void close() override;
-		swagger &get_swagger() override;
+		swagger_serve &get_swagger() override;
 	};
 
 #endif

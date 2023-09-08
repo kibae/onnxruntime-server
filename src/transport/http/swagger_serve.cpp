@@ -6,16 +6,16 @@
 
 #include "swagger/document_bin_data.h"
 
-onnxruntime_server::transport::http::swagger::swagger(const std::string &swagger_url_path)
+onnxruntime_server::transport::http::swagger_serve::swagger_serve(const std::string &swagger_url_path)
 	: swagger_url_path(swagger_url_path) {
 }
 
-bool onnxruntime_server::transport::http::swagger::is_swagger_url(const std::string &url) const {
+bool onnxruntime_server::transport::http::swagger_serve::is_swagger_url(const std::string &url) const {
 	return !swagger_url_path.empty() && swagger_url_path.length() <= url.length() && url.find(swagger_url_path) == 0;
 }
 
 std::shared_ptr<beast::http::response<beast::http::string_body>>
-onnxruntime_server::transport::http::swagger::get_response(const std::string &url, unsigned http_version) {
+onnxruntime_server::transport::http::swagger_serve::get_response(const std::string &url, unsigned http_version) {
 	beast::http::status status = beast::http::status::not_found;
 	std::string content_type = "text/plain";
 	std::shared_ptr<std::string> body = std::make_shared<std::string>("Not Found");
