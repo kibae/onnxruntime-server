@@ -23,6 +23,10 @@ void onnxruntime_server::transport::tcp::tcp_session::close() {
 #define MAX_BUFFER_LIMIT (1024 * 1024 * 100)
 
 void Orts::transport::tcp::tcp_session::do_read() {
+	if (_remote_endpoint.empty())
+		_remote_endpoint =
+			socket.remote_endpoint().address().to_string() + ":" + std::to_string(socket.remote_endpoint().port());
+
 	socket.async_read_some(
 		boost::asio::buffer(chunk, MAX_LENGTH),
 		[self = shared_from_this()](boost::system::error_code ec, std::size_t length) {
@@ -128,8 +132,5 @@ void onnxruntime_server::transport::tcp::tcp_session::do_write(const std::string
 }
 
 std::string onnxruntime_server::transport::tcp::tcp_session::get_remote_endpoint() {
-	if (_remote_endpoint.empty())
-		_remote_endpoint =
-			socket.remote_endpoint().address().to_string() + ":" + std::to_string(socket.remote_endpoint().port());
 	return _remote_endpoint;
 }

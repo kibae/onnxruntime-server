@@ -293,6 +293,7 @@ namespace onnxruntime_server {
 		short https_port = 443;
 		std::string https_cert;
 		std::string https_key;
+		std::string swagger_url_path;
 
 		std::string log_level;
 		std::string log_file;

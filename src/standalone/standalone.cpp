@@ -53,6 +53,15 @@ int onnxruntime_server::standalone::init_config(int argc, char **argv) {
 		);
 		po_desc.add(po_https);
 
+		po::options_description po_doc("Document");
+		po_doc.add_options()(
+			"swagger-url-path", po::value<std::string>(),
+			"env: ONNX_SERVER_SWAGGER_URL_PATH\nEnable Swagger API document for HTTP/HTTPS backend.\nThis value cannot "
+			"start with \"/api/\" and \"/health\" \nIf not specified, swagger document not provided.\neg) /swagger or "
+			"/api-docs"
+		);
+		po_desc.add(po_doc);
+
 		po::options_description po_log("Logging");
 		po_log.add_options()(
 			"log-level", po::value<std::string>()->default_value("info"),
@@ -162,6 +171,14 @@ int onnxruntime_server::standalone::init_config(int argc, char **argv) {
 				throw std::runtime_error("SSL Private key file path is not specified.");
 		}
 
+		if (vm.count("swagger-url-path")) {
+			config.swagger_url_path = vm["swagger-url-path"].as<std::string>();
+			// cannot start with "/api/" and "/health"
+			if ((config.swagger_url_path.length() >= 5 && config.swagger_url_path.substr(0, 5) == "/api/") ||
+				(config.swagger_url_path.length() >= 7 && config.swagger_url_path.substr(0, 7) == "/health"))
+				throw std::runtime_error(R"(Swagger URL path cannot start with "/api" and "/health")");
+		}
+
 		model_root = config.model_dir;
 
 		print_config();
@@ -222,6 +239,9 @@ void onnxruntime_server::standalone::print_config() {
 		config_json["https"]["cert"] = config.https_cert;
 		config_json["https"]["key"] = config.https_key;
 	}
+
+	if (config.use_http || config.use_https)
+		config_json["swagger_url_path"] = config.swagger_url_path;
 
 	config_json["log"] = json::object();
 	config_json["log"]["level"] = config.log_level;

@@ -31,6 +31,10 @@ onnxruntime_server::transport::http::https_session::get_onnx_session_manager() {
 }
 
 void onnxruntime_server::transport::http::https_session::do_read() {
+	if (_remote_endpoint.empty())
+		_remote_endpoint = stream.lowest_layer().remote_endpoint().address().to_string() + ":" +
+						   std::to_string(stream.lowest_layer().remote_endpoint().port());
+
 	req = {};
 
 	beast::http::async_read(
@@ -81,8 +85,9 @@ void onnxruntime_server::transport::http::https_session::close() {
 }
 
 std::string onnxruntime_server::transport::http::https_session::get_remote_endpoint() {
-	if (_remote_endpoint.empty())
-		_remote_endpoint = stream.lowest_layer().remote_endpoint().address().to_string() + ":" +
-						   std::to_string(stream.lowest_layer().remote_endpoint().port());
 	return _remote_endpoint;
+}
+
+onnxruntime_server::transport::http::swagger_serve &onnxruntime_server::transport::http::https_session::get_swagger() {
+	return server->swagger;
 }

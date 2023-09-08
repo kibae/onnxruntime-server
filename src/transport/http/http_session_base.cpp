@@ -72,6 +72,12 @@ onnxruntime_server::transport::http::http_session_base<Session>::handle_request(
 		if (target == "/health")
 			return simple_response(beast::http::status::ok, CONTENT_TYPE_PLAIN_TEXT, "OK");
 
+		if (get_swagger().is_swagger_url(target)) {
+			auto res = get_swagger().get_response(target, req.version());
+			res->keep_alive(req.keep_alive());
+			return res;
+		}
+
 		return simple_response(beast::http::status::not_found, CONTENT_TYPE_PLAIN_TEXT, "Not Found");
 	} catch (Orts::exception &e) {
 		LOG(WARNING) << get_remote_endpoint() << " transport::http::http_session_base::handle_request: " << e.what()

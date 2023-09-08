@@ -9,7 +9,7 @@ onnxruntime_server::transport::http::http_server::http_server(
 	onnxruntime_server::onnx::session_manager *onnx_session_manager,
 	onnxruntime_server::builtin_thread_pool *worker_pool
 )
-	: server(io_context, onnx_session_manager, worker_pool, config.http_port) {
+	: server(io_context, onnx_session_manager, worker_pool, config.http_port), swagger(config.swagger_url_path) {
 	acceptor.set_option(boost::asio::socket_base::reuse_address(true));
 }
 
