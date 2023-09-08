@@ -142,7 +142,12 @@ sudo cmake --install build --prefix /usr/local/onnxruntime-server
 
 # API
 - [HTTP/HTTPS REST API](https://github.com/kibae/onnxruntime-server/wiki/REST-API(HTTP-HTTPS))
-  - [Sample Swagger](https://kibae.github.io/onnxruntime-server/swagger/)
+  - API documentation (Swagger) is built in. If you want the server to serve swagger, add the `--swagger-url-path=/swagger/` option at launch. This must be used with the `--http-port` or `--https-port` option.
+    ```shell
+    ./onnxruntime_server --http-port=8080 --swagger-url-path=/api-docs/
+    ```
+    - After running the server as above, you will be able to access the Swagger UI available at `http://localhost:8080/api-docs/`.
+  - [Swagger Sample](https://kibae.github.io/onnxruntime-server/swagger/)
 - [TCP API](https://github.com/kibae/onnxruntime-server/wiki/TCP-API)
 
 
