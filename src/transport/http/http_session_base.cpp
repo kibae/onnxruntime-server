@@ -73,12 +73,18 @@ onnxruntime_server::transport::http::http_session_base<Session>::handle_request(
 			return simple_response(beast::http::status::ok, CONTENT_TYPE_PLAIN_TEXT, "OK");
 
 		return simple_response(beast::http::status::not_found, CONTENT_TYPE_PLAIN_TEXT, "Not Found");
+	} catch (Orts::exception &e) {
+		LOG(WARNING) << get_remote_endpoint() << " transport::http::http_session_base::handle_request: " << e.what()
+					 << std::endl;
+
+		return simple_response(e.status_code, CONTENT_TYPE_JSON, Orts::exception::what_to_json(e.type(), e.what()));
 	} catch (std::exception &e) {
 		LOG(WARNING) << get_remote_endpoint() << " transport::http::http_session_base::handle_request: " << e.what()
 					 << std::endl;
+
 		return simple_response(
-			beast::http::status::internal_server_error, CONTENT_TYPE_PLAIN_TEXT,
-			std::string("Internal Error: ") + (e.what())
+			beast::http::status::internal_server_error, CONTENT_TYPE_JSON,
+			Orts::exception::what_to_json("runtime_error", e.what())
 		);
 	}
 }

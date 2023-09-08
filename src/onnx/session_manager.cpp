@@ -43,7 +43,7 @@ Orts::onnx::session *Orts::onnx::session_manager::create_session(
 
 		auto current_session = get_session(key);
 		if (current_session != nullptr)
-			throw std::runtime_error("session already exists");
+			throw conflict_error("session already exists");
 
 		auto session = new onnx::session(key, bin.data(), bin.length(), option);
 		sessions.emplace(key, session);
@@ -61,7 +61,7 @@ void Orts::onnx::session_manager::remove_session(const Orts::onnx::session_key &
 	std::lock_guard<std::recursive_mutex> lock(mutex);
 	auto it = sessions.find(key);
 	if (it == sessions.end()) {
-		throw std::runtime_error("session not found");
+		throw not_found_error("session not found");
 	}
 	delete it->second;
 	sessions.erase(it);
