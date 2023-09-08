@@ -27,7 +27,7 @@
 
 - [ONNX Runtime](https://onnxruntime.ai/)
     - <details>
-      <summary>![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black) Linux</summary>
+      <summary>Linux</summary>
 
         - Use `download-onnxruntime-linux.sh` script
             - This script downloads the latest version of the binary and install to `/usr/local/onnxruntime`.
