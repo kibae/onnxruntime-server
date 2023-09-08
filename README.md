@@ -27,7 +27,7 @@
 
 - [ONNX Runtime](https://onnxruntime.ai/)
     - <details>
-      <summary>Linux</summary>
+      <summary><img src="https://cdn.simpleicons.org/linux" height="14" align="center" /><img src="https://cdn.simpleicons.org/ubuntu" height="14" align="center" /><img src="https://cdn.simpleicons.org/debian" height="14" align="center" /> Linux</summary>
 
         - Use `download-onnxruntime-linux.sh` script
             - This script downloads the latest version of the binary and install to `/usr/local/onnxruntime`.
@@ -35,7 +35,7 @@
         - Or manually download binary from [ONNX Runtime Releases](https://github.com/microsoft/onnxruntime/releases).
       </details>
     - <details>
-      <summary>Mac OS</summary>
+      <summary><img src="https://cdn.simpleicons.org/apple" height="14" align="bottom" /> Mac OS</summary>
 
         ```shell
         brew install onnxruntime
@@ -44,14 +44,14 @@
 
 - [Boost](https://www.boost.org/)
     - <details>
-      <summary>Ubuntu/Debian</summary>
+      <summary><img src="https://cdn.simpleicons.org/ubuntu" height="14" align="center" /><img src="https://cdn.simpleicons.org/debian" height="14" align="center" /> Ubuntu/Debian</summary>
 
         ```shell
         sudo apt install libboost-all-dev
         ```
       </details>
     - <details>
-      <summary>Mac OS</summary>
+      <summary><img src="https://cdn.simpleicons.org/apple" height="14" align="bottom" /> Mac OS</summary>
 
         ```shell
         brew install boost
@@ -60,14 +60,14 @@
 
 - [CMake](https://cmake.org/)
     - <details>
-      <summary>Ubuntu/Debian</summary>
+      <summary><img src="https://cdn.simpleicons.org/ubuntu" height="14" align="center" /><img src="https://cdn.simpleicons.org/debian" height="14" align="center" /> Ubuntu/Debian</summary>
 
         ```shell
         sudo apt install cmake
         ```
       </details>
     - <details>
-      <summary>Mac OS</summary>
+      <summary><img src="https://cdn.simpleicons.org/apple" height="14" align="bottom" /> Mac OS</summary>
 
         ```shell
         brew install cmake
@@ -76,7 +76,7 @@
 
 - CUDA(*optional, for GPU*)
     - <details>
-      <summary>Ubuntu/Debian</summary>
+      <summary><img src="https://cdn.simpleicons.org/ubuntu" height="14" align="center" /><img src="https://cdn.simpleicons.org/debian" height="14" align="center" /> Ubuntu/Debian</summary>
 
         ```shell
         sudo apt install nvidia-cuda-toolkit nvidia-cudnn
@@ -85,14 +85,14 @@
 
 - OpenSSL(*optional, for HTTPS*)
     - <details>
-      <summary>Ubuntu/Debian</summary>
+      <summary><img src="https://cdn.simpleicons.org/ubuntu" height="14" align="center" /><img src="https://cdn.simpleicons.org/debian" height="14" align="center" /> Ubuntu/Debian</summary>
 
         ```shell
         sudo apt install libssl-dev
         ```
       </details>
     - <details>
-      <summary>Mac OS</summary>
+      <summary><img src="https://cdn.simpleicons.org/apple" height="14" align="bottom" /> Mac OS</summary>
 
         ```shell
         brew install openssl
@@ -111,8 +111,8 @@ sudo cmake --install build --prefix /usr/local/onnxruntime-server
 
 # Run the server
 
-- You must enter the path option(`--model-dir`) where the models are located.
-- You need to enable one of the following backends: TCP, HTTP, or HTTPS.
+- **You must enter the path option(`--model-dir`) where the models are located.**
+- **You need to enable one of the following backends: TCP, HTTP, or HTTPS.**
 
 ## Options
 
@@ -121,7 +121,7 @@ sudo cmake --install build --prefix /usr/local/onnxruntime-server
   careful. Command-line options are prioritized over environment variables.
 
   <details>
-      <summary>All options</summary>
+      <summary>👇 All options 👇</summary>
 
   | Option                | Environment                     | Description                                                                                                                                                                                      |
   |-----------------------|---------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -149,7 +149,7 @@ sudo cmake --install build --prefix /usr/local/onnxruntime-server
     ./onnxruntime_server --http-port=8080 --swagger-url-path=/api-docs/
     ```
     - After running the server as above, you will be able to access the Swagger UI available at `http://localhost:8080/api-docs/`.
-  - [Swagger Sample](https://kibae.github.io/onnxruntime-server/swagger/)
+  - [Swagger Sample <img src="https://cdn.simpleicons.org/swagger/green" height="16" align="center" />](https://kibae.github.io/onnxruntime-server/swagger/)
 - [TCP API](https://github.com/kibae/onnxruntime-server/wiki/TCP-API)
 
 
