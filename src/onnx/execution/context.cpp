@@ -15,12 +15,12 @@ Orts::onnx::execution::context::context(Orts::onnx::session *session, const json
 
 	// check dataset is object
 	if (!dataset.is_object()) {
-		throw std::runtime_error("Top-level JSON dataset is not object");
+		throw bad_request_error("Top-level JSON dataset is not object");
 	}
 
 	for (auto &input : session->inputs()) {
 		if (!dataset[input.name].is_array())
-			throw std::runtime_error("Input " + input.name + " is not array");
+			throw bad_request_error("Input " + input.name + " is not array");
 
 		// batch first. first dimension is batch size
 		std::vector<json::value_type> json_values;
