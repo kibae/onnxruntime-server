@@ -18,7 +18,7 @@ Orts::onnx::session::session(session_key key, const json &option)
 #ifdef HAS_CUDA
 		_option["cuda"] = append_cuda_session_options(session_options, option);
 #else
-		throw std::runtime_error("CUDA is not supported");
+		throw runtime_error("CUDA is not supported");
 #endif
 	}
 }
@@ -96,7 +96,7 @@ Orts::onnx::session::run(const Ort::MemoryInfo &memory_info, const std::vector<O
 	assert(ort_session != nullptr);
 
 	if (input_values.empty() || input_values.size() != inputCount) {
-		throw std::runtime_error("params size is not same as: " + std::to_string(inputCount));
+		throw runtime_error("params size is not same as: " + std::to_string(inputCount));
 	}
 
 	Ort::RunOptions options;

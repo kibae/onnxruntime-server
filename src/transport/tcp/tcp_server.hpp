@@ -34,6 +34,8 @@ namespace onnxruntime_server::transport::tcp {
 		void do_task(protocol_header header);
 		void do_write(const std::string &buf);
 
+		void send_error(std::string type, std::string what);
+
 		std::string get_remote_endpoint();
 	};
 

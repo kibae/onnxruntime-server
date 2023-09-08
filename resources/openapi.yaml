@@ -61,6 +61,30 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ONNXSession'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ONNXBadRequestError'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ONNXNotFoundError'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ONNXConflictError'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ONNXRuntimeError'
 
   /api/sessions/{model}/{version}:
     get:
@@ -91,6 +115,10 @@ paths:
                 $ref: '#/components/schemas/ONNXSession'
         '404':
           description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ONNXNotFoundError'
     post:
       tags:
         - ONNX Runtime Session
@@ -122,8 +150,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ONNXSessionExecuteResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ONNXBadRequestError'
         '404':
           description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ONNXNotFoundError'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ONNXRuntimeError'
 
     delete:
       tags:
@@ -153,6 +197,10 @@ paths:
                 type: boolean
         '404':
           description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ONNXNotFoundError'
 
 components:
   schemas:
@@ -270,3 +318,48 @@ components:
             oneOf:
               - type: number
               - type: string
+    ONNXError:
+      type: object
+      properties:
+        error_type:
+          type: string
+          description: Error type
+          nullable: false
+          enum:
+            - runtime_error
+            - bad_request_error
+            - not_found_error
+            - conflict_error
+        error:
+          type: string
+          description: Error message
+          nullable: false
+    ONNXBadRequestError:
+      allOf:
+        - $ref: '#/components/schemas/ONNXError'
+      properties:
+        error_type:
+          type: string
+          example: bad_request_error
+    ONNXNotFoundError:
+      allOf:
+        - $ref: '#/components/schemas/ONNXError'
+      properties:
+        error_type:
+          type: string
+          example: not_found_error
+    ONNXConflictError:
+      allOf:
+        - $ref: '#/components/schemas/ONNXError'
+      properties:
+        error_type:
+          type: string
+          example: conflict_error
+    ONNXRuntimeError:
+      allOf:
+        - $ref: '#/components/schemas/ONNXError'
+      properties:
+        error_type:
+          type: string
+          example: runtime_error
+
