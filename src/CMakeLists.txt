@@ -32,7 +32,7 @@ set(SOURCE_FILES
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 # cuda, onnxruntime
-find_package(CUDA)
+find_package(CUDA HINTS ${CUDA_TOOLKIT_ROOT_DIR} /usr/local/cuda)
 if (CUDA_FOUND)
     message(STATUS "CUDA support found. Compiling with CUDA support.")
     enable_language(CUDA)
