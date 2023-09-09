@@ -26,10 +26,10 @@ echo
 
 wget "$item"
 
-sudo mkdir -p /usr/local/onnxruntime
-sudo tar vzxf "$FILENAME" -C /usr/local/onnxruntime --strip-components=1
-sudo sh -c 'echo "/usr/local/onnxruntime/lib" > /etc/ld.so.conf.d/onnxruntime.conf'
-sudo ldconfig
+mkdir -p /usr/local/onnxruntime
+tar vzxf "$FILENAME" -C /usr/local/onnxruntime --strip-components=1
+sh -c 'echo "/usr/local/onnxruntime/lib" > /etc/ld.so.conf.d/onnxruntime.conf'
+ldconfig
 
 echo
 echo "Done"
