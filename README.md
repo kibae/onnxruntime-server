@@ -163,14 +163,7 @@ sudo cmake --install build --prefix /usr/local/onnxruntime-server
 ```mermaid
 %%{init: {
     'sequence': {'noteAlign': 'left', 'mirrorActors': true},
-    'theme': 'default',
-    'themeVariables': {
-        'darkMode': false,
-        'background': '#ffffff',
-        'noteBkgColor': '#eeeeee',
-        'noteBorderColor': '#dddddd',
-        'actorBorder': '#444444'
-    }
+    'theme': 'neutral'
 }}%%
 sequenceDiagram
     actor A as Administrator
@@ -209,14 +202,7 @@ sequenceDiagram
 ```mermaid
 %%{init: {
     'sequence': {'noteAlign': 'left', 'mirrorActors': true},
-    'theme': 'default',
-    'themeVariables': {
-        'darkMode': false,
-        'background': '#ffffff',
-        'noteBkgColor': '#eeeeee',
-        'noteBorderColor': '#dddddd',
-        'actorBorder': '#444444'
-    }
+    'theme': 'neutral'
 }}%%
 sequenceDiagram
     actor A as Administrator
