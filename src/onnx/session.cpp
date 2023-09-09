@@ -7,7 +7,7 @@
 #include "../onnxruntime_server.hpp"
 
 #ifdef HAS_CUDA
-#include "cuda/session_options.cpp"
+#include "cuda/session_options.hpp"
 #endif
 
 Orts::onnx::session::session(session_key key, const json &option)

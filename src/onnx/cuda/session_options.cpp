@@ -1,7 +1,7 @@
 //
 // Created by kibae on 23. 9. 5.
 //
-#include "../../onnxruntime_server.hpp"
+#include "session_options.hpp"
 
 json append_cuda_session_options(OrtSessionOptions *session_options, const json &option) {
 	auto cuda = option["cuda"];
