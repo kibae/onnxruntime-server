@@ -51,15 +51,16 @@ jobs:
         shell: bash
         if: steps.cache-dependencies-apt.outputs.cache-hit != 'true' && (startsWith(matrix.image, 'debian:') || startsWith(matrix.image, 'ubuntu:'))
         run: |
-          _SRC_ROOT=$(pwd)
           sudo apt-get update -qq
-          sudo apt-get -o Dir::Cache="${_SRC_ROOT}/.github/cache/dependencies-apt" -o Dir::Cache::archives="${_SRC_ROOT}/.github/cache/dependencies-apt" install -yq --download-only build-essential clang-11 cmake libboost-all-dev libssl-dev libgtest-dev
+          sudo apt-get install -yq --download-only build-essential clang-11 cmake libboost-all-dev libssl-dev libgtest-dev
+          cp -v /var/cache/apt/archives/*.deb .github/cache/dependencies-apt/
 
       - name: Prepare container(apt)
         shell: bash
         if: startsWith(matrix.image, 'debian:') || startsWith(matrix.image, 'ubuntu:')
         run: |
-          sudo apt-get -o Dir::Cache="${_SRC_ROOT}/.github/cache/dependencies-apt" -o Dir::Cache::archives="${_SRC_ROOT}/.github/cache/dependencies-apt" install -yq build-essential clang-11 cmake libboost-all-dev libssl-dev libgtest-dev
+          pwd
+          sudo apt-get install -yq .github/cache/dependencies-apt/*.deb
 
       - name: Prepare container(onnxruntime)
         shell: bash
