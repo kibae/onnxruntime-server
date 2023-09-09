@@ -31,6 +31,8 @@ tar vzxf "$FILENAME" -C /usr/local/onnxruntime --strip-components=1
 sh -c 'echo "/usr/local/onnxruntime/lib" > /etc/ld.so.conf.d/onnxruntime.conf'
 ldconfig
 
+rm -f "$FILENAME"
+
 echo
 echo "Done"
 echo
