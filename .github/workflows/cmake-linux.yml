@@ -13,9 +13,8 @@ jobs:
 
     strategy:
       fail-fast: false
-
       matrix:
-        name: [ Ubuntu-18, Ubuntu-20, Ubuntu-22, Debian-10, Debian-11, Debian-12 ],
+        name: [ Ubuntu-18, Ubuntu-20, Ubuntu-22, Debian-10, Debian-11, Debian-12 ]
         c_compiler: [ gcc, clang ]
         include:
           - name: Ubuntu-18
