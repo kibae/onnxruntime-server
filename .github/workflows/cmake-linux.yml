@@ -9,16 +9,27 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
 
       matrix:
-        os: [ ubuntu-20.04, ubuntu-22.04 ]
-        build_type: [ Debug ]
+        name: [ Ubuntu-18, Ubuntu-20, Ubuntu-22, Debian-10, Debian-11, Debian-12 ],
         c_compiler: [ gcc, clang ]
         include:
+          - name: Ubuntu-18
+            image: "ubuntu:18.04"
+          - name: Ubuntu-20
+            image: "ubuntu:20.04"
+          - name: Ubuntu-22
+            image: "ubuntu:22.04"
+          - name: Debian-10
+            image: "debian:10"
+          - name: Debian-11
+            image: "debian:11"
+          - name: Debian-12
+            image: "debian:12"
           - c_compiler: gcc
             cpp_compiler: g++
           - c_compiler: clang
