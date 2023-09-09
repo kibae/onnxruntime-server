@@ -16,6 +16,7 @@ jobs:
       matrix:
         name: [ Ubuntu-18, Ubuntu-20, Ubuntu-22, Debian-10, Debian-11, Debian-12 ]
         c_compiler: [ gcc, clang ]
+        build_type: [ Debug ]
         include:
           - name: Ubuntu-18
             image: "ubuntu:18.04"
@@ -41,7 +42,7 @@ jobs:
 
       - name: Prepare container(apt)
         shell: bash
-        if: startsWith(matrix.os, 'debian') || startsWith(matrix.os, 'ubuntu')
+        if: startsWith(matrix.image, 'debian:') || startsWith(matrix.image, 'ubuntu:')
         run: |
           sudo apt-get update -qq
           sudo apt-get install -yq build-essential clang-11 cmake libboost-all-dev libssl-dev libgtest-dev
