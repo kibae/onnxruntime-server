@@ -18,6 +18,7 @@
 - [Run the server](#run-the-server)
     - [Options](#options)
 - [API](#api)
+- [How to use](#how-to-use)
 
 ----
 
