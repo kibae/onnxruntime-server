@@ -46,11 +46,11 @@ else ()
 endif ()
 
 # boost
-set(Boost_USE_STATIC_LIBS ON)
+#set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost COMPONENTS serialization system filesystem program_options thread REQUIRED)
 
 # openssl
-set(OPENSSL_USE_STATIC_LIBS ON)
+#set(OPENSSL_USE_STATIC_LIBS ON)
 find_package(OpenSSL)
 if (OPENSSL_FOUND)
     add_definitions(-DHAS_OPENSSL)
