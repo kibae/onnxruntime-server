@@ -128,6 +128,7 @@ sudo cmake --install build --prefix /usr/local/onnxruntime-server
   |-----------------------|---------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
   | `--workers`           | `ONNX_SERVER_WORKERS`           | Worker thread pool size.<br/>Default: `4`                                                                                                                                                        |
   | `--model-dir`         | `ONNX_SERVER_MODEL_DIR`         | Model directory path<br/>The onnx model files must be located in the following path:<br/>`${model_dir}/${model_name}/${model_version}/model.onnx`<br/>Default: `models`                          |
+  | `--prepare-model`     | `ONNX_SERVER_PREPARE_MODEL`     | Pre-create some model sessions at server startup.<br/><br/>Format as a space-separated list of `model_name:model_version` or `model_name:model_version(session_options, ...)`.<br/><br/>Available session_options are<br/>- cuda=device_id`[ or true or false]`<br/><br/>eg) `model1:v1 model2:v9`<br/>`model1:v1(cuda=true) model2:v9(cuda=1)` |
   | `--tcp-port`          | `ONNX_SERVER_TCP_PORT`          | Enable TCP backend and which port number to use.                                                                                                                                                 |
   | `--http-port`         | `ONNX_SERVER_HTTP_PORT`         | Enable HTTP backend and which port number to use.                                                                                                                                                |
   | `--https-port`        | `ONNX_SERVER_HTTPS_PORT`        | Enable HTTPS backend and which port number to use.                                                                                                                                               |
@@ -156,9 +157,55 @@ sudo cmake --install build --prefix /usr/local/onnxruntime-server
 ----
 
 # How to use
-### Simple usage examples
 - A few things have been left out to help you get a rough idea of the usage flow.
+## Simple usage examples
+### Example of creating ONNX sessions at server startup
+```mermaid
+%%{init: {
+    'sequence': {'noteAlign': 'left', 'mirrorActors': true},
+    'theme': 'default',
+    'themeVariables': {
+        'darkMode': false,
+        'background': '#ffffff',
+        'noteBkgColor': '#eeeeee',
+        'noteBorderColor': '#dddddd',
+        'actorBorder': '#444444'
+    }
+}}%%
+sequenceDiagram
+    actor A as Administrator
+    box rgb(0, 0, 0, 0.1) "ONNX Runtime Server"
+        participant SD as Disk
+        participant SP as Process
+    end
+    actor C as Client
+    Note right of A: You have 3 models to serve.
+    A ->> SD: Put model files to<br />"/var/models/model_A/v1/model.onnx"<br />"/var/models/model_A/v2/model.onnx"<br />"/var/models/model_B/20201101/model.onnx"
+    A ->> SP: Start server with --prepare-model option
+    activate SP
+    Note right of A: onnxruntime-server<br />--http-port=8080<br />--model-path=/var/models<br />--prepare-model="model_A:v1(cuda=0) model_A:v2(cuda=0)"
+    SP -->> SD: Load model
+    Note over SD, SP: Load model from<br />"/var/models/model_A/v1/model.onnx"
+    SD -->> SP: Model binary
+    activate SP
+    SP -->> SP: Create<br />onnxruntime<br />session
+    deactivate SP
+    deactivate SP
+    rect rgb(100, 100, 100, 0.3)
+        Note over SD, C: Execute Session
+        C ->> SP: Execute session request
+        activate SP
+        Note over SP, C: POST /api/sessions/model_A/v1<br />{<br />"x": [[1], [2], [3]],<br />"y": [[2], [3], [4]],<br />"z": [[3], [4], [5]]<br />}
+        activate SP
+        SP -->> SP: Execute<br />onnxruntime<br />session
+        deactivate SP
+        SP ->> C: Execute session response
+        deactivate SP
+        Note over SP, C: {<br />"output": [<br />[0.6492120623588562],<br />[0.7610487341880798],<br />[0.8728854656219482]<br />]<br />}
+    end
+```
 
+### Example of the client creating and running ONNX sessions
 ```mermaid
 %%{init: {
     'sequence': {'noteAlign': 'left', 'mirrorActors': true},
