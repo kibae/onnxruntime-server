@@ -9,16 +9,27 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
-
       matrix:
-        os: [ ubuntu-20.04, ubuntu-22.04 ]
-        build_type: [ Debug ]
+        name: [ Ubuntu-18, Ubuntu-20, Ubuntu-22, Debian-10, Debian-11, Debian-12 ]
         c_compiler: [ gcc, clang ]
+        build_type: [ Debug ]
         include:
+          - name: Ubuntu-18
+            image: "ubuntu:18.04"
+          - name: Ubuntu-20
+            image: "ubuntu:20.04"
+          - name: Ubuntu-22
+            image: "ubuntu:22.04"
+          - name: Debian-10
+            image: "debian:10"
+          - name: Debian-11
+            image: "debian:11"
+          - name: Debian-12
+            image: "debian:12"
           - c_compiler: gcc
             cpp_compiler: g++
           - c_compiler: clang
@@ -29,19 +40,41 @@ jobs:
         with:
           lfs: false
 
-      - name: Prepare container(apt)
+      - name: Cache dependencies(apt)
+        id: cache-dependencies-apt
+        uses: actions/cache@v3
+        with:
+          path: .github/cache/dependencies-apt
+          key: ${{ matrix.image }}-dependencies-apt-v1
+
+      - name: Prepare container(apt download)
         shell: bash
-        if: startsWith(matrix.os, 'debian') || startsWith(matrix.os, 'ubuntu')
+        if: steps.cache-dependencies-apt.outputs.cache-hit != 'true' && (startsWith(matrix.image, 'debian:') || startsWith(matrix.image, 'ubuntu:'))
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -yq build-essential clang-11 cmake libboost-all-dev libssl-dev libgtest-dev
+          sudo apt-get install -yq --download-only build-essential clang-11 cmake libboost-all-dev libssl-dev libgtest-dev
+          cp /var/cache/apt/archives/*.deb .github/cache/dependencies-apt/
+
+      - name: Prepare container(apt)
+        shell: bash
+        if: startsWith(matrix.image, 'debian:') || startsWith(matrix.image, 'ubuntu:')
+        run: |
+          sudo dpkg -i .github/cache/dependencies-apt/*.deb
 
       - name: Prepare container(onnxruntime)
         shell: bash
         run: |
           ./.github/actions/download-onnxruntime-linux.sh
 
+      - name: Cache test fixtures
+        id: cache-test-fixtures
+        uses: actions/cache@v3
+        with:
+          path: test/fixture
+          key: ${{ runner.os }}-test-fixtures-v1
+
       - name: Download assets(models)
+        if: steps.cache-test-fixtures.outputs.cache-hit != 'true'
         shell: bash
         run: |
           ./test/fixture/download-test-fixtures.sh
@@ -65,7 +98,7 @@ jobs:
 
       - name: Build
         # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
-        run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+        run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --parallel 4
 
       - name: Test
         working-directory: ${{ steps.strings.outputs.build-output-dir }}
