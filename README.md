@@ -16,11 +16,7 @@
 - [Build ONNX Runtime Server](#build-onnx-runtime-server)
     - [Requirements](#requirements)
         - [Install ONNX Runtime](#install-onnx-runtime)
-            - [Linux](#linux)
-            - [Mac OS](#mac-os)
         - [Install dependencies](#install-dependencies)
-            - [Ubuntu/Debian](#ubuntudebian)
-            - [Mac OS](#mac-os-1)
     - [Compile and Install](#compile-and-install)
 - [Run the server](#run-the-server)
     - [Options](#options)
@@ -92,12 +88,13 @@ sudo cmake --install build --prefix /usr/local/onnxruntime-server
 
 - **You must enter the path option(`--model-dir`) where the models are located.**
 - **You need to enable one of the following backends: TCP, HTTP, or HTTPS.**
-
-## Options
-
+    - If you want to use TCP, you must specify the `--tcp-port` option.
+    - If you want to use HTTP, you must specify the `--http-port` option.
+    - If you want to use HTTPS, you must specify the `--https-port`, `--https-cert` and `--https-key` options.
+    - If you want to use Swagger, you must specify the `--swagger-url-path` option.
 - Use the `-h`, `--help` option to see a full list of options.
-- All options can be set as environment variables. This can be useful when operating in a container like Docker. But be
-  careful. Command-line options are prioritized over environment variables.
+- **All options can be set as environment variables.** This can be useful when operating in a container like Docker.
+    - But be careful. Command-line options are prioritized over environment variables.
 
 | Option            | Environment                 | Description                                                                                                                                                                                                                                                                                                                                     |
 |-------------------|-----------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
