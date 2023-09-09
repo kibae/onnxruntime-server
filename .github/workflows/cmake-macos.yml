@@ -1,5 +1,5 @@
 # See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-single-platform.yml
-name: CMake on Mac OS
+name: CMake on MacOS
 
 on:
   push:
@@ -10,15 +10,20 @@ on:
 jobs:
   build:
     runs-on: macos-latest
+    env:
+      CC: clang
+      CXX: clang++
 
     steps:
       - uses: actions/checkout@v4
         with:
           lfs: false
+
       - name: Prepare container(homebrew)
         shell: bash
         run: |
-          brew install cmake boost onnxruntime openssl
+          brew update
+          brew install cmake boost onnxruntime openssl googletest
 
       - name: Download assets(models)
         shell: bash
