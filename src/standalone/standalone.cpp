@@ -25,6 +25,17 @@ int onnxruntime_server::standalone::init_config(int argc, char **argv) {
 			"path:\n"
 			"\"${model_dir}/${model_name}/${model_version}/model.onnx\"\nDefault: ./models"
 		);
+		po_desc.add_options()(
+			"prepare-model", po::value<std::string>(),
+			"env: ONNX_SERVER_PREPARE_MODEL\nPre-create some model sessions at server startup.\n\n"
+			"Format as a space-separated list of \"model_name:model_version\" or "
+			"\"model_name:model_version(session_options, ...)\".\n"
+			"\n"
+			"Available session_options are\n"
+			"  - cuda=device_id[ or true or false]\n"
+			"\n"
+			"eg) \"model1:v1 model2:v9\"\n    \"model1:v1(cuda=true) model2:v9(cuda=0) model2:v13(cuda=1)\""
+		);
 
 		po::options_description po_tcp("TCP Backend");
 		po_tcp.add_options()(
@@ -143,6 +154,9 @@ int onnxruntime_server::standalone::init_config(int argc, char **argv) {
 		else
 			config.model_dir = "models";
 
+		if (vm.count("prepare-model"))
+			config.prepare_model = vm["prepare-model"].as<std::string>();
+
 		if (vm.count("tcp-port")) {
 			config.use_tcp = true;
 			config.tcp_port = vm["tcp-port"].as<short>();
@@ -214,6 +228,16 @@ onnxruntime_server::standalone::get_model_bin(const std::string &model_name, con
 	std::stringstream buffer;
 	buffer << file.rdbuf();
 	return buffer.str();
+}
+
+void onnxruntime_server::standalone::prepare_models(onnxruntime_server::onnx::session_manager &manager) {
+	auto model_keys = Orts::onnx::session_key_with_option::parse(config.prepare_model);
+	if (model_keys.empty())
+		return;
+
+	for (auto &key : model_keys) {
+		manager.create_session(key.model_name, key.model_version, key.option);
+	}
 }
 
 void onnxruntime_server::standalone::print_config() {

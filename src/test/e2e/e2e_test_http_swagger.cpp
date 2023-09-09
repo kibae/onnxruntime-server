@@ -2,8 +2,8 @@
 // Created by kibae on 23. 8. 17.
 //
 
-#include "../transport/http/http_server.hpp"
-#include "test_common.hpp"
+#include "../../transport/http/http_server.hpp"
+#include "../test_common.hpp"
 
 beast::http::response<beast::http::dynamic_body>
 http_request(beast::http::verb method, const std::string &target, short port, std::string body, int keep_alive = 0);

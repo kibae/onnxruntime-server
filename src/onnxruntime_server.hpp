@@ -58,8 +58,21 @@ namespace onnxruntime_server {
 			std::string model_version = 0;
 
 			session_key(std::string model_name, std::string model_version);
-
 			bool operator<(const session_key &other) const;
+
+			static bool is_valid_model_name(const std::string &model_key);
+			static bool is_valid_model_version(const std::string &model_version);
+		};
+
+		class session_key_with_option : public session_key {
+		  public:
+			json option;
+
+			session_key_with_option(std::string model_name, std::string model_version, json option)
+				: session_key(model_name, model_version), option(option) {
+			}
+
+			static std::vector<session_key_with_option> parse(const std::string &model_key_list);
 		};
 
 		class session {
@@ -301,6 +314,7 @@ namespace onnxruntime_server {
 
 		long num_threads = 4;
 		std::string model_dir;
+		std::string prepare_model;
 		model_bin_getter_t model_bin_getter{};
 	};
 

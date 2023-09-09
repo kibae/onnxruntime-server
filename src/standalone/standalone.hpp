@@ -23,7 +23,9 @@ namespace onnxruntime_server {
 		standalone();
 
 		int init_config(int argc, char *argv[]);
+		void prepare_models(onnxruntime_server::onnx::session_manager &manager);
 		void print_config();
+
 		std::string get_model_bin(const std::string &model_name, const std::string &model_version);
 	};
 

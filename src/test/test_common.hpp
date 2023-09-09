@@ -13,7 +13,7 @@
 
 boost::filesystem::path current_file_path(__FILE__);
 boost::filesystem::path current_file_dir = current_file_path.parent_path();
-boost::filesystem::path root_dir = current_file_dir.parent_path().parent_path();
+boost::filesystem::path root_dir = current_file_dir.parent_path().parent_path().parent_path().parent_path();
 boost::filesystem::path test_dir = root_dir / "test";
 
 auto model1_path = test_dir / "fixture" / "sample" / "1" / "model.onnx";
