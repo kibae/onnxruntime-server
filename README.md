@@ -162,8 +162,7 @@ sudo cmake --install build --prefix /usr/local/onnxruntime-server
 ### Example of creating ONNX sessions at server startup
 ```mermaid
 %%{init: {
-    'sequence': {'noteAlign': 'left', 'mirrorActors': true},
-    'theme': 'neutral'
+    'sequence': {'noteAlign': 'left', 'mirrorActors': true}
 }}%%
 sequenceDiagram
     actor A as Administrator
@@ -201,8 +200,7 @@ sequenceDiagram
 ### Example of the client creating and running ONNX sessions
 ```mermaid
 %%{init: {
-    'sequence': {'noteAlign': 'left', 'mirrorActors': true},
-    'theme': 'neutral'
+    'sequence': {'noteAlign': 'left', 'mirrorActors': true}
 }}%%
 sequenceDiagram
     actor A as Administrator
