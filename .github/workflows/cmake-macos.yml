@@ -9,10 +9,18 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
-    env:
-      CC: clang
-      CXX: clang++
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        os: [ macos-latest ]
+        build_type: [ Debug ]
+        c_compiler: [ clang ]
+        include:
+          - c_compiler: clang
+            cpp_compiler: clang++
 
     steps:
       - uses: actions/checkout@v4
@@ -23,7 +31,7 @@ jobs:
         shell: bash
         run: |
           brew update
-          brew install cmake boost onnxruntime openssl googletest
+          brew install cmake onnxruntime boost openssl googletest
 
       - name: Download assets(models)
         shell: bash

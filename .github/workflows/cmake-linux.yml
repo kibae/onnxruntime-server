@@ -15,15 +15,13 @@ jobs:
       fail-fast: false
 
       matrix:
-        os: [ ubuntu-20.04, ubuntu-22.04, debian-latest ]
+        os: [ ubuntu-20.04, ubuntu-22.04 ]
         build_type: [ Debug ]
         c_compiler: [ gcc, clang ]
         include:
-          - os: ubuntu-latest
-            c_compiler: gcc
+          - c_compiler: gcc
             cpp_compiler: g++
-          - os: ubuntu-latest
-            c_compiler: clang
+          - c_compiler: clang
             cpp_compiler: clang++
 
     steps:
