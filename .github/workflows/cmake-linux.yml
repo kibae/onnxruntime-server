@@ -52,7 +52,15 @@ jobs:
         run: |
           ./.github/actions/download-onnxruntime-linux.sh
 
+      - name: Cache test fixtures
+        id: cache-test-fixtures
+        uses: actions/cache@v3
+        with:
+          path: test/fixture
+          key: ${{ runner.os }}-test-fixtures-v1
+
       - name: Download assets(models)
+        if: steps.cache-test-fixtures.outputs.cache-hit != 'true'
         shell: bash
         run: |
           ./test/fixture/download-test-fixtures.sh
