@@ -45,7 +45,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: .github/cache/dependencies-apt
-          key: ${{ runner.os }}-dependencies-apt-v1
+          key: ${{ matrix.image }}-dependencies-apt-v1
 
       - name: Prepare container(apt download)
         shell: bash
@@ -53,14 +53,12 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -yq --download-only build-essential clang-11 cmake libboost-all-dev libssl-dev libgtest-dev
-          cp -v /var/cache/apt/archives/*.deb .github/cache/dependencies-apt/
+          cp /var/cache/apt/archives/*.deb .github/cache/dependencies-apt/
 
       - name: Prepare container(apt)
         shell: bash
         if: startsWith(matrix.image, 'debian:') || startsWith(matrix.image, 'ubuntu:')
         run: |
-          pwd
-          ls -l .github/cache/dependencies-apt/
           sudo dpkg -i .github/cache/dependencies-apt/*.deb
 
       - name: Prepare container(onnxruntime)
