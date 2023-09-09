@@ -60,7 +60,8 @@ jobs:
         if: startsWith(matrix.image, 'debian:') || startsWith(matrix.image, 'ubuntu:')
         run: |
           pwd
-          sudo apt-get install -yq .github/cache/dependencies-apt/*.deb
+          ls -l .github/cache/dependencies-apt/
+          sudo dpkg -i .github/cache/dependencies-apt/*.deb
 
       - name: Prepare container(onnxruntime)
         shell: bash
