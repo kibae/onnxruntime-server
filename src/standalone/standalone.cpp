@@ -34,7 +34,7 @@ int onnxruntime_server::standalone::init_config(int argc, char **argv) {
 			"Available session_options are\n"
 			"  - cuda=device_id[ or true or false]\n"
 			"\n"
-			"eg) \"model1:v1 model2:v9\"\n    \"model1:v1(cuda=true) model2:v9(cuda=1)\""
+			"eg) \"model1:v1 model2:v9\"\n    \"model1:v1(cuda=true) model2:v9(cuda=0) model2:v13(cuda=1)\""
 		);
 
 		po::options_description po_tcp("TCP Backend");
