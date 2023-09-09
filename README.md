@@ -146,10 +146,67 @@ sudo cmake --install build --prefix /usr/local/onnxruntime-server
 - [HTTP/HTTPS REST API](https://github.com/kibae/onnxruntime-server/wiki/REST-API(HTTP-HTTPS))
   - API documentation (Swagger) is built in. If you want the server to serve swagger, add the `--swagger-url-path=/swagger/` option at launch. This must be used with the `--http-port` or `--https-port` option.
     ```shell
-    ./onnxruntime_server --http-port=8080 --swagger-url-path=/api-docs/
+    ./onnxruntime_server --model-dir=YOUR_MODEL_DIR --http-port=8080 --swagger-url-path=/api-docs/
     ```
     - After running the server as above, you will be able to access the Swagger UI available at `http://localhost:8080/api-docs/`.
   - <picture><img src="https://cdn.simpleicons.org/swagger/green" height="16" align="center" /></picture> [Swagger Sample](https://kibae.github.io/onnxruntime-server/swagger/)
 - [TCP API](https://github.com/kibae/onnxruntime-server/wiki/TCP-API)
 
+----
 
+# How to use
+### Simple usage examples
+- A few things have been left out to help you get a rough idea of the usage flow.
+
+```mermaid
+%%{init: {
+    'sequence': {'noteAlign': 'left', 'mirrorActors': true},
+    'theme': 'default',
+    'themeVariables': {
+        'darkMode': false,
+        'background': '#ffffff',
+        'noteBkgColor': '#eeeeee',
+        'noteBorderColor': '#dddddd',
+        'actorBorder': '#444444'
+    }
+}}%%
+sequenceDiagram
+    actor A as Administrator
+    box rgb(0, 0, 0, 0.1) "ONNX Runtime Server"
+        participant SD as Disk
+        participant SP as Process
+    end
+    actor C as Client
+    Note right of A: You have 3 models to serve.
+    A ->> SD: Put model files to<br />"/var/models/model_A/v1/model.onnx"<br />"/var/models/model_A/v2/model.onnx"<br />"/var/models/model_B/20201101/model.onnx"
+    A ->> SP: Start server
+    Note right of A: onnxruntime-server<br />--http-port=8080<br />--model-path=/var/models
+    rect rgb(100, 100, 100, 0.3)
+        Note over SD, C: Create Session
+        C ->> SP: Create session request
+        activate SP
+        Note over SP, C: POST /api/sessions<br />{"model": "model_A", "version": "v1"}
+        SP -->> SD: Load model
+        Note over SD, SP: Load model from<br />"/var/models/model_A/v1/model.onnx"
+        SD -->> SP: Model binary
+        activate SP
+        SP -->> SP: Create<br />onnxruntime<br />session
+        deactivate SP
+        SP ->> C: Create session response
+        deactivate SP
+        Note over SP, C: {<br />"model": "model_A",<br />"version": "v1",<br />"created_at": 1694228106,<br />"execution_count": 0,<br />"last_executed_at": 0,<br />"inputs": {<br />"x": "float32[-1,1]",<br />"y": "float32[-1,1]",<br />"z": "float32[-1,1]"<br />},<br />"outputs": {<br />"output": "float32[-1,1]"<br />}<br />}
+        Note right of C: 👌 You can know the type and shape<br />of the input and output.
+    end
+    rect rgb(100, 100, 100, 0.3)
+        Note over SD, C: Execute Session
+        C ->> SP: Execute session request
+        activate SP
+        Note over SP, C: POST /api/sessions/model_A/v1<br />{<br />"x": [[1], [2], [3]],<br />"y": [[2], [3], [4]],<br />"z": [[3], [4], [5]]<br />}
+        activate SP
+        SP -->> SP: Execute<br />onnxruntime<br />session
+        deactivate SP
+        SP ->> C: Execute session response
+        deactivate SP
+        Note over SP, C: {<br />"output": [<br />[0.6492120623588562],<br />[0.7610487341880798],<br />[0.8728854656219482]<br />]<br />}
+    end
+```
