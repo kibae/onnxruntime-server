@@ -26,6 +26,13 @@ int main(int argc, char *argv[]) {
 		Orts::onnx::session_manager manager(server.config.model_bin_getter);
 		Orts::builtin_thread_pool worker_pool(server.config.num_threads);
 
+		try {
+			server.prepare_models(manager);
+		} catch (std::exception &e) {
+			LOG(FATAL) << "Failed to prepare models: " << e.what() << std::endl;
+			return 1;
+		}
+
 		std::vector<std::shared_ptr<Orts::transport::server>> servers;
 
 		if (server.config.use_tcp) {

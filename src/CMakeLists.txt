@@ -12,6 +12,7 @@ set(SOURCE_FILES
         task/get_session.cpp
 
         onnx/session_key.cpp
+        onnx/session_key_with_option.cpp
         onnx/session.cpp
         onnx/session_manager.cpp
         onnx/value_info.cpp

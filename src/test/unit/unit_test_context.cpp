@@ -1,8 +1,8 @@
 //
 // Created by Kibae Shin on 2023/09/02.
 //
-#include "../onnxruntime_server.hpp"
-#include "test_common.hpp"
+#include "../../onnxruntime_server.hpp"
+#include "../test_common.hpp"
 
 TEST(test_onnxruntime_server_context, SimpleModelTest) {
 	Orts::onnx::session_key key("sample", "1");

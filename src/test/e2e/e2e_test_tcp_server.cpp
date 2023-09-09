@@ -2,8 +2,8 @@
 // Created by kibae on 23. 8. 17.
 //
 
-#include "../transport/tcp/tcp_server.hpp"
-#include "test_common.hpp"
+#include "../../transport/tcp/tcp_server.hpp"
+#include "../test_common.hpp"
 
 json tcp_request(short port, int16_t type, json body) {
 	boost::asio::io_context io_context;
