@@ -121,9 +121,6 @@ sudo cmake --install build --prefix /usr/local/onnxruntime-server
 - All options can be set as environment variables. This can be useful when operating in a container like Docker. But be
   careful. Command-line options are prioritized over environment variables.
 
-  <details>
-      <summary>👇 All options 👇</summary>
-
   | Option                | Environment                     | Description                                                                                                                                                                                      |
   |-----------------------|---------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
   | `--workers`           | `ONNX_SERVER_WORKERS`           | Worker thread pool size.<br/>Default: `4`                                                                                                                                                        |
@@ -138,8 +135,6 @@ sudo cmake --install build --prefix /usr/local/onnxruntime-server
   | `--log-level`         | `ONNX_SERVER_LOG_LEVEL`         | Log level(debug, info, warn, error, fatal)                                                                                                                                                      |
   | `--log-file`          | `ONNX_SERVER_LOG_FILE`          | Log file path.<br/>If not specified, logs will be printed to stdout.                                                                                                                             |
   | `--access-log-file`   | `ONNX_SERVER_ACCESS_LOG_FILE`   | Access log file path.<br/>If not specified, logs will be printed to stdout.                                                                                                                      |
-
-  </details>
 
 ----
 
@@ -172,7 +167,7 @@ sequenceDiagram
     end
     actor C as Client
     Note right of A: You have 3 models to serve.
-    A ->> SD: Put model files to<br />"/var/models/model_A/v1/model.onnx"<br />"/var/models/model_A/v2/model.onnx"<br />"/var/models/model_B/20201101/model.onnx"
+    A ->> SD: copy model files to disk.<br />"/var/models/model_A/v1/model.onnx"<br />"/var/models/model_A/v2/model.onnx"<br />"/var/models/model_B/20201101/model.onnx"
     A ->> SP: Start server with --prepare-model option
     activate SP
     Note right of A: onnxruntime-server<br />--http-port=8080<br />--model-path=/var/models<br />--prepare-model="model_A:v1(cuda=0) model_A:v2(cuda=0)"
@@ -210,7 +205,7 @@ sequenceDiagram
     end
     actor C as Client
     Note right of A: You have 3 models to serve.
-    A ->> SD: Put model files to<br />"/var/models/model_A/v1/model.onnx"<br />"/var/models/model_A/v2/model.onnx"<br />"/var/models/model_B/20201101/model.onnx"
+    A ->> SD: copy model files to disk.<br />"/var/models/model_A/v1/model.onnx"<br />"/var/models/model_A/v2/model.onnx"<br />"/var/models/model_B/20201101/model.onnx"
     A ->> SP: Start server
     Note right of A: onnxruntime-server<br />--http-port=8080<br />--model-path=/var/models
     rect rgb(100, 100, 100, 0.3)
