@@ -55,6 +55,8 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get -o Dir::Cache="${_SRC_ROOT}/.github/cache/dependencies-apt" -o Dir::Cache::archives="./" install -yq --download-only build-essential clang-11 cmake libboost-all-dev libssl-dev libgtest-dev
           sudo rm -rf .github/cache/dependencies-apt/partial .github/cache/dependencies-apt/lock
+          ls -l
+          ls -l .github/cache/dependencies-apt
 
       - name: Prepare container(apt)
         shell: bash
