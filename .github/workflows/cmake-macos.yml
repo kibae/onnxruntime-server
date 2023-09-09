@@ -1,5 +1,5 @@
 # See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-single-platform.yml
-name: CMake on Linux
+name: CMake on Mac OS
 
 on:
   push:
@@ -9,38 +9,16 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      fail-fast: false
-
-      matrix:
-        os: [ ubuntu-latest ]
-        build_type: [ Debug ]
-        c_compiler: [ gcc, clang ]
-        include:
-          - os: ubuntu-latest
-            c_compiler: gcc
-            cpp_compiler: g++
-          - os: ubuntu-latest
-            c_compiler: clang
-            cpp_compiler: clang++
+    runs-on: macos-latest
 
     steps:
       - uses: actions/checkout@v4
         with:
           lfs: false
-      - name: Prepare container(apt)
-        shell: bash
-        if: startsWith(matrix.os, 'debian') || startsWith(matrix.os, 'ubuntu')
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -yq build-essential clang-11 cmake libboost-all-dev libssl-dev libgtest-dev
-
-      - name: Prepare container(onnxruntime)
+      - name: Prepare container(homebrew)
         shell: bash
         run: |
-          ./.github/actions/download-onnxruntime-linux.sh
+          brew install cmake boost onnxruntime openssl
 
       - name: Download assets(models)
         shell: bash
