@@ -11,7 +11,12 @@ Orts::onnx::session_key::session_key(std::string model_name, std::string model_v
 	// check model_name and model_version contains ".."
 	if (this->model_name.find("..") != std::string::npos ||
 		this->model_version.find("..") != std::string::npos) {
-		throw runtime_error("Invalid model name or version");
+		throw runtime_error("Invalid model name or version. Must not contains '..'");
+	}
+
+	// check model_name contains "/"
+	if (this->model_name.find("/") != std::string::npos) {
+		throw runtime_error("Invalid model name. Must not contains '/'");
 	}
 }
 
