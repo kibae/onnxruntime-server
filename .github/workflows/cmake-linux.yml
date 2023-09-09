@@ -17,14 +17,7 @@ jobs:
       matrix:
         os: [ ubuntu-20.04, ubuntu-22.04, debian-latest ]
         build_type: [ Debug ]
-        c_compiler: [ gcc, clang ]
-        include:
-          - os: ubuntu-latest
-            c_compiler: gcc
-            cpp_compiler: g++
-          - os: ubuntu-latest
-            c_compiler: clang
-            cpp_compiler: clang++
+        compiler: [ { cpp: g++, c: gcc }, { cpp: clang++, c: clang } ]
 
     steps:
       - uses: actions/checkout@v4
