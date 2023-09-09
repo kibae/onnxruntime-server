@@ -24,7 +24,7 @@ echo
 echo "Downloading $item"
 echo
 
-wget "$item"
+wget -q "$item"
 
 sudo mkdir -p /usr/local/onnxruntime
 sudo tar vzxf "$FILENAME" -C /usr/local/onnxruntime --strip-components=1
