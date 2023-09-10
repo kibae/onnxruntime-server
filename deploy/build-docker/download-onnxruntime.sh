@@ -9,16 +9,19 @@ RAW_LIST=$(curl -s -H "Accept: application/vnd.github+json" \
   https://api.github.com/repos/microsoft/onnxruntime/releases/latest \
   | grep browser_download_url \
   | grep tgz \
-  | grep linux \
-  | grep x64 \
+  | grep $1 \
+  | grep $2 \
   | grep -v training \
-  | grep gpu \
   | awk '{print $2}' \
   | tr -d '"')
 
 item=${RAW_LIST[0]}
 
 FILENAME=$(basename "$item")
+
+echo $item
+echo $FILENAME
+exit 0
 
 echo
 echo "Downloading $item"

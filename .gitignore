@@ -12,3 +12,5 @@ venv/
 __pycache__/
 *.py[cod]
 *$py.class
+
+/deploy/build-docker/out/
