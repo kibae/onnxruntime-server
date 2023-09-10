@@ -19,10 +19,6 @@ item=${RAW_LIST[0]}
 
 FILENAME=$(basename "$item")
 
-echo $item
-echo $FILENAME
-exit 0
-
 echo
 echo "Downloading $item"
 echo

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 cd "$(dirname "$0")" || exit
+mkdir out || true
 
 VERSION=1.0.0
 
@@ -10,9 +11,11 @@ VERSION=1.0.0
 #exit 0
 
 # build docker image amd64-cuda
+rm -rf ./out/amd64-cuda || true
 docker buildx build --platform linux/amd64 -t onnxruntime:build-${VERSION}-cuda -f Dockerfile.build-amd64-cuda --load .
 docker rm temp_container || true
 docker create --name temp_container onnxruntime:build-${VERSION}-cuda
 docker cp temp_container:/app/onnxruntime-server ./out/amd64-cuda
 docker rm temp_container || true
 
+docker buildx build --platform linux/amd64 -t onnxruntime:${VERSION}-cuda -f Dockerfile.amd64-cuda --load .
