@@ -19,6 +19,7 @@
         - [Install dependencies](#install-dependencies)
     - [Compile and Install](#compile-and-install)
 - [Run the server](#run-the-server)
+- [Docker](#docker)
 - [API](#api)
 - [How to use](#how-to-use)
 
@@ -133,6 +134,35 @@ sudo cmake --install build --prefix /usr/local/onnxruntime-server
 | `--log-level`       | `ONNX_SERVER_LOG_LEVEL`       | Log level(debug, info, warn, error, fatal)                                  |
 | `--log-file`        | `ONNX_SERVER_LOG_FILE`        | Log file path.<br/>If not specified, logs will be printed to stdout.        |
 | `--access-log-file` | `ONNX_SERVER_ACCESS_LOG_FILE` | Access log file path.<br/>If not specified, logs will be printed to stdout. |
+
+----
+
+# Docker
+
+- [kibaes/onnxruntime-server](https://hub.docker.com/r/kibaes/onnxruntime-server)
+    - [`1.0.0-linux-cuda`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cuda.dockerfile)
+      amd64
+    - [`1.0.0-linux-cpu`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cpu.dockerfile)
+      amd64, arm64
+
+```shell
+DOCKER_IMAGE=kibae/onnxruntime-server:1.0.0-linux-cuda # or kibae/onnxruntime-server:1.0.0-linux-cpu	
+
+docker pull ${DOCKER_IMAGE}
+
+# simple http backend
+docker run --name onnxruntime_server_container -d --rm --gpus all \
+  -p 80:80 \
+  -v "/your_model_dir:/app/models" \
+  -v "/your_log_dir:/app/logs" \
+  -e "ONNX_SERVER_SWAGGER_URL_PATH=/api-docs" \
+  ${DOCKER_IMAGE}
+```
+
+- More information on using Docker images can be found here.
+    - https://hub.docker.com/r/kibaes/onnxruntime-server
+- [docker-compose.yml](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/docker-compose.yaml)
+  example is available in the repository.
 
 ----
 

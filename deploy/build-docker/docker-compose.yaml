@@ -28,7 +28,7 @@ services:
 
   onnxruntime_server_advanced:
     # After the docker container is up, you can use the REST API (http://localhost, https://localhost).
-    # API documentation will be available at http://localhost:8080/api-docs.
+    # API documentation will be available at http://localhost/api-docs.
     image: kibaes/onnxruntime-server:1.0.0-linux-cuda
     ports:
       - "80:80" # for http backend
