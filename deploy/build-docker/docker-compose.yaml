@@ -1,0 +1,66 @@
+services:
+  # Available environment variables can be found at
+  # https://github.com/kibae/onnxruntime-server#run-the-server
+
+  onnxruntime_server_simple:
+    # After the docker container is up, you can use the REST API (http://localhost:8080).
+    # API documentation will be available at http://localhost:8080/api-docs.
+    image: kibaes/onnxruntime-server:1.0.0-linux-cuda
+    ports:
+      - "8080:80" # for http backend
+    volumes:
+      # for model files
+      # https://github.com/kibae/onnxruntime-server#run-the-server
+      - /your_model_dir:/app/models
+
+      # for log files
+      - /your_log_dir:/app/logs
+    environment:
+      # for swagger(optional)
+      - ONNX_SERVER_SWAGGER_URL_PATH=/api-docs
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [ gpu ]
+
+  onnxruntime_server_advanced:
+    # After the docker container is up, you can use the REST API (http://localhost, https://localhost).
+    # API documentation will be available at http://localhost:8080/api-docs.
+    image: kibaes/onnxruntime-server:1.0.0-linux-cuda
+    ports:
+      - "80:80" # for http backend
+      - "443:443" # for https backend
+      - "8001:8001" # for tcp backend. binary protocol
+    volumes:
+      # for model files
+      # https://github.com/kibae/onnxruntime-server#run-the-server
+      - /your_model_dir:/app/models
+
+      # for log files
+      - /your_log_dir:/app/logs
+
+      # for cert files
+      - /your_cert_dir:/app/certs
+    environment:
+      # for https backend
+      - ONNX_SERVER_HTTPS_PORT=443
+
+      # https backend needs cert, key files
+      - ONNX_SERVER_HTTPS_CERT=/app/certs/cert.pem
+      - ONNX_SERVER_HTTPS_KEY=/app/certs/key.pem
+
+      # for onnx session preparation
+      - ONNX_SERVER_PREPARE_MODEL="model1:v1(cuda=true) model1:v2(cuda=0) model2:v2"
+
+      # for swagger(optional)
+      - ONNX_SERVER_SWAGGER_URL_PATH=/api-docs
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [ gpu ]

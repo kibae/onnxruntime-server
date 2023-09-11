@@ -21,7 +21,7 @@ docker stop docker_test || true
 docker rm docker_test || true
 docker run --name docker_test -d -p 8080:80 --gpus all -e "ONNX_SERVER_SWAGGER_URL_PATH=/api-docs" ${IMAGE_NAME} || exit 1
 sleep 1;
-docker cp ../../test/fixture/sample docker_test:/app/onnxruntime-server/models/ || exit 1
+docker cp ../../test/fixture/sample docker_test:/app/models/ || exit 1
 
 if [[ -v ${IS_CUDA} ]]; then
   curl -sX 'POST' \

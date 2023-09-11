@@ -86,6 +86,16 @@ sudo cmake --install build --prefix /usr/local/onnxruntime-server
 # Run the server
 
 - **You must enter the path option(`--model-dir`) where the models are located.**
+    - The onnx model files must be located in the following path:
+      `${model_dir}/${model_name}/${model_version}/model.onnx`
+
+| Files in `--model-dir`                | Create session request body                         | Get/Execute session API URL path<br />(after created) |
+|---------------------------------------|-----------------------------------------------------|-------------------------------------------------------|
+| `model_name/model_version/model.onnx` | `{"model":"model_name", "version":"model_version"}` | `/api/sessions/model_name/model_version`              |
+| `sample/v1/model.onnx`                | `{"model":"sample", "version":"v1"}`                | `/api/sessions/sample/v1`                             |
+| `sample/v2/model.onnx`                | `{"model":"sample", "version":"v2"}`                | `/api/sessions/sample/v2`                             |
+| `other/20200101/model.onnx`           | `{"model":"other", "version":"20200101"}`           | `/api/sessions/other/20200101`                        |
+
 - **You need to enable one of the following backends: TCP, HTTP, or HTTPS.**
     - If you want to use TCP, you must specify the `--tcp-port` option.
     - If you want to use HTTP, you must specify the `--http-port` option.
@@ -96,6 +106,8 @@ sudo cmake --install build --prefix /usr/local/onnxruntime-server
     - Normally, command-line options are prioritized over environment variables, but if
       the `ONNX_SERVER_CONFIG_PRIORITY=env` environment variable exists, environment variables have higher priority.
       Within a Docker image, environment variables have higher priority.
+
+## Options
 
 | Option            | Environment                 | Description                                                                                                                                                                                                                                                                                                                                     |
 |-------------------|-----------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|

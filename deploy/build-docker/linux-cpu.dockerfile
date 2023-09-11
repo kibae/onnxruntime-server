@@ -22,12 +22,12 @@ RUN cmake --install build --prefix /app/onnxruntime-server
 
 # target
 FROM ubuntu:latest AS target
-COPY --from=builder /app/onnxruntime-server /app/onnxruntime-server
+COPY --from=builder /app/onnxruntime-server /app
 COPY --from=builder /usr/local/onnxruntime /usr/local/onnxruntime
 
-WORKDIR /app/onnxruntime-server
-RUN mkdir -p models logs
+WORKDIR /app
+RUN mkdir -p models logs certs
 
 ENV ONNX_SERVER_CONFIG_PRIORITY=env
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/onnxruntime/lib
-ENTRYPOINT ["/app/onnxruntime-server/bin/onnxruntime_server", "--model-dir", "models", "--log-file", "logs/app.log", "--access-log-file", "logs/access.log", "--tcp-port", "6432", "--http-port", "80"]
+ENTRYPOINT ["/app/bin/onnxruntime_server", "--model-dir", "models", "--log-file", "logs/app.log", "--access-log-file", "logs/access.log", "--tcp-port", "6432", "--http-port", "80"]
