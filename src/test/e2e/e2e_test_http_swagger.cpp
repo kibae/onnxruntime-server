@@ -45,10 +45,8 @@ TEST(test_onnxruntime_server_http_swagger, HttpSwaggerTest) {
 		TIME_MEASURE_START
 		auto res = http_request(boost::beast::http::verb::get, "/swagger", server.port(), "");
 		TIME_MEASURE_STOP
-		ASSERT_EQ(res.result(), boost::beast::http::status::ok);
-
-		auto body = boost::beast::buffers_to_string(res.body().data());
-		ASSERT_GT(body.length(), 300);
+		ASSERT_EQ(res.result(), boost::beast::http::status::found);
+		ASSERT_EQ(res.at("location"), "/swagger/");
 	}
 
 	{ // Get swagger index.html
