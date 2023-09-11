@@ -1,21 +1,32 @@
 #!/usr/bin/env bash
 
 cd "$(dirname "$0")" || exit
-mkdir out || true
+source ./VERSION
 
-VERSION=1.0.0
+cd ../../
 
-# build docker image amd64, arm64, armv7l, armv6l
-#docker buildx build --platform linux/amd64,linux/arm64 -t onnxruntime:${VERSION} -f Dockerfile.cpu .
+#   ______ .______    __    __
+#  /      ||   _  \  |  |  |  |
+# |  ,----'|  |_)  | |  |  |  |
+# |  |     |   ___/  |  |  |  |
+# |  `----.|  |      |  `--'  |
+#  \______|| _|       \______/
+POSTFIX=linux-cpu
+IMAGE_NAME=${IMAGE_PREFIX}:${VERSION}-${POSTFIX}
 
-#exit 0
+docker buildx build --platform linux/amd64 -t ${IMAGE_NAME} -f deploy/build-docker/${POSTFIX}.dockerfile --load . || exit 1
+./deploy/build-docker/docker-image-test.sh ${IMAGE_NAME} || exit 1
+docker buildx build --platform linux/amd64,linux/arm64 -t ${IMAGE_NAME} -f deploy/build-docker/${POSTFIX}.dockerfile --push . || exit 1
 
-# build docker image amd64-cuda
-rm -rf ./out/amd64-cuda || true
-docker buildx build --platform linux/amd64 -t onnxruntime:build-${VERSION}-cuda -f Dockerfile.build-amd64-cuda --load .
-docker rm temp_container || true
-docker create --name temp_container onnxruntime:build-${VERSION}-cuda
-docker cp temp_container:/app/onnxruntime-server ./out/amd64-cuda
-docker rm temp_container || true
 
-docker buildx build --platform linux/amd64 -t onnxruntime:${VERSION}-cuda -f Dockerfile.amd64-cuda --load .
+#   ______  __    __   _______       ___         ___   ___    __    _  _
+#  /      ||  |  |  | |       \     /   \        \  \ /  /   / /   | || |
+# |  ,----'|  |  |  | |  .--.  |   /  ^  \   _____\  V  /   / /_   | || |_
+# |  |     |  |  |  | |  |  |  |  /  /_\  \ |______>   <   | '_ \  |__   _|
+# |  `----.|  `--'  | |  '--'  | /  _____  \      /  .  \  | (_) |    | |
+#  \______| \______/  |_______/ /__/     \__\    /__/ \__\  \___/     |_|
+POSTFIX=linux-cuda
+IMAGE_NAME=${IMAGE_PREFIX}:${VERSION}-${POSTFIX}
+docker buildx build --platform linux/amd64 -t ${IMAGE_NAME} -f deploy/build-docker/${POSTFIX}.dockerfile --load . || exit 1
+./deploy/build-docker/docker-image-test.sh ${IMAGE_NAME} 1 || exit 1
+docker buildx build --platform linux/amd64 -t ${IMAGE_NAME} -f deploy/build-docker/${POSTFIX}.dockerfile --push . || exit 1

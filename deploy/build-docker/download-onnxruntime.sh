@@ -13,7 +13,8 @@ RAW_LIST=$(curl -s -H "Accept: application/vnd.github+json" \
   | grep $2 \
   | grep -v training \
   | awk '{print $2}' \
-  | tr -d '"')
+  | tr -d '"' \
+  | head -n 1)
 
 item=${RAW_LIST[0]}
 

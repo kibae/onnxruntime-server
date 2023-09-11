@@ -102,8 +102,17 @@ int onnxruntime_server::standalone::init_config(int argc, char **argv) {
 		};
 
 		po::variables_map vm;
-		po::store(po::parse_environment(po_desc, name_mapper), vm);
-		po::store(po::parse_command_line(argc, argv, po_desc), vm);
+		auto config_prio_env = std::getenv("ONNX_SERVER_CONFIG_PRIORITY");
+		std::string config_prio(config_prio_env ? config_prio_env : "");
+		if (config_prio.length() > 3 && config_prio.substr(0, 3) == "env") {
+			// env > cmd
+			po::store(po::parse_command_line(argc, argv, po_desc), vm);
+			po::store(po::parse_environment(po_desc, name_mapper), vm);
+		} else {
+			// cmd > env
+			po::store(po::parse_environment(po_desc, name_mapper), vm);
+			po::store(po::parse_command_line(argc, argv, po_desc), vm);
+		}
 		po::notify(vm);
 
 		if (vm.count("help")) {

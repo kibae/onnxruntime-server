@@ -93,7 +93,9 @@ sudo cmake --install build --prefix /usr/local/onnxruntime-server
     - If you want to use Swagger, you must specify the `--swagger-url-path` option.
 - Use the `-h`, `--help` option to see a full list of options.
 - **All options can be set as environment variables.** This can be useful when operating in a container like Docker.
-    - But be careful. Command-line options are prioritized over environment variables.
+    - Normally, command-line options are prioritized over environment variables, but if
+      the `ONNX_SERVER_CONFIG_PRIORITY=env` environment variable exists, environment variables have higher priority.
+      Within a Docker image, environment variables have higher priority.
 
 | Option            | Environment                 | Description                                                                                                                                                                                                                                                                                                                                     |
 |-------------------|-----------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -161,7 +163,7 @@ sequenceDiagram
     A ->> SD: copy model files to disk.<br />"/var/models/model_A/v1/model.onnx"<br />"/var/models/model_A/v2/model.onnx"<br />"/var/models/model_B/20201101/model.onnx"
     A ->> SP: Start server with --prepare-model option
     activate SP
-    Note right of A: onnxruntime-server<br />--http-port=8080<br />--model-path=/var/models<br />--prepare-model="model_A:v1(cuda=0) model_A:v2(cuda=0)"
+    Note right of A: onnxruntime_server<br />--http-port=8080<br />--model-path=/var/models<br />--prepare-model="model_A:v1(cuda=0) model_A:v2(cuda=0)"
     SP -->> SD: Load model
     Note over SD, SP: Load model from<br />"/var/models/model_A/v1/model.onnx"
     SD -->> SP: Model binary
@@ -199,7 +201,7 @@ sequenceDiagram
     Note right of A: You have 3 models to serve.
     A ->> SD: copy model files to disk.<br />"/var/models/model_A/v1/model.onnx"<br />"/var/models/model_A/v2/model.onnx"<br />"/var/models/model_B/20201101/model.onnx"
     A ->> SP: Start server
-    Note right of A: onnxruntime-server<br />--http-port=8080<br />--model-path=/var/models
+    Note right of A: onnxruntime_server<br />--http-port=8080<br />--model-path=/var/models
     rect rgb(100, 100, 100, 0.3)
         Note over SD, C: Create Session
         C ->> SP: Create session request
