@@ -55,7 +55,7 @@ endif ()
 find_package(Boost COMPONENTS serialization system filesystem program_options thread REQUIRED)
 
 # openssl
-if (NOT NO_OPENSSL)
+if (NOT NO_ONNXRUNTIME_SERVER_OPENSSL)
     #set(OPENSSL_USE_STATIC_LIBS ON)
     find_package(OpenSSL)
     if (OPENSSL_FOUND)
@@ -77,10 +77,12 @@ target_link_libraries(${PROJECT_NAME}_static ${Boost_LIBRARIES} ${ONNX_RUNTIME_L
 add_subdirectory(standalone)
 
 # test
-find_package(GTest)
-if (GTEST_FOUND AND NOT CMAKE_BUILD_TYPE STREQUAL "Release")
-    enable_testing()
-    add_subdirectory(test)
+if (NOT NO_ONNXRUNTIME_SERVER_TEST)
+    find_package(GTest)
+    if (GTEST_FOUND AND NOT CMAKE_BUILD_TYPE STREQUAL "Release")
+        enable_testing()
+        add_subdirectory(test)
+    endif ()
 endif ()
 
 # install
