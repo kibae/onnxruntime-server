@@ -11,7 +11,7 @@ onnxruntime_server::transport::tcp::tcp_session::~tcp_session() {
 	try {
 		socket.close();
 	} catch (std::exception &e) {
-		LOG(WARNING) << "transport::tcp::tcp_session::~tcp_session: " << e.what() << std::endl;
+		PLOG(L_WARNING) << "transport::tcp::tcp_session::~tcp_session: " << e.what() << std::endl;
 	}
 }
 
@@ -44,9 +44,9 @@ void Orts::transport::tcp::tcp_session::do_read() {
 
 				// check buffer size
 				if (header.length > MAX_BUFFER_LIMIT) {
-					LOG(WARNING) << self->get_remote_endpoint()
-								 << " transport::session::do_read: Buffer size is too large: " << header.length
-								 << std::endl;
+					PLOG(L_WARNING) << self->get_remote_endpoint()
+									<< " transport::session::do_read: Buffer size is too large: " << header.length
+									<< std::endl;
 					self->close();
 					return;
 				}
@@ -82,8 +82,8 @@ void Orts::transport::tcp::tcp_session::do_task(Orts::transport::tcp::protocol_h
 			);
 			auto result = task->run();
 
-			LOG(INFO, "ACCESS") << self->get_remote_endpoint() << " task: " << task->name()
-								<< " duration: " << self->request_time.get_duration() << std::endl;
+			PLOG(L_INFO, "ACCESS") << self->get_remote_endpoint() << " task: " << task->name()
+								   << " duration: " << self->request_time.get_duration() << std::endl;
 
 			auto res_json = result.dump();
 			struct protocol_header res_header = {0, 0};
@@ -95,10 +95,10 @@ void Orts::transport::tcp::tcp_session::do_task(Orts::transport::tcp::protocol_h
 			response.append(res_json);
 			self->do_write(response);
 		} catch (Orts::exception &e) {
-			LOG(WARNING) << self->get_remote_endpoint() << " transport::session::do_task: " << e.what() << std::endl;
+			PLOG(L_WARNING) << self->get_remote_endpoint() << " transport::session::do_task: " << e.what() << std::endl;
 			self->send_error(e.type(), e.what());
 		} catch (std::exception &e) {
-			LOG(WARNING) << self->get_remote_endpoint() << " transport::session::do_task: " << e.what() << std::endl;
+			PLOG(L_WARNING) << self->get_remote_endpoint() << " transport::session::do_task: " << e.what() << std::endl;
 			self->send_error("runtime_error", e.what());
 		}
 	});

@@ -52,13 +52,13 @@
 
 #ifdef _WIN32
 #include <Windows.h>
-// ERROR macro is defined in Windows header
-// To avoid conflict between these macro and declaration of ERROR / DEBUG in SEVERITY enum
+// L_ERROR macro is defined in Windows header
+// To avoid conflict between these macro and declaration of L_ERROR / L_DEBUG in SEVERITY enum
 // We save macro and undef it
-#pragma push_macro("ERROR")
-#pragma push_macro("DEBUG")
-#undef ERROR
-#undef DEBUG
+#pragma push_macro("L_ERROR")
+#pragma push_macro("L_DEBUG")
+#undef L_ERROR
+#undef L_DEBUG
 #endif
 
 #ifdef HAS_APPLE_UNIFIED_LOG_
@@ -97,10 +97,10 @@
 	AIXLOG_INTERNAL__VAR_PARM(__VA_ARGS__, AIXLOG_INTERNAL__TWO_COLOR, AIXLOG_INTERNAL__ONE_COLOR, )
 
 /// External logger macros
-// usage: LOG(SEVERITY) or LOG(SEVERITY, TAG)
-// e.g.: LOG(NOTICE) or LOG(NOTICE, "my tag")
+// usage: PLOG(SEVERITY) or PLOG(SEVERITY, TAG)
+// e.g.: PLOG(L_NOTICE) or PLOG(L_NOTICE, "my tag")
 #ifndef WIN32
-#define LOG(...) AIXLOG_INTERNAL__LOG_MACRO_CHOOSER(__VA_ARGS__)(__VA_ARGS__) << TIMESTAMP << FUNC
+#define PLOG(...) AIXLOG_INTERNAL__LOG_MACRO_CHOOSER(__VA_ARGS__)(__VA_ARGS__) << TIMESTAMP << FUNC
 #endif
 
 // usage: COLOR(TEXT_COLOR, BACKGROUND_COLOR) or COLOR(TEXT_COLOR)
@@ -112,7 +112,7 @@
 #define COND AixLog::Conditional
 #define TIMESTAMP AixLog::Timestamp(std::chrono::system_clock::now())
 
-// stijnvdb: sorry! :) LOG(SEV, "tag") was not working for Windows and I couldn't figure out how to fix it for windows
+// stijnvdb: sorry! :) PLOG(SEV, "tag") was not working for Windows and I couldn't figure out how to fix it for windows
 // without potentially breaking everything else...
 // https://stackoverflow.com/questions/3046889/optional-parameters-with-c-macros (Jason Deng)
 #ifdef WIN32
@@ -124,14 +124,14 @@
 #define FUNC_RECOMPOSER(argsWithParentheses) FUNC_CHOOSER argsWithParentheses
 #define CHOOSE_FROM_ARG_COUNT(...) FUNC_RECOMPOSER((__VA_ARGS__, LOG_2, LOG_1, FUNC_, ...))
 #define MACRO_CHOOSER(...) CHOOSE_FROM_ARG_COUNT(__VA_ARGS__())
-#define LOG(...) MACRO_CHOOSER(__VA_ARGS__)(__VA_ARGS__) << TIMESTAMP << FUNC
+#define PLOG(...) MACRO_CHOOSER(__VA_ARGS__)(__VA_ARGS__) << TIMESTAMP << FUNC
 #endif
 
 /**
  * @brief
  * Severity of the log message
  */
-enum SEVERITY { TRACE = 0, DEBUG = 1, INFO = 2, NOTICE = 3, WARNING = 4, ERROR = 5, FATAL = 6 };
+enum SEVERITY { L_TRACE = 0, L_DEBUG = 1, L_INFO = 2, L_NOTICE = 3, L_WARNING = 4, L_ERROR = 5, L_FATAL = 6 };
 
 namespace AixLog {
 
@@ -147,23 +147,24 @@ namespace AixLog {
 		//
 		// Aixlog      Boost       Syslog      Android     macOS       EventLog      Syslog Desc
 		//
-		// trace       trace       DEBUG       VERBOSE     DEBUG       INFORMATION
-		// debug       debug       DEBUG       DEBUG       DEBUG       INFORMATION   debug-level message
-		// info        info        INFO        INFO        INFO        SUCCESS       informational message
-		// notice                  NOTICE      INFO        INFO        SUCCESS       normal, but significant, condition
-		// warning     warning     WARNING     WARN        DEFAULT     WARNING       warning conditions
-		// error       error       ERROR       ERROR       ERROR       ERROR         error conditions
-		// fatal       fatal       CRIT        FATAL       FAULT       ERROR         critical conditions
+		// trace       trace       L_DEBUG       VERBOSE     L_DEBUG       INFORMATION
+		// debug       debug       L_DEBUG       L_DEBUG       L_DEBUG       INFORMATION   debug-level message
+		// info        info        L_INFO        L_INFO        L_INFO        SUCCESS       informational message
+		// notice                  L_NOTICE      L_INFO        L_INFO        SUCCESS       normal, but significant,
+		// condition
+		// warning     warning     L_WARNING     WARN        DEFAULT     L_WARNING       warning conditions
+		// error       error       L_ERROR       L_ERROR       L_ERROR       L_ERROR         error conditions
+		// fatal       fatal       CRIT        L_FATAL       FAULT       L_ERROR         critical conditions
 		//                         ALERT                                             action must be taken immediately
 		//                         EMERG                                             system is unusable
 
-		trace = SEVERITY::TRACE,
-		debug = SEVERITY::DEBUG,
-		info = SEVERITY::INFO,
-		notice = SEVERITY::NOTICE,
-		warning = SEVERITY::WARNING,
-		error = SEVERITY::ERROR,
-		fatal = SEVERITY::FATAL
+		trace = SEVERITY::L_TRACE,
+		debug = SEVERITY::L_DEBUG,
+		info = SEVERITY::L_INFO,
+		notice = SEVERITY::L_NOTICE,
+		warning = SEVERITY::L_WARNING,
+		error = SEVERITY::L_ERROR,
+		fatal = SEVERITY::L_FATAL
 	};
 
 	static Severity to_severity(std::string severity, Severity def = Severity::info) {
@@ -515,7 +516,7 @@ namespace AixLog {
 			return instance_;
 		}
 
-		/// Without "init" every LOG(X) will simply go to clog
+		/// Without "init" every PLOG(X) will simply go to clog
 		static void init(const std::vector<log_sink_ptr> log_sinks = {}) {
 			Log::instance().log_sinks_.clear();
 
@@ -1109,9 +1110,9 @@ namespace AixLog {
 } // namespace AixLog
 
 #ifdef _WIN32
-// We restore the ERROR Windows macro
-#pragma pop_macro("ERROR")
-#pragma pop_macro("DEBUG")
+// We restore the L_ERROR Windows macro
+#pragma pop_macro("L_ERROR")
+#pragma pop_macro("L_DEBUG")
 #endif
 
 #endif // AIX_LOG_HPP
