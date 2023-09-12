@@ -55,11 +55,13 @@ endif ()
 find_package(Boost COMPONENTS serialization system filesystem program_options thread REQUIRED)
 
 # openssl
-#set(OPENSSL_USE_STATIC_LIBS ON)
-find_package(OpenSSL)
-if (OPENSSL_FOUND)
-    add_definitions(-DHAS_OPENSSL)
-    set(SOURCE_FILES ${SOURCE_FILES} transport/http/https_server.cpp transport/http/https_session.cpp)
+if (NOT NO_OPENSSL)
+    #set(OPENSSL_USE_STATIC_LIBS ON)
+    find_package(OpenSSL)
+    if (OPENSSL_FOUND)
+        add_definitions(-DHAS_OPENSSL)
+        set(SOURCE_FILES ${SOURCE_FILES} transport/http/https_server.cpp transport/http/https_session.cpp)
+    endif ()
 endif ()
 
 
