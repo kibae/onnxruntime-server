@@ -30,7 +30,7 @@ set(SOURCE_FILES
         transport/http/swagger/swagger_openapi_yaml.cpp
 )
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../cmake")
 
 # cuda, onnxruntime
 find_package(CUDA)
