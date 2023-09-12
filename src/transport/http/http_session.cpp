@@ -12,7 +12,7 @@ onnxruntime_server::transport::http::http_session::~http_session() {
 	try {
 		stream.close();
 	} catch (std::exception &e) {
-		LOG(WARNING) << "transport::http::http_session::~http_session: " << e.what() << std::endl;
+		PLOG(L_WARNING) << "transport::http::http_session::~http_session: " << e.what() << std::endl;
 	}
 }
 
@@ -41,8 +41,8 @@ void onnxruntime_server::transport::http::http_session::on_read(beast::error_cod
 		return close();
 
 	if (ec) {
-		LOG(WARNING) << get_remote_endpoint() << " transport::http::http_session::do_read: " << ec.message()
-					 << std::endl;
+		PLOG(L_WARNING) << get_remote_endpoint() << " transport::http::http_session::do_read: " << ec.message()
+						<< std::endl;
 		return close();
 	}
 
@@ -55,16 +55,16 @@ void onnxruntime_server::transport::http::http_session::on_read(beast::error_cod
 void onnxruntime_server::transport::http::http_session::do_write(
 	std::shared_ptr<beast::http::response<beast::http::string_body>> msg
 ) {
-	LOG(INFO, "ACCESS") << get_remote_endpoint() << " task: " << req.method_string() << " " << req.target()
-						<< " status: " << msg->result_int() << " duration: " << request_time.get_duration()
-						<< std::endl;
+	PLOG(L_INFO, "ACCESS") << get_remote_endpoint() << " task: " << req.method_string() << " " << req.target()
+						   << " status: " << msg->result_int() << " duration: " << request_time.get_duration()
+						   << std::endl;
 
 	beast::http::async_write(
 		stream, *msg,
 		[self = shared_from_this(), msg](beast::error_code ec, std::size_t bytes_transferred) {
 			if (ec) {
-				LOG(WARNING) << self->get_remote_endpoint()
-							 << " transport::http::http_session_base::do_write: " << ec.message() << std::endl;
+				PLOG(L_WARNING) << self->get_remote_endpoint()
+								<< " transport::http::http_session_base::do_write: " << ec.message() << std::endl;
 				return self->close();
 			}
 

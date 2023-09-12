@@ -71,7 +71,7 @@ void Orts::onnx::session::init() {
 	for (auto &name : _outputNames)
 		outputNames.push_back(name.c_str());
 
-	LOG(DEBUG) << "Session created: " << key.model_name << "/" << key.model_version << std::endl;
+	PLOG(L_DEBUG) << "Session created: " << key.model_name << "/" << key.model_version << std::endl;
 }
 
 Orts::onnx::session::~session() {

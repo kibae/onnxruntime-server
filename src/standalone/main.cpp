@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
 		try {
 			server.prepare_models(manager);
 		} catch (std::exception &e) {
-			LOG(FATAL) << "Failed to prepare models: " << e.what() << std::endl;
+			PLOG(L_FATAL) << "Failed to prepare models: " << e.what() << std::endl;
 			return 1;
 		}
 
@@ -39,14 +39,14 @@ int main(int argc, char *argv[]) {
 			servers.emplace_back(
 				std::make_shared<Orts::transport::tcp::tcp_server>(io_context, server.config, &manager, &worker_pool)
 			);
-			LOG(INFO) << "TCP Server ready on port: " << server.config.tcp_port << std::endl;
+			PLOG(L_INFO) << "TCP Server ready on port: " << server.config.tcp_port << std::endl;
 		}
 
 		if (server.config.use_http) {
 			servers.emplace_back(
 				std::make_shared<Orts::transport::http::http_server>(io_context, server.config, &manager, &worker_pool)
 			);
-			LOG(INFO) << "HTTP Server ready on port: " << server.config.http_port << std::endl;
+			PLOG(L_INFO) << "HTTP Server ready on port: " << server.config.http_port << std::endl;
 		}
 
 #ifdef HAS_OPENSSL
@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
 			servers.emplace_back(
 				std::make_shared<Orts::transport::http::https_server>(io_context, server.config, &manager, &worker_pool)
 			);
-			LOG(INFO) << "HTTPS Server ready on port: " << server.config.https_port << std::endl;
+			PLOG(L_INFO) << "HTTPS Server ready on port: " << server.config.https_port << std::endl;
 		}
 #endif
 
@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
 		servers.clear();
 	}
 
-	LOG(INFO) << "Terminated" << std::endl;
+	PLOG(L_INFO) << "Terminated" << std::endl;
 
 	return 0;
 }

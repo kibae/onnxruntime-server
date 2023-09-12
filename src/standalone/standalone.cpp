@@ -281,5 +281,5 @@ void onnxruntime_server::standalone::print_config() {
 	config_json["log"]["file"] = config.log_file;
 	config_json["log"]["access_file"] = config.access_log_file;
 
-	LOG(INFO) << "Config values:\n" << config_json.dump(2) << std::endl;
+	PLOG(L_INFO) << "Config values:\n" << config_json.dump(2) << std::endl;
 }
