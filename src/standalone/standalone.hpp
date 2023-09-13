@@ -38,7 +38,7 @@ class SinkCoutWithFilter : public AixLog::SinkCout {
   public:
 	SinkCoutWithFilter(
 		const AixLog::Filter &allow, const AixLog::Filter &deny,
-		const std::string &format = "%Y-%m-%d %H-%M-%S.#ms [#severity] (#tag_func)"
+		const std::string &format = "%Y-%m-%d %H:%M:%S.#ms [#severity] (#tag_func)"
 	)
 		: SinkCout(AixLog::Filter(), format), _allow(allow), _deny(deny) {
 	}
@@ -56,7 +56,7 @@ class SinkFileWithFilter : public AixLog::SinkFile {
   public:
 	SinkFileWithFilter(
 		const AixLog::Filter &allow, const AixLog::Filter &deny, const std::string &filename,
-		const std::string &format = "%Y-%m-%d %H-%M-%S.#ms [#severity] (#tag_func)"
+		const std::string &format = "%Y-%m-%d %H:%M:%S.#ms [#severity] (#tag_func)"
 	)
 		: SinkFile(AixLog::Filter(), filename, format), _allow(allow), _deny(deny) {
 	}
