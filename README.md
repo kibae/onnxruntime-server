@@ -6,9 +6,16 @@
 
 - [ONNX: Open Neural Network Exchange](https://onnxruntime.ai/)
 - **The ONNX Runtime Server is a server that provides TCP and HTTP/HTTPS REST APIs for ONNX inference.**
-- This project is part of the pg_onnx project. pg_onnx is an extension that allows you to perform inference using data
-  within PostgreSQL.
+- ONNX Runtime Server aims to provide simple, high-performance ML inference and a good developer experience.
+- If you have exported ML models trained in various environments as ONNX files, you can provide APIs without writing additional code or metadata.
+  - Provide inference API without writing additional code. [Just place the files in a directory structure.](#run-the-server)
+  - You can choose whether to use CPU or CUDA hardware acceleration for each model.
+  - Provides TCP, HTTP/HTTPS REST APIs.
+  - Analyze the input/output of ONNX models to provide shape information for your collaborators.
+  - Built-in Swagger API documentation makes it easy for collaborators to test ML models through the API. ([API example](https://kibae.github.io/onnxruntime-server/swagger/))
+  - [Ready-to-run Docker images.](#docker) No build required.
 
+Translated with www.DeepL.com/Translator (free version)
 ----
 
 <!-- TOC -->
