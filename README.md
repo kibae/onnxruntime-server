@@ -4,7 +4,8 @@
 [![CMake on MacOS](https://github.com/kibae/onnxruntime-server/actions/workflows/cmake-macos.yml/badge.svg)](https://github.com/kibae/onnxruntime-server/actions/workflows/cmake-macos.yml)
 [![License](https://img.shields.io/github/license/kibae/onnxruntime-server)](https://github.com/kibae/onnxruntime-server/blob/main/LICENSE)
 
-- [ONNX: Open Neural Network Exchange](https://onnxruntime.ai/)
+- [ONNX: Open Neural Network Exchange](https://onnx.ai/)
+- [ONNX Runtime](https://onnxruntime.ai/)
 - **The ONNX Runtime Server is a server that provides TCP and HTTP/HTTPS REST APIs for ONNX inference.**
 - ONNX Runtime Server aims to provide simple, high-performance ML inference and a good developer experience.
 - If you have exported ML models trained in various environments as ONNX files, you can provide APIs without writing additional code or metadata.
@@ -15,7 +16,6 @@
   - Built-in Swagger API documentation makes it easy for collaborators to test ML models through the API. ([API example](https://kibae.github.io/onnxruntime-server/swagger/))
   - [Ready-to-run Docker images.](#docker) No build required.
 
-Translated with www.DeepL.com/Translator (free version)
 ----
 
 <!-- TOC -->
