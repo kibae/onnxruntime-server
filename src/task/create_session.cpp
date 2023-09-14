@@ -6,6 +6,10 @@
 
 #include "../onnxruntime_server.hpp"
 
+#include <boost/beast/core/detail/base64.hpp>
+
+namespace detail = boost::beast::detail;
+
 std::string onnxruntime_server::task::create_session::name() {
 	return "CREATE_SESSION";
 }
@@ -25,11 +29,21 @@ Orts::task::create_session::create_session(
 
 json Orts::task::create_session::run() {
 	Orts::onnx::session *session = nullptr;
-	if (data.is_binary()) {
-		auto binary_data = data.get_binary();
-		std::string bin(binary_data.begin(), binary_data.end());
-		// TODO: check convert
-		session = onnx_session_manager->create_session(model_name, model_version, bin, option);
+	std::string model_bin;
+	if (!data.is_null() && !data.empty() && data.is_object() && data.contains("bytes")) {
+		if (data["enc"] == "base64") {
+			auto bytes = data["bytes"].get<std::string>();
+			model_bin.resize(detail::base64::decoded_size(bytes.size()));
+			auto decoded_size = detail::base64::decode(model_bin.data(), bytes.data(), bytes.size());
+			model_bin.resize(decoded_size.first);
+		} else {
+			auto binary_data = data["bytes"].get_binary();
+			model_bin.append(binary_data.begin(), binary_data.end());
+		}
+	}
+
+	if (!model_bin.empty()) {
+		session = onnx_session_manager->create_session(model_name, model_version, model_bin, option);
 	} else {
 		session = onnx_session_manager->create_session(model_name, model_version, option);
 	}

@@ -45,7 +45,7 @@ Orts::onnx::session *Orts::onnx::session_manager::create_session(
 		if (current_session != nullptr)
 			throw conflict_error("session already exists");
 
-		auto session = new onnx::session(key, bin.data(), bin.length(), option);
+		auto session = new onnx::session(key, bin.data(), bin.size(), option);
 		sessions.emplace(key, session);
 		return session;
 	}
