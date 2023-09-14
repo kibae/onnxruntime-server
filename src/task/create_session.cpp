@@ -25,10 +25,15 @@ Orts::task::create_session::create_session(
 
 json Orts::task::create_session::run() {
 	Orts::onnx::session *session = nullptr;
+
+	// binary convert
+	if (!data.is_null() && !data.empty() && data.is_object() && data.contains("bytes")) {
+		data = json::binary(data["bytes"]);
+	}
+
 	if (data.is_binary()) {
 		auto binary_data = data.get_binary();
 		std::string bin(binary_data.begin(), binary_data.end());
-		// TODO: check convert
 		session = onnx_session_manager->create_session(model_name, model_version, bin, option);
 	} else {
 		session = onnx_session_manager->create_session(model_name, model_version, option);
