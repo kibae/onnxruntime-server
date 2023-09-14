@@ -10,8 +10,8 @@
 - If you have exported ML models trained in various environments as ONNX files, you can provide APIs without writing additional code or metadata.
     - Provide inference API without writing additional code. [Just place the ONNX files into the directory structure.](#run-the-server)
     - Each ONNX session, you can choose to use CPU or CUDA.
-      [    - Analyze the input/output of ONNX models to provide type/shape information for your collaborators.
-    - Built-in Swagger API documentation makes it easy for collaborators to test ML models through ]()the API. ([API example](https://kibae.github.io/onnxruntime-server/swagger/))
+    - Analyze the input/output of ONNX models to provide type/shape information for your collaborators.
+    - Built-in Swagger API documentation makes it easy for collaborators to test ML models through the API. ([API example](https://kibae.github.io/onnxruntime-server/swagger/))
     - [Ready-to-run Docker images.](#docker) No build required.
 
 ----
