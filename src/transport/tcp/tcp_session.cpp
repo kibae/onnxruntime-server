@@ -19,8 +19,7 @@ void onnxruntime_server::transport::tcp::tcp_session::close() {
 	server->remove_session(shared_from_this());
 }
 
-#define MAX_LENGTH 1024
-#define MAX_BUFFER_LIMIT (1024 * 1024 * 100)
+#define MAX_LENGTH 1024 * 16
 
 void Orts::transport::tcp::tcp_session::do_read() {
 	if (_remote_endpoint.empty())
@@ -42,6 +41,7 @@ void Orts::transport::tcp::tcp_session::do_read() {
 				header.type = htons(header.type);
 				header.length = htonl(header.length);
 
+				/*
 				// check buffer size
 				if (header.length > MAX_BUFFER_LIMIT) {
 					PLOG(L_WARNING) << self->get_remote_endpoint()
@@ -50,6 +50,7 @@ void Orts::transport::tcp::tcp_session::do_read() {
 					self->close();
 					return;
 				}
+				 */
 
 				// continue to read
 				if (self->buffer.size() < sizeof(protocol_header) + header.length) {
