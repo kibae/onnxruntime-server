@@ -7,11 +7,11 @@
 - [ONNX: Open Neural Network Exchange](https://onnx.ai/)
 - **The ONNX Runtime Server is a server that provides TCP and HTTP/HTTPS REST APIs for ONNX inference.**
 - ONNX Runtime Server aims to provide simple, high-performance ML inference and a good developer experience.
-  - If you have exported ML models trained in various environments as ONNX files, you can provide inference APIs without writing additional code or metadata. [Just place the ONNX files into the directory structure.](#run-the-server)
-  - Each ONNX session, you can choose to use CPU or CUDA.
-  - Analyze the input/output of ONNX models to provide type/shape information for your collaborators.
-  - Built-in Swagger API documentation makes it easy for collaborators to test ML models through the API. ([API example](https://kibae.github.io/onnxruntime-server/swagger/))
-  - [Ready-to-run Docker images.](#docker) No build required.
+    - If you have exported ML models trained in various environments as ONNX files, you can provide inference APIs without writing additional code or metadata. [Just place the ONNX files into the directory structure.](#run-the-server)
+    - Each ONNX session, you can choose to use CPU or CUDA.
+    - Analyze the input/output of ONNX models to provide type/shape information for your collaborators.
+    - Built-in Swagger API documentation makes it easy for collaborators to test ML models through the API. ([API example](https://kibae.github.io/onnxruntime-server/swagger/))
+    - [Ready-to-run Docker images.](#docker) No build required.
 
 ----
 
@@ -142,13 +142,13 @@ sudo cmake --install build --prefix /usr/local/onnxruntime-server
 # Docker
 
 - Docker hub: [kibaes/onnxruntime-server](https://hub.docker.com/r/kibaes/onnxruntime-server)
-    - [`1.0.0-linux-cuda`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cuda.dockerfile)
+    - [`1.1.0-linux-cuda`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cuda.dockerfile)
       amd64
-    - [`1.0.0-linux-cpu`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cpu.dockerfile)
+    - [`1.1.0-linux-cpu`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cpu.dockerfile)
       amd64, arm64
 
 ```shell
-DOCKER_IMAGE=kibae/onnxruntime-server:1.0.0-linux-cuda # or kibae/onnxruntime-server:1.0.0-linux-cpu	
+DOCKER_IMAGE=kibae/onnxruntime-server:1.1.0-linux-cuda # or kibae/onnxruntime-server:1.1.0-linux-cpu	
 
 docker pull ${DOCKER_IMAGE}
 

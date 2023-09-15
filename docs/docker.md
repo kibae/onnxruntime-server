@@ -5,9 +5,9 @@
 
 # Supported tags and respective Dockerfile links
 
-- [`1.0.0-linux-cuda`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cuda.dockerfile)
+- [`1.1.0-linux-cuda`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cuda.dockerfile)
   amd64
-- [`1.0.0-linux-cpu`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cpu.dockerfile)
+- [`1.1.0-linux-cpu`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cpu.dockerfile)
   amd64, arm64
 
 # How to use this image
@@ -30,7 +30,7 @@
     - API documentation will be available at http://localhost/api-docs.
 
 ```shell
-DOCKER_IMAGE=kibae/onnxruntime-server:1.0.0-linux-cuda # or kibae/onnxruntime-server:1.0.0-linux-cpu	
+DOCKER_IMAGE=kibae/onnxruntime-server:1.1.0-linux-cuda # or kibae/onnxruntime-server:1.1.0-linux-cpu	
 
 docker pull ${DOCKER_IMAGE}
 
@@ -71,7 +71,7 @@ services:
   onnxruntime_server_simple:
     # After the docker container is up, you can use the REST API (http://localhost:8080).
     # API documentation will be available at http://localhost:8080/api-docs.
-    image: kibaes/onnxruntime-server:1.0.0-linux-cuda
+    image: kibaes/onnxruntime-server:1.1.0-linux-cuda
     ports:
       - "8080:80" # for http backend
     volumes:
@@ -103,7 +103,7 @@ services:
   onnxruntime_server_advanced:
     # After the docker container is up, you can use the REST API (http://localhost, https://localhost).
     # API documentation will be available at http://localhost/api-docs.
-    image: kibaes/onnxruntime-server:1.0.0-linux-cuda
+    image: kibaes/onnxruntime-server:1.1.0-linux-cuda
     ports:
       - "80:80" # for http backend
       - "443:443" # for https backend
