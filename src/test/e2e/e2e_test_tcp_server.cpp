@@ -16,9 +16,9 @@ json tcp_request(
 	auto json_data = json.dump();
 	struct onnxruntime_server::transport::tcp::protocol_header header = {};
 	header.type = htons(type);
-	header.length = htonll(json_data.size() + post_size);
-	header.json_length = htonll(json_data.size());
-	header.post_length = htonll(post_size);
+	header.length = HTONLL(json_data.size() + post_size);
+	header.json_length = HTONLL(json_data.size());
+	header.post_length = HTONLL(post_size);
 
 	std::vector<boost::asio::const_buffer> buffers;
 	buffers.emplace_back(&header, sizeof(header));
@@ -38,7 +38,7 @@ json tcp_request(
 		if (res_data.size() > sizeof(struct Orts::transport::tcp::protocol_header)) {
 			res_header = *(struct Orts::transport::tcp::protocol_header *)res_data.data();
 			res_header.type = ntohs(res_header.type);
-			res_header.length = ntohll(res_header.length);
+			res_header.length = NTOHLL(res_header.length);
 
 			if (res_data.length() >= res_header.length)
 				break;

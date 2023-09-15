@@ -7,6 +7,14 @@
 
 #include "../../onnxruntime_server.hpp"
 
+#ifdef WORDS_BIGENDIAN
+#define HTONLL(x) (x)
+#define NTOHLL(x) (x)
+#else
+#define HTONLL(x) ((((uint64_t)htonl(x)) << 32) + htonl(x >> 32))
+#define NTOHLL(x) ((((uint64_t)ntohl(x)) << 32) + ntohl(x >> 32))
+#endif
+
 namespace onnxruntime_server::transport::tcp {
 	struct protocol_header {
 		int16_t type;
