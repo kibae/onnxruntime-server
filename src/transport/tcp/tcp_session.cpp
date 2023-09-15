@@ -42,7 +42,7 @@ void Orts::transport::tcp::tcp_session::do_read() {
 				header.length = ntohll(header.length);
 				header.json_length = ntohll(header.json_length);
 				header.post_length = ntohll(header.post_length);
-				assert(header.length == header.json_length + header.post_length);
+				// assert(header.length == header.json_length + header.post_length);
 
 				/*
 				// check buffer size
@@ -84,7 +84,7 @@ void Orts::transport::tcp::tcp_session::do_task(Orts::transport::tcp::protocol_h
 				header.json_length > 0
 					? json::parse(cstr + sizeof(protocol_header), cstr + sizeof(protocol_header) + header.json_length)
 					: json::object();
-			auto post = header.post_length > 0 ? cstr + sizeof(protocol_header) + header.json_length : NULL;
+			auto post = header.post_length > 0 ? cstr + sizeof(protocol_header) + header.json_length : nullptr;
 
 			// create task
 			auto task =
@@ -98,7 +98,8 @@ void Orts::transport::tcp::tcp_session::do_task(Orts::transport::tcp::protocol_h
 			struct protocol_header res_header = {0, 0, 0, 0};
 			res_header.type = htons(header.type);
 			res_header.json_length = htonll(res_json.size());
-			res_header.length = res_header.json_length + res_header.post_length;
+			res_header.post_length = htonll(0);
+			res_header.length = res_header.json_length;
 
 			std::string response;
 			response.append((char *)&res_header, sizeof(res_header));
@@ -119,7 +120,8 @@ void onnxruntime_server::transport::tcp::tcp_session::send_error(std::string typ
 	struct protocol_header res_header = {0, 0, 0, 0};
 	res_header.type = htons(-1);
 	res_header.json_length = htonll(res_json.size());
-	res_header.length = res_header.json_length + res_header.post_length;
+	res_header.post_length = htonll(0);
+	res_header.length = res_header.json_length;
 
 	std::string response;
 	response.append((char *)&res_header, sizeof(res_header));
