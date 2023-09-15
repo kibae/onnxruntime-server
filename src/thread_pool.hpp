@@ -61,7 +61,7 @@ namespace onnxruntime_server {
 
 		std::mutex queue_mutex;
 		std::condition_variable condition;
-		std::atomic_bool stop = false;
+		std::atomic_bool stop = ATOMIC_VAR_INIT(false);
 	};
 } // namespace onnxruntime_server
 
