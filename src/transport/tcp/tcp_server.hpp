@@ -10,7 +10,9 @@
 namespace onnxruntime_server::transport::tcp {
 	struct protocol_header {
 		int16_t type;
-		int32_t length;
+		int64_t length;
+		int64_t json_length;
+		int64_t post_length;
 	} __attribute__((packed));
 
 	class tcp_server;
@@ -35,6 +37,11 @@ namespace onnxruntime_server::transport::tcp {
 		void do_write(const std::string &buf);
 
 		void send_error(std::string type, std::string what);
+
+		static std::shared_ptr<onnxruntime_server::task::task> create_task(
+			onnx::session_manager *onnx_session_manager, int16_t type, const json &request_json, const char *post,
+			size_t post_length
+		);
 
 		std::string get_remote_endpoint();
 	};

@@ -8,14 +8,19 @@ std::string onnxruntime_server::task::execute_session::name() {
 	return "EXECUTE_SESSION";
 }
 
-Orts::task::execute_session::execute_session(onnx::session_manager *onnx_session_manager, const std::string &buf)
-	: session_task(onnx_session_manager, buf) {
+Orts::task::execute_session::execute_session(onnx::session_manager *onnx_session_manager, const json &request_json)
+	: session_task(onnx_session_manager, request_json) {
+	if (!request_json.is_object() || !request_json.contains("data") || !request_json["data"].is_object()) {
+		throw bad_request_error("Invalid session task. Must be a JSON object with data(object) field");
+	}
+	data = request_json["data"];
 }
 
 Orts::task::execute_session::execute_session(
-	Orts::onnx::session_manager *onnx_session_manager, std::string model_name, std::string model_version, json data
+	onnx::session_manager *onnx_session_manager, const std::string &model_name, const std::string &model_version,
+	json data
 )
-	: session_task(onnx_session_manager, std::move(model_name), std::move(model_version), std::move(data)) {
+	: session_task(onnx_session_manager, model_name, model_version), data(std::move(data)) {
 }
 
 json Orts::task::execute_session::run() {

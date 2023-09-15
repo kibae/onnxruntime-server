@@ -38,8 +38,11 @@ void Orts::transport::tcp::tcp_session::do_read() {
 					return;
 				}
 				protocol_header header = *(protocol_header *)self->buffer.data();
-				header.type = htons(header.type);
-				header.length = htonl(header.length);
+				header.type = ntohs(header.type);
+				header.length = ntohll(header.length);
+				header.json_length = ntohll(header.json_length);
+				header.post_length = ntohll(header.post_length);
+				assert(header.length == header.json_length + header.post_length);
 
 				/*
 				// check buffer size
@@ -76,20 +79,26 @@ void Orts::transport::tcp::tcp_session::do_task(Orts::transport::tcp::protocol_h
 	// enqueue task to thread pool
 	server->get_worker_pool()->enqueue([self = shared_from_this(), header]() {
 		try {
+			auto cstr = self->buffer.c_str();
+			auto json =
+				header.json_length > 0
+					? json::parse(cstr + sizeof(protocol_header), cstr + sizeof(protocol_header) + header.json_length)
+					: json::object();
+			auto post = header.post_length > 0 ? cstr + sizeof(protocol_header) + header.json_length : NULL;
+
 			// create task
-			auto task = Orts::task::create(
-				self->server->get_onnx_session_manager(), header.type,
-				self->buffer.substr(sizeof(protocol_header), header.length)
-			);
+			auto task =
+				create_task(self->server->get_onnx_session_manager(), header.type, json, post, header.post_length);
 			auto result = task->run();
 
 			PLOG(L_INFO, "ACCESS") << self->get_remote_endpoint() << " task: " << task->name()
 								   << " duration: " << self->request_time.get_duration() << std::endl;
 
 			auto res_json = result.dump();
-			struct protocol_header res_header = {0, 0};
+			struct protocol_header res_header = {0, 0, 0, 0};
 			res_header.type = htons(header.type);
-			res_header.length = htonl((int32_t)res_json.size());
+			res_header.json_length = htonll(res_json.size());
+			res_header.length = res_header.json_length + res_header.post_length;
 
 			std::string response;
 			response.append((char *)&res_header, sizeof(res_header));
@@ -107,9 +116,10 @@ void Orts::transport::tcp::tcp_session::do_task(Orts::transport::tcp::protocol_h
 
 void onnxruntime_server::transport::tcp::tcp_session::send_error(std::string type, std::string what) {
 	auto res_json = Orts::exception::what_to_json(type, what);
-	struct protocol_header res_header = {0, 0};
+	struct protocol_header res_header = {0, 0, 0, 0};
 	res_header.type = htons(-1);
-	res_header.length = htonl((int32_t)res_json.size());
+	res_header.json_length = htonll(res_json.size());
+	res_header.length = res_header.json_length + res_header.post_length;
 
 	std::string response;
 	response.append((char *)&res_header, sizeof(res_header));
@@ -130,6 +140,26 @@ void onnxruntime_server::transport::tcp::tcp_session::do_write(const std::string
 			}
 		}
 	);
+}
+
+std::shared_ptr<Orts::task::task> onnxruntime_server::transport::tcp::tcp_session::create_task(
+	onnx::session_manager *onnx_session_manager, int16_t type, const json &request_json, const char *post,
+	size_t post_length
+) {
+	switch (type) {
+	case Orts::task::EXECUTE_SESSION:
+		return std::make_shared<Orts::task::execute_session>(onnx_session_manager, request_json);
+	case Orts::task::GET_SESSION:
+		return std::make_shared<Orts::task::get_session>(onnx_session_manager, request_json);
+	case Orts::task::CREATE_SESSION:
+		return std::make_shared<Orts::task::create_session>(onnx_session_manager, request_json, post, post_length);
+	case Orts::task::DESTROY_SESSION:
+		return std::make_shared<Orts::task::destroy_session>(onnx_session_manager, request_json);
+	case Orts::task::LIST_SESSION:
+		return std::make_shared<Orts::task::list_session>(onnx_session_manager);
+	default:
+		throw bad_request_error("Invalid task type");
+	}
 }
 
 std::string onnxruntime_server::transport::tcp::tcp_session::get_remote_endpoint() {

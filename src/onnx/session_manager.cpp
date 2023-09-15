@@ -29,15 +29,19 @@ Orts::onnx::session *Orts::onnx::session_manager::get_session(const Orts::onnx::
 }
 
 Orts::onnx::session *Orts::onnx::session_manager::create_session(
-	const std::string &model_name, const std::string &model_version, const json &option
-) {
-	return create_session(model_name, model_version, model_bin_getter(model_name, model_version), option);
-}
-
-Orts::onnx::session *Orts::onnx::session_manager::create_session(
-	const std::string &model_name, const std::string &model_version, const std::string &bin, const json &option
+	const std::string &model_name, const std::string &model_version, const json &option, const char *model_data,
+	size_t model_data_length
 ) {
 	auto key = session_key(model_name, model_version);
+
+	static std::string model_bin;
+	if (model_data == nullptr) {
+		// get model binary from model_bin_getter
+		model_bin = model_bin_getter(model_name, model_version);
+		model_data = model_bin.data();
+		model_data_length = model_bin.size();
+	}
+
 	{
 		std::lock_guard<std::recursive_mutex> lock(mutex);
 
@@ -45,7 +49,7 @@ Orts::onnx::session *Orts::onnx::session_manager::create_session(
 		if (current_session != nullptr)
 			throw conflict_error("session already exists");
 
-		auto session = new onnx::session(key, bin.data(), bin.size(), option);
+		auto session = new onnx::session(key, model_data, model_data_length, option);
 		sessions.emplace(key, session);
 		return session;
 	}

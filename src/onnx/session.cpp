@@ -23,20 +23,14 @@ Orts::onnx::session::session(session_key key, const json &option)
 	}
 }
 
-Orts::onnx::session::session(session_key key, const std::string &path) : session(std::move(key), json::object()) {
+Orts::onnx::session::session(session_key key, const std::string &path, const json &option) : session(key, option) {
 	ort_session = new Ort::Session(env, path.c_str(), session_options);
 	init();
 }
 
-Orts::onnx::session::session(session_key key, const std::string &path, const json &option)
-	: session(std::move(key), option) {
-	ort_session = new Ort::Session(env, path.c_str(), session_options);
-	init();
-}
-
-Orts::onnx::session::session(session_key key, const void *model_data, size_t modal_data_length, const json &option)
-	: session(std::move(key), option) {
-	ort_session = new Ort::Session(env, model_data, modal_data_length, session_options);
+Orts::onnx::session::session(session_key key, const char *model_data, size_t model_data_length, const json &option)
+	: session(key, option) {
+	ort_session = new Ort::Session(env, model_data, model_data_length, session_options);
 	init();
 }
 
