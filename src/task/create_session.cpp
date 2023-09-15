@@ -14,40 +14,26 @@ std::string onnxruntime_server::task::create_session::name() {
 	return "CREATE_SESSION";
 }
 
-Orts::task::create_session::create_session(onnx::session_manager *onnx_session_manager, const std::string &buf)
-	: session_task(onnx_session_manager, buf) {
-	option = raw["option"];
+Orts::task::create_session::create_session(
+	onnx::session_manager *onnx_session_manager, const json &request_json, const char *model_data,
+	size_t model_data_length
+)
+	: session_task(onnx_session_manager, request_json), model_data(model_data), model_data_length(model_data_length) {
+	option =
+		request_json.contains("option") && request_json["option"].is_object() ? request_json["option"] : json::object();
 }
 
 Orts::task::create_session::create_session(
-	Orts::onnx::session_manager *onnx_session_manager, std::string model_name, std::string model_version, json data,
-	json option
+	onnx::session_manager *onnx_session_manager, const std::string &model_name, const std::string &model_version,
+	json option, const char *model_data, size_t model_data_length
 )
-	: session_task(onnx_session_manager, std::move(model_name), std::move(model_version), std::move(data)),
-	  option(std::move(option)) {
+	: session_task(onnx_session_manager, model_name, model_version), option(std::move(option)), model_data(model_data),
+	  model_data_length(model_data_length) {
 }
 
 json Orts::task::create_session::run() {
-	Orts::onnx::session *session = nullptr;
-	std::string model_bin;
-	if (!data.is_null() && !data.empty() && data.is_object() && data.contains("bytes")) {
-		if (data["enc"] == "base64") {
-			auto bytes = data["bytes"].get<std::string>();
-			model_bin.resize(detail::base64::decoded_size(bytes.size()));
-			auto decoded_size = detail::base64::decode(model_bin.data(), bytes.data(), bytes.size());
-			model_bin.resize(decoded_size.first);
-		} else {
-			auto binary_data = data["bytes"].get_binary();
-			model_bin.append(binary_data.begin(), binary_data.end());
-		}
-	}
-
-	if (!model_bin.empty()) {
-		session = onnx_session_manager->create_session(model_name, model_version, model_bin, option);
-	} else {
-		session = onnx_session_manager->create_session(model_name, model_version, option);
-	}
-
+	Orts::onnx::session *session =
+		onnx_session_manager->create_session(model_name, model_version, option, model_data, model_data_length);
 	if (session == nullptr) {
 		throw not_found_error("session not found");
 	}

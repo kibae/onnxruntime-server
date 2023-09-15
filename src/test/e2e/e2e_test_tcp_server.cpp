@@ -5,37 +5,46 @@
 #include "../../transport/tcp/tcp_server.hpp"
 #include "../test_common.hpp"
 
-json tcp_request(short port, int16_t type, json body) {
+json tcp_request(
+	uint_least16_t port, int16_t type, const json &json, unsigned char *post = nullptr, size_t post_size = 0
+) {
 	boost::asio::io_context io_context;
 	boost::asio::ip::tcp::socket socket(io_context);
 	boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::address::from_string("127.0.0.1"), port);
 	socket.connect(endpoint);
 
-	auto data = body.dump();
+	auto json_data = json.dump();
 	struct onnxruntime_server::transport::tcp::protocol_header header = {};
 	header.type = htons(type);
-	header.length = htonl(data.size());
+	header.length = HTONLL(json_data.size() + post_size);
+	header.json_length = HTONLL(json_data.size());
+	header.post_length = HTONLL(post_size);
 
 	std::vector<boost::asio::const_buffer> buffers;
-	buffers.push_back(boost::asio::buffer(&header, sizeof(header)));
-	buffers.push_back(boost::asio::buffer(data));
+	buffers.emplace_back(&header, sizeof(header));
+	buffers.emplace_back(json_data.c_str(), json_data.size());
+	if (post != nullptr)
+		buffers.emplace_back(post, post_size);
 
 	boost::asio::write(socket, buffers);
 
-	struct Orts::transport::tcp::protocol_header res_header = {};
-	socket.read_some(boost::asio::buffer(&res_header, sizeof(res_header)));
-	res_header.type = ntohs(res_header.type);
-	res_header.length = ntohl(res_header.length);
-
+	struct Orts::transport::tcp::protocol_header res_header;
 	std::string res_data;
-	while (res_data.length() < res_header.length) {
+	while (true) {
 		char buffer[1024 * 4];
 		std::size_t bytes_read = socket.read_some(boost::asio::buffer(buffer));
 		res_data.append(buffer, bytes_read);
-	}
-	socket.close();
 
-	return json::parse(res_data);
+		if (res_data.size() > sizeof(struct Orts::transport::tcp::protocol_header)) {
+			res_header = *(struct Orts::transport::tcp::protocol_header *)res_data.data();
+			res_header.type = ntohs(res_header.type);
+			res_header.length = NTOHLL(res_header.length);
+
+			if (res_data.length() >= res_header.length)
+				break;
+		}
+	}
+	return json::parse(res_data.c_str() + sizeof(res_header));
 }
 
 TEST(test_onnxruntime_server_tcp, TcpServerTest) {

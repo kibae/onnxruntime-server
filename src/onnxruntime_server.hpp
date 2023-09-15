@@ -104,9 +104,10 @@ namespace onnxruntime_server {
 
 		  public:
 			session_key key;
-			session(session_key key, const std::string &path);
-			session(session_key key, const std::string &path, const json &option);
-			session(session_key key, const void *model_data, size_t modal_data_length, const json &option);
+			explicit session(session_key key, const std::string &path, const json &option = json::object());
+			explicit session(
+				session_key key, const char *model_data, size_t model_data_length, const json &option = json::object()
+			);
 			~session();
 
 			std::vector<Ort::Value>
@@ -135,11 +136,9 @@ namespace onnxruntime_server {
 
 			session *get_session(const std::string &model_name, const std::string &model_version);
 			session *get_session(const session_key &key);
-			session *
-			create_session(const std::string &model_name, const std::string &model_version, const json &option);
 			session *create_session(
-				const std::string &model_name, const std::string &model_version, const std::string &bin,
-				const json &option
+				const std::string &model_name, const std::string &model_version, const json &option,
+				const char *model_data = nullptr, size_t model_data_length = 0
 			);
 			void remove_session(const std::string &model_name, const std::string &model_version);
 			void remove_session(const session_key &key);
@@ -213,59 +212,57 @@ namespace onnxruntime_server {
 		class session_task : public task {
 		  protected:
 			onnx::session_manager *onnx_session_manager;
-			json raw;
 
 		  public:
 			std::string model_name;
 			std::string model_version;
-			json data;
 
-			session_task(onnx::session_manager *onnx_session_manager, const std::string &buf);
-			session_task(
-				onnx::session_manager *onnx_session_manager, std::string model_name, std::string model_version,
-				json data
-			);
-			session_task(
-				onnx::session_manager *onnx_session_manager, const std::string &model_name,
-				const std::string &model_version
+			explicit session_task(onnx::session_manager *onnx_session_manager, const json &request_json);
+			explicit session_task(
+				onnx::session_manager *onnx_session_manager, std::string model_name, std::string model_version
 			);
 		};
 
 		class create_session : public session_task {
 		  public:
 			json option;
+			const char *model_data = nullptr;
+			size_t model_data_length = 0;
 
-			explicit create_session(onnx::session_manager *onnx_session_manager, const std::string &buf);
 			explicit create_session(
-				onnx::session_manager *onnx_session_manager, std::string model_name, std::string model_version,
-				json data, json option
+				onnx::session_manager *onnx_session_manager, const json &request_json, const char *model_data = nullptr,
+				size_t model_data_length = 0
 			);
-
+			explicit create_session(
+				onnx::session_manager *onnx_session_manager, const std::string &model_name,
+				const std::string &model_version, json option, const char *model_data = nullptr,
+				size_t model_data_length = 0
+			);
 			std::string name() override;
-
 			json run() override;
 		};
 
 		class execute_session : public session_task {
 		  public:
-			std::string name() override;
+			json data;
 
-			explicit execute_session(onnx::session_manager *onnx_session_manager, const std::string &buf);
+			explicit execute_session(onnx::session_manager *onnx_session_manager, const json &request_json);
 			explicit execute_session(
-				onnx::session_manager *onnx_session_manager, std::string model_name, std::string model_version,
-				json data
+				onnx::session_manager *onnx_session_manager, const std::string &model_name,
+				const std::string &model_version, json data
 			);
+			std::string name() override;
 			json run() override;
 		};
 
 		class get_session : public session_task {
 		  public:
-			std::string name() override;
-
-			explicit get_session(onnx::session_manager *onnx_session_manager, const std::string &buf);
+			explicit get_session(onnx::session_manager *onnx_session_manager, const json &request_json);
 			explicit get_session(
-				onnx::session_manager *onnx_session_manager, std::string model_name, std::string model_version
+				onnx::session_manager *onnx_session_manager, const std::string &model_name,
+				const std::string &model_version
 			);
+			std::string name() override;
 			json run() override;
 		};
 
@@ -273,24 +270,21 @@ namespace onnxruntime_server {
 			onnx::session_manager *onnx_session_manager;
 
 		  public:
-			std::string name() override;
-
 			explicit list_session(onnx::session_manager *onnx_session_manager);
+			std::string name() override;
 			json run() override;
 		};
 
 		class destroy_session : public session_task {
 		  public:
-			std::string name() override;
-
-			explicit destroy_session(onnx::session_manager *onnx_session_manager, const std::string &buf);
+			explicit destroy_session(onnx::session_manager *onnx_session_manager, const json &request_json);
 			explicit destroy_session(
-				onnx::session_manager *onnx_session_manager, std::string model_name, std::string model_version
+				onnx::session_manager *onnx_session_manager, const std::string &model_name,
+				const std::string &model_version
 			);
+			std::string name() override;
 			json run() override;
 		};
-
-		std::shared_ptr<task> create(onnx::session_manager *onnx_session_manager, int16_t type, const std::string &buf);
 
 	} // namespace task
 
