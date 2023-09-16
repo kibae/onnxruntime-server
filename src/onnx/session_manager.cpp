@@ -9,18 +9,15 @@ Orts::onnx::session_manager::session_manager(model_bin_getter_t model_bin_getter
 }
 
 Orts::onnx::session_manager::~session_manager() {
-	for (auto &it : sessions) {
-		delete it.second;
-	}
 }
 
-Orts::onnx::session *
+std::shared_ptr<Orts::onnx::session>
 Orts::onnx::session_manager::get_session(const std::string &model_name, const std::string &model_version) {
 	auto key = session_key(model_name, model_version);
 	return get_session(key);
 }
 
-Orts::onnx::session *Orts::onnx::session_manager::get_session(const Orts::onnx::session_key &key) {
+std::shared_ptr<Orts::onnx::session> Orts::onnx::session_manager::get_session(const Orts::onnx::session_key &key) {
 	std::lock_guard<std::recursive_mutex> lock(mutex);
 	auto it = sessions.find(key);
 	if (it == sessions.end())
@@ -28,7 +25,7 @@ Orts::onnx::session *Orts::onnx::session_manager::get_session(const Orts::onnx::
 	return it->second;
 }
 
-Orts::onnx::session *Orts::onnx::session_manager::create_session(
+std::shared_ptr<Orts::onnx::session> Orts::onnx::session_manager::create_session(
 	const std::string &model_name, const std::string &model_version, const json &option, const char *model_data,
 	size_t model_data_length
 ) {
@@ -49,7 +46,7 @@ Orts::onnx::session *Orts::onnx::session_manager::create_session(
 		if (current_session != nullptr)
 			throw conflict_error("session already exists");
 
-		auto session = new onnx::session(key, model_data, model_data_length, option);
+		auto session = std::make_shared<onnx::session>(key, model_data, model_data_length, option);
 		sessions.emplace(key, session);
 		return session;
 	}
@@ -67,6 +64,5 @@ void Orts::onnx::session_manager::remove_session(const Orts::onnx::session_key &
 	if (it == sessions.end()) {
 		throw not_found_error("session not found");
 	}
-	delete it->second;
 	sessions.erase(it);
 }

@@ -123,20 +123,20 @@ namespace onnxruntime_server {
 		class session_manager {
 		  private:
 			std::recursive_mutex mutex;
-			std::map<session_key, session *> sessions;
+			std::map<session_key, std::shared_ptr<session>> sessions;
 			model_bin_getter_t model_bin_getter;
 
 		  public:
 			explicit session_manager(model_bin_getter_t model_bin_getter);
 			~session_manager();
 
-			std::map<session_key, session *> &get_sessions() {
+			std::map<session_key, std::shared_ptr<session>> &get_sessions() {
 				return sessions;
 			}
 
-			session *get_session(const std::string &model_name, const std::string &model_version);
-			session *get_session(const session_key &key);
-			session *create_session(
+			std::shared_ptr<session> get_session(const std::string &model_name, const std::string &model_version);
+			std::shared_ptr<session> get_session(const session_key &key);
+			std::shared_ptr<session> create_session(
 				const std::string &model_name, const std::string &model_version, const json &option,
 				const char *model_data = nullptr, size_t model_data_length = 0
 			);
@@ -161,11 +161,11 @@ namespace onnxruntime_server {
 			class context {
 			  private:
 				Ort::MemoryInfo memory_info;
-				onnxruntime_server::onnx::session *session;
+				std::shared_ptr<onnxruntime_server::onnx::session> session;
 				std::map<std::string, input_value *> inputs;
 
 			  public:
-				context(class session *session, const json &json_str);
+				context(std::shared_ptr<class session> session, const json &json_str);
 				~context();
 
 				void flat_json_values(const json::value_type &data, std::vector<json::value_type> *json_values);
