@@ -32,7 +32,7 @@ Orts::task::create_session::create_session(
 }
 
 json Orts::task::create_session::run() {
-	Orts::onnx::session *session =
+	std::shared_ptr<Orts::onnx::session> session =
 		onnx_session_manager->create_session(model_name, model_version, option, model_data, model_data_length);
 	if (session == nullptr) {
 		throw not_found_error("session not found");

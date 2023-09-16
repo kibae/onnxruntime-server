@@ -4,7 +4,7 @@
 
 #include "../../onnxruntime_server.hpp"
 
-Orts::onnx::execution::context::context(Orts::onnx::session *session, const json &json_str)
+Orts::onnx::execution::context::context(std::shared_ptr<Orts::onnx::session> session, const json &json_str)
 	: memory_info(Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault)), session(session) {
 	assert(session != nullptr);
 
