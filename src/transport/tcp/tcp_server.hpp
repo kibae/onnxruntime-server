@@ -15,6 +15,8 @@
 #define NTOHLL(x) ((((uint64_t)ntohl(x)) << 32) + ntohl(x >> 32))
 #endif
 
+#define MAX_RECV_BUF_LENGTH 1024 * 1024 * 4
+
 namespace onnxruntime_server::transport::tcp {
 	struct protocol_header {
 		int16_t type;
@@ -29,7 +31,7 @@ namespace onnxruntime_server::transport::tcp {
 	  private:
 		asio::socket socket;
 		tcp_server *server;
-		char chunk[1024];
+		char chunk[MAX_RECV_BUF_LENGTH];
 		std::string buffer;
 
 		onnxruntime_server::task::benchmark request_time;
