@@ -31,26 +31,25 @@ std::shared_ptr<Orts::onnx::session> Orts::onnx::session_manager::create_session
 ) {
 	auto key = session_key(model_name, model_version);
 
-	static std::string model_bin;
-	if (model_data == nullptr) {
-		// get model binary from model_bin_getter
-		model_bin = model_bin_getter(model_name, model_version);
+	std::shared_ptr<Orts::onnx::session> session = nullptr;
+	std::lock_guard<std::recursive_mutex> lock(mutex);
+
+	auto current_session = get_session(key);
+	if (current_session != nullptr)
+		throw conflict_error("session already exists");
+
+	if (model_data != nullptr && model_data_length > 0) {
+		session = std::make_shared<onnx::session>(key, model_data, model_data_length, option);
+	} else if (option.contains("path") && option["path"].is_string()) {
+		session = std::make_shared<onnx::session>(key, option["path"].get<std::string>(), option);
+	} else {
+		auto model_bin = model_bin_getter(model_name, model_version);
 		model_data = model_bin.data();
 		model_data_length = model_bin.size();
+		session = std::make_shared<onnx::session>(key, model_data, model_data_length, option);
 	}
-
-	{
-		std::lock_guard<std::recursive_mutex> lock(mutex);
-
-		auto current_session = get_session(key);
-		if (current_session != nullptr)
-			throw conflict_error("session already exists");
-
-		auto session = std::make_shared<onnx::session>(key, model_data, model_data_length, option);
-		sessions.emplace(key, session);
-		return session;
-	}
-	return nullptr;
+	sessions.emplace(key, session);
+	return session;
 }
 
 void Orts::onnx::session_manager::remove_session(const std::string &model_name, const std::string &model_version) {

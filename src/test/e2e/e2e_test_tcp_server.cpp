@@ -91,12 +91,33 @@ TEST(test_onnxruntime_server_tcp, TcpServerTest) {
 		ASSERT_EQ(res_json["version"], "1");
 	}
 
+	{ // API: Create session2
+		json body = json::parse(R"({"model":"sample","version":"path"})");
+		body["option"]["path"] = model2_path.string();
+		TIME_MEASURE_START
+		auto res_json = tcp_request(server.port(), Orts::task::type::CREATE_SESSION, body);
+		TIME_MEASURE_STOP
+		std::cout << "API: Create session\n" << res_json.dump(2) << "\n";
+		ASSERT_EQ(res_json["model"], "sample");
+		ASSERT_EQ(res_json["version"], "path");
+	}
+
+	{ // API: Get session
+		json body = json::parse(R"({"model":"sample","version":"path"})");
+		TIME_MEASURE_START
+		auto res_json = tcp_request(server.port(), Orts::task::type::GET_SESSION, body);
+		TIME_MEASURE_STOP
+		std::cout << "API: Get session\n" << res_json.dump(2) << "\n";
+		ASSERT_EQ(res_json["model"], "sample");
+		ASSERT_EQ(res_json["version"], "path");
+	}
+
 	{ // API: List session
 		TIME_MEASURE_START
 		auto res_json = tcp_request(server.port(), Orts::task::type::LIST_SESSION, "");
 		TIME_MEASURE_STOP
 		std::cout << "API: List sessions\n" << res_json.dump(2) << "\n";
-		ASSERT_EQ(res_json.size(), 1);
+		ASSERT_EQ(res_json.size(), 2);
 		ASSERT_EQ(res_json[0]["model"], "sample");
 		ASSERT_EQ(res_json[0]["version"], "1");
 	}
@@ -126,7 +147,7 @@ TEST(test_onnxruntime_server_tcp, TcpServerTest) {
 		auto res_json = tcp_request(server.port(), Orts::task::type::LIST_SESSION, "");
 		TIME_MEASURE_STOP
 		std::cout << "API: List sessions\n" << res_json.dump(2) << "\n";
-		ASSERT_EQ(res_json.size(), 0);
+		ASSERT_EQ(res_json.size(), 1);
 	}
 
 	running = false;
