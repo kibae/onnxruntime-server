@@ -24,11 +24,13 @@ void Orts::transport::tcp::tcp_session::do_read() {
 		_remote_endpoint =
 			socket.remote_endpoint().address().to_string() + ":" + std::to_string(socket.remote_endpoint().port());
 
+	// use heap memory to avoid stack overflow
+	chunk.resize(MAX_RECV_BUF_LENGTH);
 	socket.async_read_some(
-		boost::asio::buffer(chunk, MAX_RECV_BUF_LENGTH),
+		boost::asio::buffer(chunk.data(), MAX_RECV_BUF_LENGTH),
 		[self = shared_from_this()](boost::system::error_code ec, std::size_t length) {
 			if (!ec) {
-				self->buffer.append(self->chunk, length);
+				self->buffer.append(self->chunk.data(), length);
 
 				// check protocol header
 				if (self->buffer.size() < sizeof(protocol_header)) {
