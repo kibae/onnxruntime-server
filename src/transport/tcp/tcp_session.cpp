@@ -19,15 +19,13 @@ void onnxruntime_server::transport::tcp::tcp_session::close() {
 	server->remove_session(shared_from_this());
 }
 
-#define MAX_LENGTH 1024 * 16
-
 void Orts::transport::tcp::tcp_session::do_read() {
 	if (_remote_endpoint.empty())
 		_remote_endpoint =
 			socket.remote_endpoint().address().to_string() + ":" + std::to_string(socket.remote_endpoint().port());
 
 	socket.async_read_some(
-		boost::asio::buffer(chunk, MAX_LENGTH),
+		boost::asio::buffer(chunk, MAX_RECV_BUF_LENGTH),
 		[self = shared_from_this()](boost::system::error_code ec, std::size_t length) {
 			if (!ec) {
 				self->buffer.append(self->chunk, length);
@@ -42,18 +40,6 @@ void Orts::transport::tcp::tcp_session::do_read() {
 				header.length = NTOHLL(header.length);
 				header.json_length = NTOHLL(header.json_length);
 				header.post_length = NTOHLL(header.post_length);
-				// assert(header.length == header.json_length + header.post_length);
-
-				/*
-				// check buffer size
-				if (header.length > MAX_BUFFER_LIMIT) {
-					PLOG(L_WARNING) << self->get_remote_endpoint()
-									<< " transport::session::do_read: Buffer size is too large: " << header.length
-									<< std::endl;
-					self->close();
-					return;
-				}
-				 */
 
 				// continue to read
 				if (self->buffer.size() < sizeof(protocol_header) + header.length) {
