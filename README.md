@@ -7,10 +7,13 @@
 - [ONNX: Open Neural Network Exchange](https://onnx.ai/)
 - **The ONNX Runtime Server is a server that provides TCP and HTTP/HTTPS REST APIs for ONNX inference.**
 - ONNX Runtime Server aims to provide simple, high-performance ML inference and a good developer experience.
-    - If you have exported ML models trained in various environments as ONNX files, you can provide inference APIs without writing additional code or metadata. [Just place the ONNX files into the directory structure.](#run-the-server)
+    - If you have exported ML models trained in various environments as ONNX files, you can provide inference APIs
+      without writing additional code or
+      metadata. [Just place the ONNX files into the directory structure.](#run-the-server)
     - Each ONNX session, you can choose to use CPU or CUDA.
     - Analyze the input/output of ONNX models to provide type/shape information for your collaborators.
-    - Built-in Swagger API documentation makes it easy for collaborators to test ML models through the API. ([API example](https://kibae.github.io/onnxruntime-server/swagger/))
+    - Built-in Swagger API documentation makes it easy for collaborators to test ML models through the
+      API. ([API example](https://kibae.github.io/onnxruntime-server/swagger/))
     - [Ready-to-run Docker images.](#docker) No build required.
 
 ----
@@ -108,7 +111,9 @@ sudo cmake --install build --prefix /usr/local/onnxruntime-server
     - If you want to use Swagger, you must specify the `--swagger-url-path` option.
 - Use the `-h`, `--help` option to see a full list of options.
 - **All options can be set as environment variables.** This can be useful when operating in a container like Docker.
-    - Normally, command-line options are prioritized over environment variables, but if the `ONNX_SERVER_CONFIG_PRIORITY=env` environment variable exists, environment variables have higher priority. Within a Docker image, environment variables have higher priority.
+    - Normally, command-line options are prioritized over environment variables, but if
+      the `ONNX_SERVER_CONFIG_PRIORITY=env` environment variable exists, environment variables have higher priority.
+      Within a Docker image, environment variables have higher priority.
 
 ## Options
 
@@ -142,13 +147,13 @@ sudo cmake --install build --prefix /usr/local/onnxruntime-server
 # Docker
 
 - Docker hub: [kibaes/onnxruntime-server](https://hub.docker.com/r/kibaes/onnxruntime-server)
-    - [`1.1.0-linux-cuda`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cuda.dockerfile)
+    - [`1.2.0-linux-cuda`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cuda.dockerfile)
       amd64
-    - [`1.1.0-linux-cpu`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cpu.dockerfile)
+    - [`1.2.0-linux-cpu`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cpu.dockerfile)
       amd64, arm64
 
 ```shell
-DOCKER_IMAGE=kibae/onnxruntime-server:1.1.0-linux-cuda # or kibae/onnxruntime-server:1.1.0-linux-cpu	
+DOCKER_IMAGE=kibae/onnxruntime-server:1.2.0-linux-cuda # or kibae/onnxruntime-server:1.2.0-linux-cpu	
 
 docker pull ${DOCKER_IMAGE}
 
@@ -171,12 +176,14 @@ docker run --name onnxruntime_server_container -d --rm --gpus all \
 # API
 
 - [HTTP/HTTPS REST API](https://github.com/kibae/onnxruntime-server/wiki/REST-API(HTTP-HTTPS))
-    - API documentation (Swagger) is built in. If you want the server to serve swagger, add the `--swagger-url-path=/swagger/` option at launch. This must be used with the `--http-port` or `--https-port`
+    - API documentation (Swagger) is built in. If you want the server to serve swagger, add
+      the `--swagger-url-path=/swagger/` option at launch. This must be used with the `--http-port` or `--https-port`
       option.
       ```shell
       ./onnxruntime_server --model-dir=YOUR_MODEL_DIR --http-port=8080 --swagger-url-path=/api-docs/
       ```
-        - After running the server as above, you will be able to access the Swagger UI available at `http://localhost:8080/api-docs/`.
+        - After running the server as above, you will be able to access the Swagger UI available
+          at `http://localhost:8080/api-docs/`.
     - <picture><img src="https://cdn.simpleicons.org/swagger/green" height="16" align="center" /></picture> [Swagger Sample](https://kibae.github.io/onnxruntime-server/swagger/)
 - [TCP API](https://github.com/kibae/onnxruntime-server/wiki/TCP-API)
 
