@@ -31,7 +31,7 @@ namespace onnxruntime_server::transport::tcp {
 	  private:
 		asio::socket socket;
 		tcp_server *server;
-		char chunk[MAX_RECV_BUF_LENGTH];
+		std::string chunk;
 		std::string buffer;
 
 		onnxruntime_server::task::benchmark request_time;
