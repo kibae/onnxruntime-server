@@ -6,7 +6,7 @@ echo
 echo "Select onnxruntime version to download:"
 RAW_LIST=$(curl -s -H "Accept: application/vnd.github+json" \
   -H "X-GitHub-Api-Version: 2022-11-28" \
-  https://api.github.com/repos/microsoft/onnxruntime/releases/latest \
+  https://api.github.com/repos/microsoft/onnxruntime/releases/tags/v1.15.1 \
   | grep browser_download_url \
   | grep tgz \
   | grep linux \
