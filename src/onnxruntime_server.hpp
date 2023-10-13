@@ -17,7 +17,6 @@
 #include "thread_pool.hpp"
 #include "utils/aixlog.hpp"
 #include "utils/exceptions.hpp"
-#include "utils/half_fp.hpp"
 #include "utils/json.hpp"
 
 #include <onnxruntime_cxx_api.h>

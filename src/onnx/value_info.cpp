@@ -125,14 +125,14 @@ json::array_t Orts::onnx::value_info::get_tensor_data(Ort::Value &tensors) const
 	{
 		auto data = tensors.GetTensorData<Ort::Float16_t>();
 		for (size_t i = 0; i < size; i++)
-			values.emplace_back(float16_to_float32(data[i].value));
+			values.emplace_back((float)data[i]);
 		break;
 	}
 	case ONNX_TENSOR_ELEMENT_DATA_TYPE_BFLOAT16: // Non-IEEE floating-point format based on IEEE754 single-precision
 	{
 		auto data = tensors.GetTensorData<Ort::BFloat16_t>();
 		for (size_t i = 0; i < size; i++)
-			values.emplace_back(bfloat16_to_float32(data[i].value));
+			values.emplace_back((float)data[i]);
 		break;
 	}
 	case ONNX_TENSOR_ELEMENT_DATA_TYPE_COMPLEX64: // complex with float32 real and imaginary components

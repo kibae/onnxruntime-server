@@ -80,7 +80,7 @@ Orts::onnx::execution::input_value::input_value(
 	{
 		auto *values = new std::vector<Ort::BFloat16_t>();
 		for (auto &val : json_value)
-			values->emplace_back(float32_to_bfloat16(val.get<float>()));
+			values->emplace_back(val.get<float>());
 
 		tensors = Ort::Value::CreateTensor<Ort::BFloat16_t>(memory_info, values->data(), values->size(), SHAPE_ARG);
 		deallocators.emplace_back([values]() { delete values; });
@@ -91,7 +91,7 @@ Orts::onnx::execution::input_value::input_value(
 	{
 		auto *values = new std::vector<Ort::Float16_t>();
 		for (auto &val : json_value)
-			values->emplace_back(float32_to_float16(val.get<float>()));
+			values->emplace_back(val.get<float>());
 
 		tensors = Ort::Value::CreateTensor<Ort::Float16_t>(memory_info, values->data(), values->size(), SHAPE_ARG);
 		deallocators.emplace_back([values]() { delete values; });
