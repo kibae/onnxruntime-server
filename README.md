@@ -38,7 +38,7 @@
 
 - [ONNX Runtime](https://onnxruntime.ai/)
 - [Boost](https://www.boost.org/)
-- [CMake](https://cmake.org/)
+- [CMake](https://cmake.org/), pkg-config
 - CUDA(*optional, for Nvidia GPU support*)
 - OpenSSL(*optional, for HTTPS*)
 
@@ -66,7 +66,7 @@ brew install onnxruntime
 #### Ubuntu/Debian
 
 ```shell
-sudo apt install cmake libboost-all-dev libssl-dev 
+sudo apt install cmake pkg-config libboost-all-dev libssl-dev 
 # optional, for Nvidia GPU support
 sudo apt install nvidia-cuda-toolkit nvidia-cudnn
 # optional, for Nvidia GPU support with Docker 
@@ -147,13 +147,13 @@ sudo cmake --install build --prefix /usr/local/onnxruntime-server
 # Docker
 
 - Docker hub: [kibaes/onnxruntime-server](https://hub.docker.com/r/kibaes/onnxruntime-server)
-    - [`1.2.1-linux-cuda`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cuda.dockerfile)
+    - [`1.16.1-linux-cuda`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cuda.dockerfile)
       amd64
-    - [`1.2.1-linux-cpu`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cpu.dockerfile)
+    - [`1.16.1-linux-cpu`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cpu.dockerfile)
       amd64, arm64
 
 ```shell
-DOCKER_IMAGE=kibae/onnxruntime-server:1.2.1-linux-cuda # or kibae/onnxruntime-server:1.2.1-linux-cpu	
+DOCKER_IMAGE=kibae/onnxruntime-server:1.16.1-linux-cuda # or kibae/onnxruntime-server:1.16.1-linux-cpu	
 
 docker pull ${DOCKER_IMAGE}
 
