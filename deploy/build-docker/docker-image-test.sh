@@ -44,6 +44,15 @@ else
     -H 'accept: application/json' \
     -H 'Content-Type: application/json' \
     -d '{"model": "sample", "version": "2"}' | jq || exit 1
+
+  ERROR=$(curl -sX 'GET' \
+    'http://localhost:8080/api/sessions/sample/2' \
+    -H 'accept: application/json' | jq '.error' || exit 1)
+
+  if [ "${ERROR}" != "null" ]; then
+    echo ${ERROR}
+    exit 1
+  fi
 fi
 
 curl -sX 'POST' \
