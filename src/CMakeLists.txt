@@ -51,7 +51,7 @@ if (CUDA_FOUND)
     endif ()
 else ()
     message(STATUS "CUDA support not found. Compiling without CUDA support.")
-    pkg_check_modules(ONNX_RUNTIME IMPORTED_TARGET libonnxruntime)
+    #    pkg_check_modules(ONNX_RUNTIME IMPORTED_TARGET libonnxruntime)
     if (NOT ONNX_RUNTIME_FOUND)
         list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../cmake" "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
         find_package(ONNXRuntime REQUIRED)
@@ -74,7 +74,7 @@ endif ()
 
 
 include_directories(${Boost_INCLUDE_DIR} ${ONNX_RUNTIME_INCLUDE_DIRS} ${OPENSSL_INCLUDE_DIR})
-link_directories(${Boost_LIBRARY_DIRS} ${ONNX_RUNTIME_LIBRARY_DIR} ${OPENSSL_LIBRARY_DIRS})
+link_directories(${Boost_LIBRARY_DIRS} ${ONNX_RUNTIME_LIBRARY_DIRS} ${OPENSSL_LIBRARY_DIRS})
 
 add_library(${PROJECT_NAME} STATIC SHARED ${SOURCE_FILES})
 target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} ${ONNX_RUNTIME_LIBRARIES} ${OPENSSL_LIBRARIES})
