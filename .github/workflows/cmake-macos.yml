@@ -32,7 +32,8 @@ jobs:
         run: |
           brew update
           brew install cmake onnxruntime boost openssl googletest
-          find /usr/local
+          find /usr/local/include
+          find /usr/local/lib*
 
       - name: Cache test fixtures
         id: cache-test-fixtures
