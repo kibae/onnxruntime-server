@@ -1,6 +1,6 @@
 # ONNX Runtime Server
 
-[![ONNX Runtime](https://img.shields.io/github/v/release/microsoft/onnxruntime?filter=v1.16.3&label=ONNX%20Runtime)](https://github.com/microsoft/onnxruntime)
+[![ONNX Runtime](https://img.shields.io/github/v/release/microsoft/onnxruntime?filter=v1.17.0&label=ONNX%20Runtime)](https://github.com/microsoft/onnxruntime)
 [![CMake on Linux](https://github.com/kibae/onnxruntime-server/actions/workflows/cmake-linux.yml/badge.svg)](https://github.com/kibae/onnxruntime-server/actions/workflows/cmake-linux.yml)
 [![CMake on MacOS](https://github.com/kibae/onnxruntime-server/actions/workflows/cmake-macos.yml/badge.svg)](https://github.com/kibae/onnxruntime-server/actions/workflows/cmake-macos.yml)
 [![License](https://img.shields.io/github/license/kibae/onnxruntime-server)](https://github.com/kibae/onnxruntime-server/blob/main/LICENSE)
@@ -148,13 +148,13 @@ sudo cmake --install build --prefix /usr/local/onnxruntime-server
 # Docker
 
 - Docker hub: [kibaes/onnxruntime-server](https://hub.docker.com/r/kibaes/onnxruntime-server)
-    - [`1.16.3-linux-cuda`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cuda.dockerfile)
+    - [`1.17.0-linux-cuda`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cuda.dockerfile)
       amd64
-    - [`1.16.3-linux-cpu`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cpu.dockerfile)
+    - [`1.17.0-linux-cpu`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cpu.dockerfile)
       amd64, arm64
 
 ```shell
-DOCKER_IMAGE=kibae/onnxruntime-server:1.16.3-linux-cuda # or kibae/onnxruntime-server:1.16.3-linux-cpu	
+DOCKER_IMAGE=kibae/onnxruntime-server:1.17.0-linux-cuda # or kibae/onnxruntime-server:1.17.0-linux-cpu	
 
 docker pull ${DOCKER_IMAGE}
 
