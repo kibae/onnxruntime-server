@@ -17,6 +17,9 @@ FILES=(
     "deploy/build-docker/VERSION"
     "deploy/build-docker/docker-compose.yaml"
     "deploy/build-docker/README.md"
+    "deploy/build-docker/linux-cpu.dockerfile"
+    "deploy/build-docker/linux-cuda11.dockerfile"
+    "deploy/build-docker/linux-cuda12.dockerfile"
     )
 
 pwd
@@ -24,7 +27,7 @@ pwd
 for file in "${FILES[@]}"
 do
     echo "Updating $file"
-    sed -i '' "s/${FROM_VERSION}/${TO_VERSION}/g" "$file"
+    sed -i "s/${FROM_VERSION}/${TO_VERSION}/g" "$file"
 done
 
 echo "Done"
