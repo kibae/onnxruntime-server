@@ -2,8 +2,7 @@
 name: CMake on MacOS
 
 on:
-  push:
-  workflow_run:
+  workflow_call:
     workflows: ["Asset Cache"]
     types:
       - completed
@@ -11,8 +10,6 @@ on:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
-
-    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
 
     strategy:
       fail-fast: false
