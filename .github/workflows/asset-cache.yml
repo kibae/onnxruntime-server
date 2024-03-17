@@ -1,4 +1,4 @@
-name: Cache
+name: Asset Cache
 
 on:
   push:

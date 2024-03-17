@@ -3,9 +3,10 @@ name: CMake on Linux
 
 on:
   workflow_call:
-    workflows: [Cache]
+    workflows: ["Asset Cache"]
     types:
       - completed
+    branches: [ "*" ]
 
 jobs:
   build:
