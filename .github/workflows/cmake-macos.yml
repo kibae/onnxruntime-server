@@ -2,7 +2,7 @@
 name: CMake on MacOS
 
 on:
-  workflow_dispatch:
+  push:
   workflow_run:
     workflows: ["Asset Cache"]
     types:
