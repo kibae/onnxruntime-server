@@ -4,7 +4,6 @@ name: CMake on Linux
 on:
   workflow_run:
     workflows: [ "Asset Cache" ]
-    branches: [ "*" ]
     types:
       - completed
 

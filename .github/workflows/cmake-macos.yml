@@ -4,7 +4,6 @@ name: CMake on MacOS
 on:
   workflow_run:
     workflows: [ "Asset Cache" ]
-    branches: [ "*" ]
     types:
       - completed
 

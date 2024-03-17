@@ -7,14 +7,13 @@ on:
     branches: [ "*" ]
 
 jobs:
-  build:
+  prepare:
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
         name: [ Ubuntu-20, Ubuntu-22, Debian-11, Debian-12 ]
-        c_compiler: [ gcc, clang ]
         build_type: [ Debug ]
         include:
           - name: Ubuntu-20
@@ -25,10 +24,6 @@ jobs:
             image: "debian:11"
           - name: Debian-12
             image: "debian:12"
-          - c_compiler: gcc
-            cpp_compiler: g++
-          - c_compiler: clang
-            cpp_compiler: clang++
 
     steps:
       - name: Cache dependencies(apt)
