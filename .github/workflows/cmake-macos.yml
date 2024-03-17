@@ -3,7 +3,7 @@ name: CMake on MacOS
 
 on:
   workflow_run:
-    workflows: [ "Asset Cache" ]
+    workflows: [Asset Cache]
     types:
       - completed
 
