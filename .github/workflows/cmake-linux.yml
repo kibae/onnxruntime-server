@@ -2,7 +2,7 @@
 name: CMake on Linux
 
 on:
-  workflow_call:
+  workflow_run:
     workflows: ["Asset Cache"]
     types:
       - completed
