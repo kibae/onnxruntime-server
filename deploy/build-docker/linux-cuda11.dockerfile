@@ -1,4 +1,4 @@
-FROM ubuntu:latest AS builder
+FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu22.04 AS builder
 
 RUN apt update && apt install -y curl wget git build-essential cmake pkg-config libboost-all-dev libssl-dev
 RUN mkdir -p /app/source
@@ -12,16 +12,15 @@ WORKDIR /app/source/onnxruntime-server
 
 ARG TARGETPLATFORM
 RUN case ${TARGETPLATFORM} in \
-         "linux/amd64")  ./download-onnxruntime.sh linux x64 1.17.1 ;; \
-         "linux/arm64")  ./download-onnxruntime.sh linux aarch64 1.17.1 ;; \
+         "linux/amd64")  ./download-onnxruntime.sh linux x64-gpu 1.17.1 ;; \
     esac
 
-RUN cmake -DBoost_USE_STATIC_LIBS=ON -DOPENSSL_USE_STATIC_LIBS=ON -B build -S . -DCMAKE_BUILD_TYPE=Release
+RUN cmake -DCUDA_SDK_ROOT_DIR=/usr/local/cuda -DBoost_USE_STATIC_LIBS=ON -DOPENSSL_USE_STATIC_LIBS=ON -B build -S . -DCMAKE_BUILD_TYPE=Release
 RUN cmake --build build --parallel 4 --target onnxruntime_server_standalone
 RUN cmake --install build --prefix /app/onnxruntime-server
 
 # target
-FROM ubuntu:latest AS target
+FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04 AS target
 COPY --from=builder /app/onnxruntime-server /app
 COPY --from=builder /usr/local/onnxruntime /usr/local/onnxruntime
 

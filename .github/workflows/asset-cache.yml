@@ -1,0 +1,69 @@
+name: Cache
+
+on:
+  push:
+    branches: [ "*" ]
+  pull_request:
+    branches: [ "*" ]
+
+jobs:
+  apt-download:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        name: [ Ubuntu-20, Ubuntu-22, Debian-11, Debian-12 ]
+        build_type: [ Debug ]
+        include:
+          - name: Ubuntu-20
+            image: "ubuntu:20.04"
+          - name: Ubuntu-22
+            image: "ubuntu:22.04"
+          - name: Debian-11
+            image: "debian:11"
+          - name: Debian-12
+            image: "debian:12"
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+
+      - name: Cache dependencies(apt)
+        id: cache-dependencies-apt
+        uses: actions/cache@v4
+        with:
+          path: .github/cache/dependencies-apt
+          key: ${{ matrix.image }}-dependencies-apt-v1
+
+      - name: Prepare container(apt download)
+        shell: bash
+        if: steps.cache-dependencies-apt.outputs.cache-hit != 'true' && (startsWith(matrix.image, 'debian:') || startsWith(matrix.image, 'ubuntu:'))
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -yq --download-only build-essential clang-11 cmake libboost-all-dev libssl-dev libgtest-dev
+          cp /var/cache/apt/archives/*.deb .github/cache/dependencies-apt/
+
+  
+
+  test-fixture:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+
+      - name: Cache test fixtures
+        id: cache-test-fixtures
+        uses: actions/cache@v4
+        with:
+          path: test/fixture
+          key: test-fixtures-v1
+
+      - name: Download assets(models)
+        if: steps.cache-test-fixtures.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          ./test/fixture/download-test-fixtures.sh
