@@ -33,19 +33,6 @@ jobs:
           brew update
           HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 HOMEBREW_NO_AUTO_UPDATE=1 brew install cmake onnxruntime boost openssl googletest
 
-      - name: Cache test fixtures
-        id: cache-test-fixtures
-        uses: actions/cache@v4
-        with:
-          path: test/fixture
-          key: test-fixtures-v1
-
-      - name: Download assets(models)
-        if: steps.cache-test-fixtures.outputs.cache-hit != 'true'
-        shell: bash
-        run: |
-          ./test/fixture/download-test-fixtures.sh
-
       - name: Set reusable strings
         # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
         id: strings
@@ -66,6 +53,19 @@ jobs:
       - name: Build
         # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
         run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --parallel 4
+
+      - name: Cache test fixtures
+        id: cache-test-fixtures
+        uses: actions/cache@v4
+        with:
+          path: test/fixture
+          key: test-fixtures-v1
+
+      - name: Download assets(models)
+        if: steps.cache-test-fixtures.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          ./test/fixture/download-test-fixtures.sh
 
       - name: Test
         working-directory: ${{ steps.strings.outputs.build-output-dir }}
