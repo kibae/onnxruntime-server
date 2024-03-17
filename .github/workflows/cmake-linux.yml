@@ -4,13 +4,15 @@ name: CMake on Linux
 on:
   workflow_dispatch:
   workflow_run:
-    workflows: [Asset Cache]
+    workflows: ["Asset Cache"]
     types:
       - completed
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
 
     strategy:
       fail-fast: false
