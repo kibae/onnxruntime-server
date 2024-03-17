@@ -30,7 +30,6 @@ jobs:
         id: cache-dependencies-apt
         uses: actions/cache@v3
         with:
-          path: .github/cache/dependencies-apt
           key: ${{ matrix.image }}-dependencies-apt-v1
 
       - name: Prepare container(apt download)
@@ -45,7 +44,6 @@ jobs:
         id: cache-test-fixtures
         uses: actions/cache@v3
         with:
-          path: test/fixture
           key: test-fixtures-v1
 
       - name: Download assets(models)
