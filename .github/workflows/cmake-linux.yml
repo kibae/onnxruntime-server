@@ -38,7 +38,7 @@ jobs:
 
       - name: Cache dependencies(apt)
         id: cache-dependencies-apt
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: .github/cache/dependencies-apt
           key: ${{ matrix.image }}-dependencies-apt-v1
@@ -64,7 +64,7 @@ jobs:
 
       - name: Cache test fixtures
         id: cache-test-fixtures
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: test/fixture
           key: test-fixtures-v1

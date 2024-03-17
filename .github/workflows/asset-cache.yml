@@ -7,7 +7,7 @@ on:
     branches: [ "*" ]
 
 jobs:
-  prepare:
+  apt-download:
     runs-on: ubuntu-latest
 
     strategy:
@@ -32,7 +32,7 @@ jobs:
 
       - name: Cache dependencies(apt)
         id: cache-dependencies-apt
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: .github/cache/dependencies-apt
           key: ${{ matrix.image }}-dependencies-apt-v1
@@ -45,9 +45,19 @@ jobs:
           sudo apt-get install -yq --download-only build-essential clang-11 cmake libboost-all-dev libssl-dev libgtest-dev
           cp /var/cache/apt/archives/*.deb .github/cache/dependencies-apt/
 
+  
+
+  test-fixture:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+
       - name: Cache test fixtures
         id: cache-test-fixtures
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: test/fixture
           key: test-fixtures-v1

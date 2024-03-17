@@ -35,7 +35,7 @@ jobs:
 
       - name: Cache test fixtures
         id: cache-test-fixtures
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: test/fixture
           key: test-fixtures-v1
