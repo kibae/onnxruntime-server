@@ -2,10 +2,11 @@
 name: CMake on MacOS
 
 on:
-  workflow_call:
-    workflows: [Cache]
+  workflow_run:
+    workflows: ["Asset Cache"]
     types:
       - completed
+    branches: [ "*" ]
 
 jobs:
   build:
