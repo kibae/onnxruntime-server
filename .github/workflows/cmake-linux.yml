@@ -2,10 +2,11 @@
 name: CMake on Linux
 
 on:
-  push:
+  workflow_run:
+    workflows: [ "Asset Cache" ]
     branches: [ "*" ]
-  pull_request:
-    branches: [ "*" ]
+    types:
+      - completed
 
 jobs:
   build:

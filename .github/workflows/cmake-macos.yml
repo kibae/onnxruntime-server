@@ -2,10 +2,11 @@
 name: CMake on MacOS
 
 on:
-  push:
+  workflow_run:
+    workflows: [ "Asset Cache" ]
     branches: [ "*" ]
-  pull_request:
-    branches: [ "*" ]
+    types:
+      - completed
 
 jobs:
   build:
@@ -31,7 +32,7 @@ jobs:
         shell: bash
         run: |
           brew update
-          brew install cmake onnxruntime boost openssl googletest
+          HOMEBREW_NO_AUTO_UPDATE=1 brew install cmake onnxruntime boost openssl googletest
 
       - name: Cache test fixtures
         id: cache-test-fixtures
