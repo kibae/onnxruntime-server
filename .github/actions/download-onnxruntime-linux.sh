@@ -13,6 +13,7 @@ RAW_LIST=$(curl -s -H "Accept: application/vnd.github+json" \
   | grep x64 \
   | grep -v training \
   | grep -v gpu \
+  | grep -v cuda \
   | awk '{print $2}' \
   | tr -d '"')
 
