@@ -8,12 +8,7 @@ RAW_LIST=$(curl -s -H "Accept: application/vnd.github+json" \
   -H "X-GitHub-Api-Version: 2022-11-28" \
   https://api.github.com/repos/microsoft/onnxruntime/releases/latest \
   | grep browser_download_url \
-  | grep tgz \
-  | grep linux \
-  | grep x64 \
-  | grep -v training \
-  | grep -v gpu \
-  | grep -v cuda \
+  | grep -E "onnxruntime-linux-x64-([.0-9]+)tgz" \
   | awk '{print $2}' \
   | tr -d '"')
 
