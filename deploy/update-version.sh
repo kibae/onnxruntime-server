@@ -17,9 +17,7 @@ FILES=(
     "deploy/build-docker/VERSION"
     "deploy/build-docker/docker-compose.yaml"
     "deploy/build-docker/README.md"
-    "deploy/build-docker/linux-cpu.dockerfile"
-    "deploy/build-docker/linux-cuda11.dockerfile"
-    "deploy/build-docker/linux-cuda12.dockerfile"
+    "src/test/test_lib_version.cpp"
     )
 
 pwd

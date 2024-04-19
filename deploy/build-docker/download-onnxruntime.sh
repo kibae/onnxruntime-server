@@ -2,16 +2,16 @@
 
 cd "$(dirname "$0")" || exit
 
+OS=$1
+ARCH=$2
+
 echo
 echo "Select onnxruntime version to download:"
 RAW_LIST=$(curl -s -H "Accept: application/vnd.github+json" \
   -H "X-GitHub-Api-Version: 2022-11-28" \
   https://api.github.com/repos/microsoft/onnxruntime/releases/latest \
   | grep browser_download_url \
-  | grep tgz \
-  | grep $1 \
-  | grep $2 \
-  | grep -v training \
+  | grep -E "onnxruntime-${OS}-${ARCH}-([.0-9]+)tgz" \
   | awk '{print $2}' \
   | tr -d '"' \
   | head -n 1)

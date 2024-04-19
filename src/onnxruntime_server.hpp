@@ -36,6 +36,8 @@ namespace onnxruntime_server {
 	typedef std::function<std::string(const std::string &, const std::string &)> model_bin_getter_t;
 
 	namespace onnx {
+		std::string version();
+
 		class value_info {
 		  public:
 			const std::string name;
