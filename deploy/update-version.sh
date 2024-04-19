@@ -20,6 +20,7 @@ FILES=(
     "deploy/build-docker/linux-cpu.dockerfile"
     "deploy/build-docker/linux-cuda11.dockerfile"
     "deploy/build-docker/linux-cuda12.dockerfile"
+    "src/test/test_lib_version.cpp"
     )
 
 pwd

@@ -1,2 +1,2 @@
-export VERSION=1.17.1
+export VERSION=1.17.3
 export IMAGE_PREFIX=kibaes/onnxruntime-server

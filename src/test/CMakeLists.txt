@@ -11,6 +11,10 @@ set(TEST_LIBS
         GTest::Main
 )
 
+add_executable(lib_version test_lib_version.cpp)
+target_link_libraries(lib_version PRIVATE ${TEST_LIBS})
+add_test(NAME lib_version COMMAND lib_version)
+
 # __    __  .__   __.  __  .___________.
 #|  |  |  | |  \ |  | |  | |           |
 #|  |  |  | |   \|  | |  | `---|  |----`
