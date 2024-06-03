@@ -26,6 +26,7 @@
         - [Install ONNX Runtime](#install-onnx-runtime)
         - [Install dependencies](#install-dependencies)
     - [Compile and Install](#compile-and-install)
+- [Install via a package manager]
 - [Run the server](#run-the-server)
 - [Docker](#docker)
 - [API](#api)
@@ -89,6 +90,14 @@ cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel
 sudo cmake --install build --prefix /usr/local/onnxruntime-server
 ```
+
+----
+
+# Install via a package manager
+
+| OS                            | Method     | Command                                    |
+|-------------------------------|------------|--------------------------------------------|
+| Arch Linux                    | AUR        | `yay -S onnxruntime-server`                |
 
 ----
 
