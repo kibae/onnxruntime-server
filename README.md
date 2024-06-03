@@ -26,7 +26,7 @@
         - [Install ONNX Runtime](#install-onnx-runtime)
         - [Install dependencies](#install-dependencies)
     - [Compile and Install](#compile-and-install)
-- [Install via a package manager]
+- [Install via a package manager](#install-via-a-package-manager)
 - [Run the server](#run-the-server)
 - [Docker](#docker)
 - [API](#api)
