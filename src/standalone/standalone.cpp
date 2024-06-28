@@ -15,11 +15,11 @@ int onnxruntime_server::standalone::init_config(int argc, char **argv) {
 		po_desc.add_options()("help,h", "Produce help message\n");
 		// env: ONNX_WORKERS
 		po_desc.add_options()(
-			"workers", po::value<int>()->default_value(4),
+			"workers", po::value<long>()->default_value(4),
 			"env: ONNX_SERVER_WORKERS\nWorker thread pool size.\nDefault: 4"
 		);
 		po_desc.add_options()(
-			"request-payload-limit", po::value<int>()->default_value(1024 * 1024 * 10),
+			"request-payload-limit", po::value<long>()->default_value(1024 * 1024 * 10),
 			"env: ONNX_SERVER_REQUEST_PAYLOAD_LIMIT\nHTTP/HTTPS request payload size limit.\nDefault: 1024 * 1024 * 10(10MB)"
 		);
 		po_desc.add_options()(
