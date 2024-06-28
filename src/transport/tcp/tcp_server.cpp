@@ -8,7 +8,7 @@ onnxruntime_server::transport::tcp::tcp_server::tcp_server(
 	onnxruntime_server::onnx::session_manager *onnx_session_manager,
 	onnxruntime_server::builtin_thread_pool *worker_pool
 )
-	: server(io_context, onnx_session_manager, worker_pool, config.tcp_port, config.request_payload_limit) {
+	: server(io_context, onnx_session_manager, worker_pool, config.tcp_port) {
 	acceptor.set_option(boost::asio::socket_base::reuse_address(true));
 }
 
