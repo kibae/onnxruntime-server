@@ -1,4 +1,4 @@
-FROM nvidia/cuda:12.2.2-cudnn8-devel-ubuntu22.04 AS builder
+FROM nvidia/cuda:12.3.2-cudnn9-devel-ubuntu22.04 AS builder
 
 RUN apt update && apt install -y curl wget git build-essential cmake pkg-config libboost-all-dev libssl-dev
 RUN mkdir -p /app/source
@@ -20,7 +20,7 @@ RUN cmake --build build --parallel 4 --target onnxruntime_server_standalone
 RUN cmake --install build --prefix /app/onnxruntime-server
 
 # target
-FROM nvidia/cuda:12.2.2-cudnn8-runtime-ubuntu22.04 AS target
+FROM nvidia/cuda:12.3.2-cudnn9-runtime-ubuntu22.04 AS target
 COPY --from=builder /app/onnxruntime-server /app
 COPY --from=builder /usr/local/onnxruntime /usr/local/onnxruntime
 
