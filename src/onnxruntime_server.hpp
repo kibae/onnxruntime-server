@@ -311,6 +311,7 @@ namespace onnxruntime_server {
 		std::string model_dir;
 		std::string prepare_model;
 		model_bin_getter_t model_bin_getter{};
+		long request_payload_limit = 1024 * 1024 * 10;
 	};
 
 	namespace transport {
@@ -322,6 +323,7 @@ namespace onnxruntime_server {
 			asio::socket socket;
 			asio::acceptor acceptor;
 			uint_least16_t assigned_port = 0;
+			long request_payload_limit_;
 
 			onnx::session_manager *onnx_session_manager;
 
@@ -331,12 +333,13 @@ namespace onnxruntime_server {
 		  public:
 			server(
 				boost::asio::io_context &io_context, onnx::session_manager *onnx_session_manager,
-				builtin_thread_pool *worker_pool, int port
+				builtin_thread_pool *worker_pool, int port, long request_payload_limit
 			);
 			~server();
 
 			builtin_thread_pool *get_worker_pool();
 			onnx::session_manager *get_onnx_session_manager();
+			[[nodiscard]] long request_payload_limit() const;
 			[[nodiscard]] uint_least16_t port() const;
 		};
 
