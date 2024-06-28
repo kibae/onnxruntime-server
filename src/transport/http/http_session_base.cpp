@@ -1,7 +1,8 @@
 #include "http_server.hpp"
 
 template <class Session>
-onnxruntime_server::transport::http::http_session_base<Session>::http_session_base() : buffer(), req() {
+onnxruntime_server::transport::http::http_session_base<Session>::http_session_base() : buffer() {
+	req_parser = std::make_shared<beast::http::request_parser<beast::http::string_body>>();
 }
 
 #define CONTENT_TYPE_PLAIN_TEXT "text/plain"
@@ -10,8 +11,11 @@ onnxruntime_server::transport::http::http_session_base<Session>::http_session_ba
 template <class Session>
 std::shared_ptr<beast::http::response<beast::http::string_body>>
 onnxruntime_server::transport::http::http_session_base<Session>::handle_request() {
+	auto req = req_parser->get();
+
 	auto const simple_response =
 		[this](beast::http::status method, beast::string_view content_type, beast::string_view body) {
+			auto req = req_parser->get();
 			auto res = std::make_shared<beast::http::response<beast::http::string_body>>(method, req.version());
 			res->set(beast::http::field::content_type, content_type);
 			res->keep_alive(req.keep_alive());

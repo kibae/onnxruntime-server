@@ -35,10 +35,10 @@ void onnxruntime_server::transport::http::https_session::do_read() {
 		_remote_endpoint = stream.lowest_layer().remote_endpoint().address().to_string() + ":" +
 						   std::to_string(stream.lowest_layer().remote_endpoint().port());
 
-	req = {};
+	req_parser->body_limit(server->request_payload_limit());
 
 	beast::http::async_read(
-		stream, buffer, req, beast::bind_front_handler(&https_session::on_read, shared_from_this())
+		stream, buffer, *req_parser, beast::bind_front_handler(&https_session::on_read, shared_from_this())
 	);
 }
 
@@ -59,6 +59,7 @@ void onnxruntime_server::transport::http::https_session::on_read(beast::error_co
 void onnxruntime_server::transport::http::https_session::do_write(
 	std::shared_ptr<beast::http::response<beast::http::string_body>> msg
 ) {
+	auto req = req_parser->get();
 	PLOG(L_INFO, "ACCESS") << get_remote_endpoint() << " task: " << req.method_string() << " " << req.target()
 						   << " status: " << msg->result_int() << " duration: " << request_time.get_duration()
 						   << std::endl;
@@ -72,7 +73,7 @@ void onnxruntime_server::transport::http::https_session::do_write(
 				return self->close();
 			}
 
-			if (!self->req.keep_alive())
+			if (!self->req_parser->get().keep_alive())
 				return self->close();
 
 			self->do_read();

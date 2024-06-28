@@ -19,6 +19,10 @@ int onnxruntime_server::standalone::init_config(int argc, char **argv) {
 			"env: ONNX_SERVER_WORKERS\nWorker thread pool size.\nDefault: 4"
 		);
 		po_desc.add_options()(
+			"request-payload-limit", po::value<int>()->default_value(1024 * 1024 * 10),
+			"env: ONNX_SERVER_REQUEST_PAYLOAD_LIMIT\nHTTP/HTTPS request payload size limit.\nDefault: 1024 * 1024 * 10(10MB)"
+		);
+		po_desc.add_options()(
 			"model-dir", po::value<std::string>()->default_value("models"),
 			"env: ONNX_SERVER_MODEL_DIR\nModel directory path.\nThe onnx model files must be located in the "
 			"following "
@@ -156,7 +160,10 @@ int onnxruntime_server::standalone::init_config(int argc, char **argv) {
 		AixLog::Log::init({log_file, log_access_file});
 
 		if (vm.count("workers"))
-			config.num_threads = vm["workers"].as<int>();
+			config.num_threads = vm["workers"].as<long>();
+
+		if (vm.count("request-payload-limit"))
+			config.request_payload_limit = vm["request-payload-limit"].as<long>();
 
 		if (vm.count("model-dir"))
 			config.model_dir = vm["model-dir"].as<std::string>();
