@@ -36,7 +36,7 @@ namespace onnxruntime_server::transport::http {
 	template <class Session> class http_session_base : public std::enable_shared_from_this<Session> {
 	  protected:
 		beast::flat_buffer buffer;
-		std::shared_ptr<beast::http::request_parser<beast::http::string_body>> req_parser;
+		beast::http::request<beast::http::string_body> req;
 
 		virtual onnx::session_manager *get_onnx_session_manager() = 0;
 		std::shared_ptr<beast::http::response<beast::http::string_body>> handle_request();
