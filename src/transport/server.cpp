@@ -6,10 +6,10 @@
 
 Orts::transport::server::server(
 	boost::asio::io_context &io_context, Orts::onnx::session_manager *onnx_session_manager,
-	Orts::builtin_thread_pool *worker_pool, int port
+	Orts::builtin_thread_pool *worker_pool, int port, long request_payload_limit
 )
 	: io_context(io_context), acceptor(io_context, asio::endpoint(asio::v4(), port)), socket(io_context),
-	  onnx_session_manager(onnx_session_manager), worker_pool(worker_pool) {
+	  onnx_session_manager(onnx_session_manager), worker_pool(worker_pool), request_payload_limit_(request_payload_limit) {
 
 	assigned_port = acceptor.local_endpoint().port();
 
@@ -35,6 +35,10 @@ Orts::builtin_thread_pool *Orts::transport::server::get_worker_pool() {
 
 Orts::onnx::session_manager *Orts::transport::server::get_onnx_session_manager() {
 	return onnx_session_manager;
+}
+
+long Orts::transport::server::request_payload_limit() const {
+	return request_payload_limit_;
 }
 
 uint_least16_t Orts::transport::server::port() const {
