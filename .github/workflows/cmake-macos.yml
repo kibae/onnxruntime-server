@@ -31,7 +31,7 @@ jobs:
         shell: bash
         run: |
           brew update
-          HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 HOMEBREW_NO_AUTO_UPDATE=1 brew install cmake boost openssl googletest
+          HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 HOMEBREW_NO_AUTO_UPDATE=1 brew install cmake boost openssl googletest curl
           ./.github/actions/download-onnxruntime-macos.sh
 
       - name: Set reusable strings
