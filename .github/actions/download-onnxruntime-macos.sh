@@ -8,7 +8,7 @@ RAW_LIST=$(curl -s -H "Accept: application/vnd.github+json" \
   -H "X-GitHub-Api-Version: 2022-11-28" \
   https://api.github.com/repos/microsoft/onnxruntime/releases/latest \
   | grep browser_download_url \
-  | grep -E "onnxruntime-osx-universal([-.0-9]+).tgz" \
+  | grep "onnxruntime-osx-universal" \
   | awk '{print $2}' \
   | tr -d '"')
 
