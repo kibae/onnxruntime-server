@@ -5,12 +5,8 @@
 
 # Supported tags and respective Dockerfile links
 
-- [`1.19.0-linux-cuda11`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cuda11.dockerfile)
-  amd64
-- [`1.19.0-linux-cuda12`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cuda12.dockerfile)
-  amd64
-- [`1.19.0-linux-cpu`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cpu.dockerfile)
-  amd64, arm64
+- [`1.19.0-linux-cuda11`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cuda11.dockerfile) amd64(CUDA 11.x, cuDNN 8.x)
+- [`1.19.0-linux-cpu`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cpu.dockerfile) amd64, arm64
 
 # How to use this image
 

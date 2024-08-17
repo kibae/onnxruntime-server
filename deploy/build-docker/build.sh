@@ -37,11 +37,11 @@ if [ "$1" != "--target=cpu" ]; then
   docker buildx build --platform linux/amd64 -t ${IMAGE_NAME} -f deploy/build-docker/${POSTFIX}.dockerfile --push . || exit 1
 
 
-  POSTFIX=linux-cuda12
-  IMAGE_NAME=${IMAGE_PREFIX}:${VERSION}-${POSTFIX}
+#  POSTFIX=linux-cuda12
+#  IMAGE_NAME=${IMAGE_PREFIX}:${VERSION}-${POSTFIX}
 
-  docker buildx build --platform linux/amd64 -t ${IMAGE_NAME} -f deploy/build-docker/${POSTFIX}.dockerfile --load . || exit 1
-  ./deploy/build-docker/docker-image-test.sh ${IMAGE_NAME} 1 || exit 1
-  docker buildx build --platform linux/amd64 -t ${IMAGE_NAME} -f deploy/build-docker/${POSTFIX}.dockerfile --push . || exit 1
+#  docker buildx build --platform linux/amd64 -t ${IMAGE_NAME} -f deploy/build-docker/${POSTFIX}.dockerfile --load . || exit 1
+#  ./deploy/build-docker/docker-image-test.sh ${IMAGE_NAME} 1 || exit 1
+#  docker buildx build --platform linux/amd64 -t ${IMAGE_NAME} -f deploy/build-docker/${POSTFIX}.dockerfile --push . || exit 1
 fi
 
