@@ -158,11 +158,11 @@ sudo cmake --install build --prefix /usr/local/onnxruntime-server
 # Docker
 
 - Docker hub: [kibaes/onnxruntime-server](https://hub.docker.com/r/kibaes/onnxruntime-server)
-    - [`1.19.2-linux-cuda11`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cuda11.dockerfile) amd64(CUDA 11.x, cuDNN 8.x)
+    - [`1.19.2-linux-cuda12`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cuda12.dockerfile) amd64(CUDA 12.x, cuDNN 9.x)
     - [`1.19.2-linux-cpu`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cpu.dockerfile) amd64, arm64
 
 ```shell
-DOCKER_IMAGE=kibae/onnxruntime-server:1.19.2-linux-cuda11 # or kibae/onnxruntime-server:1.19.2-linux-cpu	
+DOCKER_IMAGE=kibae/onnxruntime-server:1.19.2-linux-cuda12 # or kibae/onnxruntime-server:1.19.2-linux-cpu	
 
 docker pull ${DOCKER_IMAGE}
 
