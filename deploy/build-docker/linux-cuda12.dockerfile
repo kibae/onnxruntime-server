@@ -12,7 +12,7 @@ WORKDIR /app/source/onnxruntime-server
 
 ARG TARGETPLATFORM
 RUN case ${TARGETPLATFORM} in \
-         "linux/amd64")  ./download-onnxruntime.sh linux x64-gpu-cuda12 ;; \
+         "linux/amd64")  ./download-onnxruntime.sh linux x64-gpu ;; \
     esac
 
 RUN cmake -DCUDA_SDK_ROOT_DIR=/usr/local/cuda-12 -DBoost_USE_STATIC_LIBS=ON -DOPENSSL_USE_STATIC_LIBS=ON -B build -S . -DCMAKE_BUILD_TYPE=Release
