@@ -24,6 +24,7 @@ wget -q "$item"
 
 sudo mkdir -p /usr/local/onnxruntime
 sudo tar vzxf "$FILENAME" -C /usr/local/onnxruntime --strip-components=1
+ls /usr/local/onnxruntime
 
 rm -f "$FILENAME"
 
