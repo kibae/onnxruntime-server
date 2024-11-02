@@ -15,7 +15,7 @@ RUN case ${TARGETPLATFORM} in \
          "linux/amd64")  ./download-onnxruntime.sh linux x64-gpu ;; \
     esac
 
-RUN cmake -DCUDA_SDK_ROOT_DIR=/usr/local/cuda-12 -DBoost_USE_STATIC_LIBS=ON -DOPENSSL_USE_STATIC_LIBS=ON -B build -S . -DCMAKE_BUILD_TYPE=Release
+RUN cmake -DCUDA_SDK_ROOT_DIR=/usr/local/cuda -DBoost_USE_STATIC_LIBS=ON -DOPENSSL_USE_STATIC_LIBS=ON -B build -S . -DCMAKE_BUILD_TYPE=Release
 RUN cmake --build build --parallel 4 --target onnxruntime_server_standalone
 RUN cmake --install build --prefix /app/onnxruntime-server
 
@@ -28,5 +28,5 @@ WORKDIR /app
 RUN mkdir -p models logs certs
 
 ENV ONNX_SERVER_CONFIG_PRIORITY=env
-ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-12/lib64:/usr/local/onnxruntime/lib
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/onnxruntime/lib
 ENTRYPOINT ["/app/bin/onnxruntime_server", "--model-dir", "models", "--log-file", "logs/app.log", "--access-log-file", "logs/access.log", "--tcp-port", "6432", "--http-port", "80"]
