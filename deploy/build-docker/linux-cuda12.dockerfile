@@ -16,7 +16,7 @@ RUN case ${TARGETPLATFORM} in \
     esac
 
 RUN cmake -DCUDA_SDK_ROOT_DIR=/usr/local/cuda-12 -DBoost_USE_STATIC_LIBS=ON -DOPENSSL_USE_STATIC_LIBS=ON -B build -S . -DCMAKE_BUILD_TYPE=Release
-RUN cmake --build build --parallel 4 --target onnxruntime_server_standalone
+RUN cmake --build build --parallel 8 --target onnxruntime_server_standalone
 RUN cmake --install build --prefix /app/onnxruntime-server
 
 # target
