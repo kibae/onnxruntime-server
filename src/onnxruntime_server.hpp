@@ -56,7 +56,7 @@ namespace onnxruntime_server {
 		class session_key {
 		  public:
 			std::string model_name;
-			std::string model_version = 0;
+			std::string model_version;
 
 			session_key(std::string model_name, std::string model_version);
 			bool operator<(const session_key &other) const;
@@ -128,7 +128,7 @@ namespace onnxruntime_server {
 			model_bin_getter_t model_bin_getter;
 
 		  public:
-			explicit session_manager(model_bin_getter_t model_bin_getter);
+			explicit session_manager(const model_bin_getter_t& model_bin_getter);
 			~session_manager();
 
 			std::map<session_key, std::shared_ptr<session>> &get_sessions() {

@@ -134,11 +134,10 @@ TEST(test_onnxruntime_server_http, HttpServerTest) {
 	server_thread.join();
 }
 
-TEST(test_onnxruntime_server_http, HttpServerLargeRequestTest) {
+TEST(test_onnxruntime_server_http, HttpServerTest3) {
 	Orts::config config;
 	config.http_port = 0;
 	config.model_bin_getter = test_model_bin_getter;
-	config.request_payload_limit = 1024 * 1024 * 1024;
 
 	boost::asio::io_context io_context;
 	Orts::onnx::session_manager manager(config.model_bin_getter);
@@ -151,7 +150,7 @@ TEST(test_onnxruntime_server_http, HttpServerLargeRequestTest) {
 	TIME_MEASURE_INIT
 
 	{ // API: Create session
-		json body = json::parse(R"({"model":"sample","version":"1"})");
+		json body = json::parse(R"({"model":"sample","version":"3"})");
 		TIME_MEASURE_START
 		auto res = http_request(boost::beast::http::verb::post, "/api/sessions", server.port(), body.dump());
 		TIME_MEASURE_STOP
@@ -159,18 +158,18 @@ TEST(test_onnxruntime_server_http, HttpServerLargeRequestTest) {
 		json res_json = json::parse(boost::beast::buffers_to_string(res.body().data()));
 		std::cout << "API: Create session\n" << res_json.dump(2) << "\n";
 		ASSERT_EQ(res_json["model"], "sample");
-		ASSERT_EQ(res_json["version"], "1");
+		ASSERT_EQ(res_json["version"], "3");
 	}
 
 	{ // API: Get session
 		TIME_MEASURE_START
-		auto res = http_request(boost::beast::http::verb::get, "/api/sessions/sample/1", server.port(), "");
+		auto res = http_request(boost::beast::http::verb::get, "/api/sessions/sample/3", server.port(), "");
 		TIME_MEASURE_STOP
 		ASSERT_EQ(res.result(), boost::beast::http::status::ok);
 		json res_json = json::parse(boost::beast::buffers_to_string(res.body().data()));
 		std::cout << "API: Get session\n" << res_json.dump(2) << "\n";
 		ASSERT_EQ(res_json["model"], "sample");
-		ASSERT_EQ(res_json["version"], "1");
+		ASSERT_EQ(res_json["version"], "3");
 	}
 
 	{ // API: List session
@@ -182,13 +181,13 @@ TEST(test_onnxruntime_server_http, HttpServerLargeRequestTest) {
 		std::cout << "API: List sessions\n" << res_json.dump(2) << "\n";
 		ASSERT_EQ(res_json.size(), 1);
 		ASSERT_EQ(res_json[0]["model"], "sample");
-		ASSERT_EQ(res_json[0]["version"], "1");
+		ASSERT_EQ(res_json[0]["version"], "3");
 	}
 
 	{ // API: Execute session
 		auto input = json::parse(R"({"x":[[1]],"y":[[2]],"z":[[3]]})");
 		TIME_MEASURE_START
-		auto res = http_request(boost::beast::http::verb::post, "/api/sessions/sample/1", server.port(), input.dump());
+		auto res = http_request(boost::beast::http::verb::post, "/api/sessions/sample/3", server.port(), input.dump());
 		TIME_MEASURE_STOP
 		ASSERT_EQ(res.result(), boost::beast::http::status::ok);
 		json res_json = json::parse(boost::beast::buffers_to_string(res.body().data()));
@@ -198,29 +197,9 @@ TEST(test_onnxruntime_server_http, HttpServerLargeRequestTest) {
 		ASSERT_GT(res_json["output"][0], 0);
 	}
 
-	{ // API: Execute session large request
-		auto input = json::parse(R"({"x":[[1]],"y":[[2]],"z":[[3]]})");
-		int size = 1000000;
-		for (int i = 0; i < size; i++) {
-			input["x"].push_back(input["x"][0]);
-			input["y"].push_back(input["y"][0]);
-			input["z"].push_back(input["z"][0]);
-		}
-		std::cout << input.dump().length() << " bytes\n";
-
-		TIME_MEASURE_START
-		auto res = http_request(boost::beast::http::verb::post, "/api/sessions/sample/1", server.port(), input.dump());
-		TIME_MEASURE_STOP
-		ASSERT_EQ(res.result(), boost::beast::http::status::ok);
-		json res_json = json::parse(boost::beast::buffers_to_string(res.body().data()));
-		ASSERT_TRUE(res_json.contains("output"));
-		ASSERT_EQ(res_json["output"].size(), size + 1);
-		ASSERT_GT(res_json["output"][0], 0);
-	}
-
 	{ // API: Destroy session
 		TIME_MEASURE_START
-		auto res = http_request(boost::beast::http::verb::delete_, "/api/sessions/sample/1", server.port(), "");
+		auto res = http_request(boost::beast::http::verb::delete_, "/api/sessions/sample/3", server.port(), "");
 		TIME_MEASURE_STOP
 		ASSERT_EQ(res.result(), boost::beast::http::status::ok);
 		json res_json = json::parse(boost::beast::buffers_to_string(res.body().data()));

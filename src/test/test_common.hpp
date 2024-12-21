@@ -11,25 +11,19 @@
 
 #include <gtest/gtest.h>
 
+#include "../standalone/model_bin_getter.hpp"
+
 boost::filesystem::path current_file_path(__FILE__);
 boost::filesystem::path current_file_dir = current_file_path.parent_path();
 boost::filesystem::path root_dir = current_file_dir.parent_path().parent_path().parent_path().parent_path();
 boost::filesystem::path test_dir = root_dir / "test";
+boost::filesystem::path model_root = test_dir / "fixture";
 
-auto model1_path = test_dir / "fixture" / "sample" / "1" / "model.onnx";
-auto model2_path = test_dir / "fixture" / "sample" / "2" / "model.onnx";
+auto model1_path = model_root / "sample" / "1" / "model.onnx";
+auto model2_path = model_root / "sample" / "2" / "model.onnx";
 
 std::string test_model_bin_getter(const std::string &model_name, const std::string &model_version) {
-	std::string model_path;
-	if (model_version == "1")
-		model_path = model1_path.string();
-	else if (model_version == "2")
-		model_path = model2_path.string();
-
-	std::ifstream file(model_path, std::ios::binary);
-	std::stringstream buffer;
-	buffer << file.rdbuf();
-	return buffer.str();
+	return onnxruntime_server::get_model_bin(model_root.string(), model_name, model_version);
 }
 
 void test_server_run(boost::asio::io_context &io_context, bool *running) {
