@@ -79,7 +79,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        name: [ Ubuntu-20, Ubuntu-22, Debian-11, Debian-12 ]
+        name: [ Ubuntu-20, Ubuntu-22, Ubuntu-24, Debian-11, Debian-12 ]
         c_compiler: [ gcc, clang ]
         build_type: [ Debug ]
         include:
