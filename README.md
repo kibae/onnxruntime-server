@@ -111,14 +111,15 @@ sudo cmake --install build --prefix /usr/local/onnxruntime-server
 
 - **You must enter the path option(`--model-dir`) where the models are located.**
     - The onnx model files must be located in the following path:
-      `${model_dir}/${model_name}/${model_version}/model.onnx`
+      `${model_dir}/${model_name}/${model_version}/model.onnx` or
+      `${model_dir}/${model_name}/${model_version}.onnx`
 
-| Files in `--model-dir`                | Create session request body                         | Get/Execute session API URL path<br />(after created) |
-|---------------------------------------|-----------------------------------------------------|-------------------------------------------------------|
-| `model_name/model_version/model.onnx` | `{"model":"model_name", "version":"model_version"}` | `/api/sessions/model_name/model_version`              |
-| `sample/v1/model.onnx`                | `{"model":"sample", "version":"v1"}`                | `/api/sessions/sample/v1`                             |
-| `sample/v2/model.onnx`                | `{"model":"sample", "version":"v2"}`                | `/api/sessions/sample/v2`                             |
-| `other/20200101/model.onnx`           | `{"model":"other", "version":"20200101"}`           | `/api/sessions/other/20200101`                        |
+| Files in `--model-dir`                                                   | Create session request body                         | Get/Execute session API URL path<br />(after created) |
+|--------------------------------------------------------------------------|-----------------------------------------------------|-------------------------------------------------------|
+| `model_name/model_version/model.onnx` or `model_name/model_version.onnx` | `{"model":"model_name", "version":"model_version"}` | `/api/sessions/model_name/model_version`              |
+| `sample/v1/model.onnx` or `sample/v1.onnx`                               | `{"model":"sample", "version":"v1"}`                | `/api/sessions/sample/v1`                             |
+| `sample/v2/model.onnx` or `sample/v2.onnx`                               | `{"model":"sample", "version":"v2"}`                | `/api/sessions/sample/v2`                             |
+| `other/20200101/model.onnx` or `other/20200101.onnx`                     | `{"model":"other", "version":"20200101"}`           | `/api/sessions/other/20200101`                        |
 
 - **You need to enable one of the following backends: TCP, HTTP, or HTTPS.**
     - If you want to use TCP, you must specify the `--tcp-port` option.
@@ -137,7 +138,7 @@ sudo cmake --install build --prefix /usr/local/onnxruntime-server
 |---------------------------|-------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `--workers`               | `ONNX_SERVER_WORKERS`               | Worker thread pool size.<br/>Default: `4`                                                                                                                                                                                                                                                                                                       |
 | `--request-payload-limit` | `ONNX_SERVER_REQUEST_PAYLOAD_LIMIT` | HTTP/HTTPS request payload size limit.<br />Default: 1024 * 1024 * 10(10MB)`                                                                                                                                                                                                                                                                    |
-| `--model-dir`             | `ONNX_SERVER_MODEL_DIR`             | Model directory path<br/>The onnx model files must be located in the following path:<br/>`${model_dir}/${model_name}/${model_version}/model.onnx`<br/>Default: `models`                                                                                                                                                                         |
+| `--model-dir`             | `ONNX_SERVER_MODEL_DIR`             | Model directory path<br/>The onnx model files must be located in the following path:<br/>`${model_dir}/${model_name}/${model_version}/model.onnx` or<br/>`${model_dir}/${model_name}/${model_version}.onnx`<br/>Default: `models`                                                                                                               |
 | `--prepare-model`         | `ONNX_SERVER_PREPARE_MODEL`         | Pre-create some model sessions at server startup.<br/><br/>Format as a space-separated list of `model_name:model_version` or `model_name:model_version(session_options, ...)`.<br/><br/>Available session_options are<br/>- cuda=device_id`[ or true or false]`<br/><br/>eg) `model1:v1 model2:v9`<br/>`model1:v1(cuda=true) model2:v9(cuda=1)` |
 
 ### Backend options

@@ -3,8 +3,7 @@
 //
 
 #include "standalone.hpp"
-#include <fstream>
-#include <sstream>
+#include "model_bin_getter.hpp"
 
 onnxruntime_server::standalone::standalone() : config() {
 }
@@ -24,10 +23,8 @@ int onnxruntime_server::standalone::init_config(int argc, char **argv) {
 		);
 		po_desc.add_options()(
 			"model-dir", po::value<std::string>()->default_value("models"),
-			"env: ONNX_SERVER_MODEL_DIR\nModel directory path.\nThe onnx model files must be located in the "
-			"following "
-			"path:\n"
-			"\"${model_dir}/${model_name}/${model_version}/model.onnx\"\nDefault: ./models"
+			"env: ONNX_SERVER_MODEL_DIR\nModel directory path.\nThe onnx model files must be located in the following path:\n"
+			"\"${model_dir}/${model_name}/${model_version}/model.onnx\" or \n\"${model_dir}/${model_name}/${model_version}.onnx\"\nDefault: ./models"
 		);
 		po_desc.add_options()(
 			"prepare-model", po::value<std::string>(),
@@ -232,21 +229,15 @@ int onnxruntime_server::standalone::init_config(int argc, char **argv) {
 		return 1;
 	}
 
-	config.model_bin_getter = std::bind(&standalone::get_model_bin, this, std::placeholders::_1, std::placeholders::_2);
+	config.model_bin_getter = [this](const std::string &model_name, const std::string &model_version) {
+		return onnxruntime_server::get_model_bin(model_root.string(), model_name, model_version);
+	};
+	// config.model_bin_getter = std::bind(&onnxruntime_server::get_model_bin, this, std::placeholders::_1, std::placeholders::_2);
 
 	return 0;
 }
 
-std::string
-onnxruntime_server::standalone::get_model_bin(const std::string &model_name, const std::string &model_version) {
-	auto model_path = (model_root / model_name / model_version / "model.onnx").string();
-	std::ifstream file(model_path, std::ios::binary);
-	std::stringstream buffer;
-	buffer << file.rdbuf();
-	return buffer.str();
-}
-
-void onnxruntime_server::standalone::prepare_models(onnxruntime_server::onnx::session_manager &manager) {
+void onnxruntime_server::standalone::prepare_models(onnxruntime_server::onnx::session_manager &manager) const {
 	auto model_keys = Orts::onnx::session_key_with_option::parse(config.prepare_model);
 	if (model_keys.empty())
 		return;

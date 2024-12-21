@@ -35,13 +35,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        name: [ Ubuntu-20, Ubuntu-22, Debian-11, Debian-12 ]
+        name: [ Ubuntu-20, Ubuntu-22, Ubuntu-24, Debian-11, Debian-12 ]
         build_type: [ Debug ]
         include:
           - name: Ubuntu-20
             image: "ubuntu:20.04"
           - name: Ubuntu-22
             image: "ubuntu:22.04"
+          - name: Ubuntu-24
+            image: "ubuntu:24.04"
           - name: Debian-11
             image: "debian:11"
           - name: Debian-12
@@ -64,7 +66,7 @@ jobs:
         if: steps.cache-dependencies-apt.outputs.cache-hit != 'true' && (startsWith(matrix.image, 'debian:') || startsWith(matrix.image, 'ubuntu:'))
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -yq --download-only build-essential clang-11 cmake libboost-all-dev libssl-dev libgtest-dev
+          sudo apt-get install -yq --download-only build-essential clang cmake libboost-all-dev libssl-dev libgtest-dev
           cp /var/cache/apt/archives/*.deb .github/cache/dependencies-apt/
 
 
@@ -77,7 +79,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        name: [ Ubuntu-20, Ubuntu-22, Debian-11, Debian-12 ]
+        name: [ Ubuntu-20, Ubuntu-22, Ubuntu-24, Debian-11, Debian-12 ]
         c_compiler: [ gcc, clang ]
         build_type: [ Debug ]
         include:
@@ -85,6 +87,8 @@ jobs:
             image: "ubuntu:20.04"
           - name: Ubuntu-22
             image: "ubuntu:22.04"
+          - name: Ubuntu-24
+            image: "ubuntu:24.04"
           - name: Debian-11
             image: "debian:11"
           - name: Debian-12
@@ -111,7 +115,7 @@ jobs:
         if: steps.cache-dependencies-apt.outputs.cache-hit != 'true' && (startsWith(matrix.image, 'debian:') || startsWith(matrix.image, 'ubuntu:'))
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -yq --download-only build-essential clang-11 cmake libboost-all-dev libssl-dev libgtest-dev
+          sudo apt-get install -yq --download-only build-essential clang cmake libboost-all-dev libssl-dev libgtest-dev
           cp /var/cache/apt/archives/*.deb .github/cache/dependencies-apt/
 
       - name: Prepare container(apt)
