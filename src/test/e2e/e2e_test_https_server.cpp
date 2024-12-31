@@ -145,7 +145,7 @@ http_request(beast::http::verb method, const std::string &target, short port, st
 	ssl_context.set_verify_mode(boost::asio::ssl::verify_none);
 
 	boost::asio::ssl::stream<asio::tcp::socket> stream(ioc, ssl_context);
-	boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::address::from_string("127.0.0.1"), port);
+	boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::make_address("127.0.0.1"), port);
 	stream.lowest_layer().connect(endpoint);
 	boost::system::error_code ec;
 	stream.handshake(boost::asio::ssl::stream_base::client, ec);
