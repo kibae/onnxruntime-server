@@ -54,6 +54,7 @@ jobs:
         shell: bash
         if: steps.cache-dependencies-apt.outputs.cache-hit != 'true' && (startsWith(matrix.os, 'debian-') || startsWith(matrix.os, 'ubuntu-'))
         run: |
+          cat /etc/os-release
           sudo apt-get update -qq
           sudo apt-get install -yq --download-only build-essential clang cmake libboost-all-dev libssl-dev libgtest-dev
           cp /var/cache/apt/archives/*.deb .github/cache/dependencies-apt/
@@ -101,6 +102,7 @@ jobs:
         shell: bash
         if: startsWith(matrix.os, 'debian-') || startsWith(matrix.os, 'ubuntu-')
         run: |
+          cat /etc/os-release
           sudo dpkg -i .github/cache/dependencies-apt/*.deb
 
       - name: Prepare container(onnxruntime)
