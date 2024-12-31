@@ -30,12 +30,10 @@ jobs:
           ./test/fixture/download-test-fixtures.sh
 
   prepare-apt:
-    runs-on: ubuntu-latest
-
+    runs-on: ${{ matrix.image }}
     strategy:
       fail-fast: false
       matrix:
-        name: [ Ubuntu-20, Ubuntu-22, Ubuntu-24, Debian-11, Debian-12 ]
         build_type: [ Debug ]
         include:
           - name: Ubuntu-20
@@ -73,13 +71,12 @@ jobs:
 
 
   build:
-    runs-on: ubuntu-latest
-    needs: ["prepare-asset", "prepare-apt"]
+    runs-on: ${{ matrix.image }}
+    needs: [ "prepare-asset", "prepare-apt" ]
 
     strategy:
       fail-fast: false
       matrix:
-        name: [ Ubuntu-20, Ubuntu-22, Ubuntu-24, Debian-11, Debian-12 ]
         c_compiler: [ gcc, clang ]
         build_type: [ Debug ]
         include:
