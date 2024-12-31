@@ -223,7 +223,7 @@ beast::http::response<beast::http::dynamic_body>
 http_request(beast::http::verb method, const std::string &target, short port, std::string body) {
 	boost::asio::io_context ioc;
 	boost::asio::ip::tcp::socket socket(ioc);
-	boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::address::from_string("127.0.0.1"), port);
+	boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::make_address("127.0.0.1"), port);
 	socket.connect(endpoint);
 
 	beast::http::request<beast::http::string_body> req(method, target, 11);
