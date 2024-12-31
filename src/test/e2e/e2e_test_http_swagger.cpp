@@ -16,8 +16,7 @@ TEST(test_onnxruntime_server_http_swagger, HttpSwaggerTest) {
 
 	boost::asio::io_context io_context;
 	Orts::onnx::session_manager manager(config.model_bin_getter);
-	Orts::builtin_thread_pool worker_pool(config.num_threads);
-	Orts::transport::http::http_server server(io_context, config, &manager, &worker_pool);
+	Orts::transport::http::http_server server(io_context, config, manager);
 	std::cout << server.port() << std::endl;
 
 	bool running = true;

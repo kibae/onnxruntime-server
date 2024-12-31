@@ -4,13 +4,12 @@
 
 #include "http_server.hpp"
 
-onnxruntime_server::transport::http::https_server::https_server(
+Orts::transport::http::https_server::https_server(
 	boost::asio::io_context &io_context, const onnxruntime_server::config &config,
-	onnxruntime_server::onnx::session_manager *onnx_session_manager,
-	onnxruntime_server::builtin_thread_pool *worker_pool
+	Orts::onnx::session_manager &onnx_session_manager
 )
-	: server(io_context, onnx_session_manager, worker_pool, config.https_port, config.request_payload_limit), ctx(boost::asio::ssl::context::sslv23),
-	  swagger(config.swagger_url_path) {
+	: server(io_context, onnx_session_manager, config.https_port, config.request_payload_limit),
+	  ctx(boost::asio::ssl::context::sslv23), swagger(config.swagger_url_path) {
 	boost::system::error_code ec;
 	ctx.set_options(
 		boost::asio::ssl::context::default_workarounds | boost::asio::ssl::context::no_sslv2 |
@@ -31,11 +30,12 @@ onnxruntime_server::transport::http::https_server::https_server(
 }
 
 void onnxruntime_server::transport::http::https_server::client_connected(asio::socket socket) {
-	auto session = std::make_shared<https_session>(std::move(socket), this, ctx);
-	sessions.push_back(session);
-	session->run();
-}
+	https_session(std::move(socket), ctx, request_payload_limit()).run(get_onnx_session_manager(), swagger);
 
-void onnxruntime_server::transport::http::https_server::remove_session(const std::shared_ptr<https_session> &session) {
-	sessions.remove(session);
+	try {
+		socket.close();
+		PLOG(L_INFO) << "transport::https::https_server: worker killed" << std::endl;
+	} catch (std::exception &e) {
+		PLOG(L_WARNING) << "transport::http::https_server: socket close error " << e.what() << std::endl;
+	}
 }

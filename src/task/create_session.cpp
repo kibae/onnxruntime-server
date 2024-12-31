@@ -15,7 +15,7 @@ std::string onnxruntime_server::task::create_session::name() {
 }
 
 Orts::task::create_session::create_session(
-	onnx::session_manager *onnx_session_manager, const json &request_json, const char *model_data,
+	onnx::session_manager &onnx_session_manager, const json &request_json, const char *model_data,
 	size_t model_data_length
 )
 	: session_task(onnx_session_manager, request_json), model_data(model_data), model_data_length(model_data_length) {
@@ -24,7 +24,7 @@ Orts::task::create_session::create_session(
 }
 
 Orts::task::create_session::create_session(
-	onnx::session_manager *onnx_session_manager, const std::string &model_name, const std::string &model_version,
+	onnx::session_manager &onnx_session_manager, const std::string &model_name, const std::string &model_version,
 	json option, const char *model_data, size_t model_data_length
 )
 	: session_task(onnx_session_manager, model_name, model_version), option(std::move(option)), model_data(model_data),
@@ -33,7 +33,7 @@ Orts::task::create_session::create_session(
 
 json Orts::task::create_session::run() {
 	std::shared_ptr<Orts::onnx::session> session =
-		onnx_session_manager->create_session(model_name, model_version, option, model_data, model_data_length);
+		onnx_session_manager.create_session(model_name, model_version, option, model_data, model_data_length);
 	if (session == nullptr) {
 		throw not_found_error("session not found");
 	}

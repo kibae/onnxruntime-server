@@ -6,6 +6,7 @@
 #define ONNX_RUNTIME_SERVER_TCP_SERVER_HPP
 
 #include "../../onnxruntime_server.hpp"
+#include <optional>
 
 #ifdef WORDS_BIGENDIAN
 #define HTONLL(x) (x)
@@ -15,7 +16,7 @@
 #define NTOHLL(x) ((((uint64_t)ntohl(x)) << 32) + ntohl(x >> 32))
 #endif
 
-#define MAX_RECV_BUF_LENGTH 1024 * 1024 * 4
+#define MAX_RECV_BUF_LENGTH (1024 * 1024 * 4)
 
 namespace onnxruntime_server::transport::tcp {
 	struct protocol_header {
@@ -25,50 +26,51 @@ namespace onnxruntime_server::transport::tcp {
 		int64_t post_length;
 	} __attribute__((packed));
 
-	class tcp_server;
-
-	class tcp_session : public std::enable_shared_from_this<tcp_session> {
+	class tcp_session {
 	  private:
 		asio::socket socket;
-		tcp_server *server;
 		std::string chunk;
 		std::string buffer;
 
 		onnxruntime_server::task::benchmark request_time;
 		std::string _remote_endpoint;
 
-	  public:
-		tcp_session(asio::socket socket, tcp_server *server);
-		~tcp_session();
-
-		void close();
-		void do_read();
-		void do_task(protocol_header header);
-		void do_write(const std::string &buf);
-
-		void send_error(std::string type, std::string what);
+		std::optional<protocol_header> do_read();
+		bool do_write(protocol_header &header, const std::string &buf);
 
 		static std::shared_ptr<onnxruntime_server::task::task> create_task(
-			onnx::session_manager *onnx_session_manager, int16_t type, const json &request_json, const char *post,
+			onnx::session_manager &onnx_session_manager, int16_t type, const json &request_json, const char *post,
 			size_t post_length
 		);
 
+	  public:
+		explicit tcp_session(asio::socket socket);
+		void run(onnx::session_manager &session_manager);
+
+		bool send_error(std::string type, std::string what);
 		std::string get_remote_endpoint();
 	};
 
 	class tcp_server : public server {
-	  private:
-		std::list<std::shared_ptr<tcp_session>> sessions;
-
 	  protected:
-		void client_connected(asio::socket socket) override;
+		void client_connected(asio::socket socket) override {
+			tcp_session(std::move(socket)).run(get_onnx_session_manager());
+
+			try {
+				socket.close();
+				PLOG(L_INFO) << "transport::tcp::tcp_server: worker killed" << std::endl;
+			} catch (std::exception &e) {
+				PLOG(L_WARNING) << "transport::tcp::tcp_server: socket close error " << e.what() << std::endl;
+			}
+		}
 
 	  public:
 		tcp_server(
-			boost::asio::io_context &io_context, const class config &config,
-			onnx::session_manager *onnx_session_manager, builtin_thread_pool *worker_pool
-		);
-		void remove_session(const std::shared_ptr<tcp_session> &session);
+			boost::asio::io_context &io_context, const class config &config, onnx::session_manager &onnx_session_manager
+		)
+			: server(io_context, onnx_session_manager, config.tcp_port, config.request_payload_limit) {
+			acceptor.set_option(boost::asio::socket_base::reuse_address(true));
+		}
 	};
 
 } // namespace onnxruntime_server::transport::tcp

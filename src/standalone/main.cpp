@@ -24,7 +24,6 @@ int main(int argc, char *argv[]) {
 	{ // scope
 		boost::asio::io_context io_context;
 		Orts::onnx::session_manager manager(server.config.model_bin_getter);
-		Orts::builtin_thread_pool worker_pool(server.config.num_threads);
 
 		try {
 			server.prepare_models(manager);
@@ -36,15 +35,14 @@ int main(int argc, char *argv[]) {
 		std::vector<std::shared_ptr<Orts::transport::server>> servers;
 
 		if (server.config.use_tcp) {
-			servers.emplace_back(
-				std::make_shared<Orts::transport::tcp::tcp_server>(io_context, server.config, &manager, &worker_pool)
+			servers.emplace_back(std::make_shared<Orts::transport::tcp::tcp_server>(io_context, server.config, manager)
 			);
 			PLOG(L_INFO) << "TCP Server ready on port: " << server.config.tcp_port << std::endl;
 		}
 
 		if (server.config.use_http) {
 			servers.emplace_back(
-				std::make_shared<Orts::transport::http::http_server>(io_context, server.config, &manager, &worker_pool)
+				std::make_shared<Orts::transport::http::http_server>(io_context, server.config, manager)
 			);
 			PLOG(L_INFO) << "HTTP Server ready on port: " << server.config.http_port << std::endl;
 		}
@@ -52,7 +50,7 @@ int main(int argc, char *argv[]) {
 #ifdef HAS_OPENSSL
 		if (server.config.use_https) {
 			servers.emplace_back(
-				std::make_shared<Orts::transport::http::https_server>(io_context, server.config, &manager, &worker_pool)
+				std::make_shared<Orts::transport::http::https_server>(io_context, server.config, manager)
 			);
 			PLOG(L_INFO) << "HTTPS Server ready on port: " << server.config.https_port << std::endl;
 		}
@@ -67,7 +65,6 @@ int main(int argc, char *argv[]) {
 		}
 
 		// cleanup
-		worker_pool.flush();
 		servers.clear();
 	}
 

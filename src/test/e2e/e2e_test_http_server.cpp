@@ -15,8 +15,7 @@ TEST(test_onnxruntime_server_http, HttpServerTest) {
 
 	boost::asio::io_context io_context;
 	Orts::onnx::session_manager manager(config.model_bin_getter);
-	Orts::builtin_thread_pool worker_pool(config.num_threads);
-	Orts::transport::http::http_server server(io_context, config, &manager, &worker_pool);
+	Orts::transport::http::http_server server(io_context, config, manager);
 
 	bool running = true;
 	std::thread server_thread([&io_context, &running]() { test_server_run(io_context, &running); });
@@ -141,8 +140,7 @@ TEST(test_onnxruntime_server_http, HttpServerTest3) {
 
 	boost::asio::io_context io_context;
 	Orts::onnx::session_manager manager(config.model_bin_getter);
-	Orts::builtin_thread_pool worker_pool(config.num_threads);
-	Orts::transport::http::http_server server(io_context, config, &manager, &worker_pool);
+	Orts::transport::http::http_server server(io_context, config, manager);
 
 	bool running = true;
 	std::thread server_thread([&io_context, &running]() { test_server_run(io_context, &running); });
