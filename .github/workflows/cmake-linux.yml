@@ -30,24 +30,13 @@ jobs:
           ./test/fixture/download-test-fixtures.sh
 
   prepare-apt:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
 
     strategy:
       fail-fast: false
       matrix:
-        name: [ Ubuntu-20, Ubuntu-22, Ubuntu-24, Debian-11, Debian-12 ]
+        os: [ ubuntu-20.04, ubuntu-22.04, ubuntu-24.04 ]
         build_type: [ Debug ]
-        include:
-          - name: Ubuntu-20
-            image: "ubuntu:20.04"
-          - name: Ubuntu-22
-            image: "ubuntu:22.04"
-          - name: Ubuntu-24
-            image: "ubuntu:24.04"
-          - name: Debian-11
-            image: "debian:11"
-          - name: Debian-12
-            image: "debian:12"
 
     steps:
       - uses: actions/checkout@v4
@@ -59,12 +48,13 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .github/cache/dependencies-apt
-          key: ${{ matrix.image }}-dependencies-apt-v1
+          key: ${{ matrix.os }}-dependencies-apt-v1
 
       - name: Prepare container(apt download)
         shell: bash
-        if: steps.cache-dependencies-apt.outputs.cache-hit != 'true' && (startsWith(matrix.image, 'debian:') || startsWith(matrix.image, 'ubuntu:'))
+        if: steps.cache-dependencies-apt.outputs.cache-hit != 'true' && (startsWith(matrix.os, 'debian-') || startsWith(matrix.os, 'ubuntu-'))
         run: |
+          cat /etc/os-release
           sudo apt-get update -qq
           sudo apt-get install -yq --download-only build-essential clang cmake libboost-all-dev libssl-dev libgtest-dev
           cp /var/cache/apt/archives/*.deb .github/cache/dependencies-apt/
@@ -73,26 +63,16 @@ jobs:
 
 
   build:
-    runs-on: ubuntu-latest
-    needs: ["prepare-asset", "prepare-apt"]
+    runs-on: ${{ matrix.os }}
+    needs: [ "prepare-asset", "prepare-apt" ]
 
     strategy:
       fail-fast: false
       matrix:
-        name: [ Ubuntu-20, Ubuntu-22, Ubuntu-24, Debian-11, Debian-12 ]
+        os: [ ubuntu-20.04, ubuntu-22.04, ubuntu-24.04 ]
         c_compiler: [ gcc, clang ]
         build_type: [ Debug ]
         include:
-          - name: Ubuntu-20
-            image: "ubuntu:20.04"
-          - name: Ubuntu-22
-            image: "ubuntu:22.04"
-          - name: Ubuntu-24
-            image: "ubuntu:24.04"
-          - name: Debian-11
-            image: "debian:11"
-          - name: Debian-12
-            image: "debian:12"
           - c_compiler: gcc
             cpp_compiler: g++
           - c_compiler: clang
@@ -108,11 +88,11 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .github/cache/dependencies-apt
-          key: ${{ matrix.image }}-dependencies-apt-v1
+          key: ${{ matrix.os }}-dependencies-apt-v1
 
       - name: Prepare container(apt download)
         shell: bash
-        if: steps.cache-dependencies-apt.outputs.cache-hit != 'true' && (startsWith(matrix.image, 'debian:') || startsWith(matrix.image, 'ubuntu:'))
+        if: steps.cache-dependencies-apt.outputs.cache-hit != 'true' && (startsWith(matrix.os, 'debian-') || startsWith(matrix.os, 'ubuntu-'))
         run: |
           sudo apt-get update -qq
           sudo apt-get install -yq --download-only build-essential clang cmake libboost-all-dev libssl-dev libgtest-dev
@@ -120,8 +100,9 @@ jobs:
 
       - name: Prepare container(apt)
         shell: bash
-        if: startsWith(matrix.image, 'debian:') || startsWith(matrix.image, 'ubuntu:')
+        if: startsWith(matrix.os, 'debian-') || startsWith(matrix.os, 'ubuntu-')
         run: |
+          cat /etc/os-release
           sudo dpkg -i .github/cache/dependencies-apt/*.deb
 
       - name: Prepare container(onnxruntime)
