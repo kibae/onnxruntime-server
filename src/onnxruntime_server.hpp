@@ -346,7 +346,7 @@ namespace onnxruntime_server {
 namespace Orts = onnxruntime_server;
 
 // consts
-#define MAX(a, b) (a > b ? a : b)
-#define MIN(a, b) (a < b ? a : b)
+#define NUM_MAX(a, b) (a > b ? a : b)
+#define NUM_MIN(a, b) (a < b ? a : b)
 
 #endif // ONNX_RUNTIME_SERVER_HPP

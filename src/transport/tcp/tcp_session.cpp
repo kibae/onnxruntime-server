@@ -64,18 +64,14 @@ std::optional<Orts::transport::tcp::protocol_header> Orts::transport::tcp::tcp_s
 	header.json_length = NTOHLL(header.json_length);
 	header.post_length = NTOHLL(header.post_length);
 
-	while (true) {
+	while (buffer.size() < header.length) {
 		length = socket.read_some(
-			boost::asio::buffer(chunk.data(), MIN(MAX_RECV_BUF_LENGTH, header.length - buffer.length())), ec
+			boost::asio::buffer(chunk.data(), NUM_MIN(MAX_RECV_BUF_LENGTH, header.length - buffer.length())), ec
 		);
 		if (ec)
 			return std::nullopt;
 
 		buffer.append(chunk.data(), length);
-
-		// check protocol header
-		if (buffer.size() >= header.length)
-			break;
 	}
 	return header;
 }
