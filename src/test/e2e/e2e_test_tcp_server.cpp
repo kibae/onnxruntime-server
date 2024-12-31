@@ -52,7 +52,7 @@ TEST(test_onnxruntime_server_tcp, TcpServerTest) {
 	config.model_bin_getter = test_model_bin_getter;
 
 	boost::asio::io_context io_context;
-	Orts::onnx::session_manager manager(config.model_bin_getter);
+	Orts::onnx::session_manager manager(config.model_bin_getter, config.num_threads);
 	Orts::transport::tcp::tcp_server server(io_context, config, manager);
 	ASSERT_GT(server.port(), 0);
 

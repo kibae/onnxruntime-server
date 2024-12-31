@@ -14,6 +14,7 @@
 #include <thread>
 #include <utility>
 
+#include "thread_pool.hpp"
 #include "utils/aixlog.hpp"
 #include "utils/exceptions.hpp"
 #include "utils/json.hpp"
@@ -127,8 +128,10 @@ namespace onnxruntime_server {
 			model_bin_getter_t model_bin_getter;
 
 		  public:
-			explicit session_manager(const model_bin_getter_t &model_bin_getter);
+			explicit session_manager(const model_bin_getter_t &model_bin_getter, long num_threads);
 			~session_manager();
+
+			builtin_thread_pool thread_pool;
 
 			std::map<session_key, std::shared_ptr<session>> &get_sessions() {
 				return sessions;
@@ -306,6 +309,7 @@ namespace onnxruntime_server {
 		std::string log_file;
 		std::string access_log_file;
 
+		long num_threads = 4;
 		std::string model_dir;
 		std::string prepare_model;
 		model_bin_getter_t model_bin_getter{};

@@ -31,6 +31,7 @@ json Orts::task::execute_session::run() {
 	session->touch();
 
 	Orts::onnx::execution::context ctx(session, data);
-	auto result = ctx.run();
+	auto result = onnx_session_manager.thread_pool.enqueue([&ctx]() { return ctx.run(); }).get();
+	// auto result = ctx.run();
 	return ctx.tensors_to_json(result);
 }

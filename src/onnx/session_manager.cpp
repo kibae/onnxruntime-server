@@ -4,11 +4,14 @@
 
 #include "../onnxruntime_server.hpp"
 
-Orts::onnx::session_manager::session_manager(const model_bin_getter_t& model_bin_getter) : model_bin_getter(model_bin_getter) {
+Orts::onnx::session_manager::session_manager(const model_bin_getter_t &model_bin_getter, long num_threads)
+	: model_bin_getter(model_bin_getter), thread_pool(num_threads) {
 	assert(model_bin_getter != nullptr);
 }
 
-Orts::onnx::session_manager::~session_manager() = default;
+Orts::onnx::session_manager::~session_manager() {
+	thread_pool.flush();
+}
 
 std::shared_ptr<Orts::onnx::session>
 Orts::onnx::session_manager::get_session(const std::string &model_name, const std::string &model_version) {

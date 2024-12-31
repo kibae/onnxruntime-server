@@ -14,7 +14,7 @@ TEST(test_onnxruntime_server_http, HttpServerTest) {
 	config.model_bin_getter = test_model_bin_getter;
 
 	boost::asio::io_context io_context;
-	Orts::onnx::session_manager manager(config.model_bin_getter);
+	Orts::onnx::session_manager manager(config.model_bin_getter, config.num_threads);
 	Orts::transport::http::http_server server(io_context, config, manager);
 
 	bool running = true;
@@ -139,7 +139,7 @@ TEST(test_onnxruntime_server_http, HttpServerTest3) {
 	config.model_bin_getter = test_model_bin_getter;
 
 	boost::asio::io_context io_context;
-	Orts::onnx::session_manager manager(config.model_bin_getter);
+	Orts::onnx::session_manager manager(config.model_bin_getter, config.num_threads);
 	Orts::transport::http::http_server server(io_context, config, manager);
 
 	bool running = true;

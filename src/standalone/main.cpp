@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
 
 	{ // scope
 		boost::asio::io_context io_context;
-		Orts::onnx::session_manager manager(server.config.model_bin_getter);
+		Orts::onnx::session_manager manager(server.config.model_bin_getter, server.config.num_threads);
 
 		try {
 			server.prepare_models(manager);
@@ -35,7 +35,8 @@ int main(int argc, char *argv[]) {
 		std::vector<std::shared_ptr<Orts::transport::server>> servers;
 
 		if (server.config.use_tcp) {
-			servers.emplace_back(std::make_shared<Orts::transport::tcp::tcp_server>(io_context, server.config, manager)
+			servers.emplace_back(
+				std::make_shared<Orts::transport::tcp::tcp_server>(io_context, server.config, manager)
 			);
 			PLOG(L_INFO) << "TCP Server ready on port: " << server.config.tcp_port << std::endl;
 		}
