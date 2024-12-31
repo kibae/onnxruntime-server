@@ -12,19 +12,17 @@ int onnxruntime_server::standalone::init_config(int argc, char **argv) {
 	try {
 		po::options_description po_desc("ONNX Runtime Server options", 100);
 		po_desc.add_options()("help,h", "Produce help message\n");
-		// env: ONNX_WORKERS
-		po_desc.add_options()(
-			"workers", po::value<long>()->default_value(4),
-			"env: ONNX_SERVER_WORKERS\nWorker thread pool size.\nDefault: 4"
-		);
 		po_desc.add_options()(
 			"request-payload-limit", po::value<long>()->default_value(1024 * 1024 * 10),
-			"env: ONNX_SERVER_REQUEST_PAYLOAD_LIMIT\nHTTP/HTTPS request payload size limit.\nDefault: 1024 * 1024 * 10(10MB)"
+			"env: ONNX_SERVER_REQUEST_PAYLOAD_LIMIT\nHTTP/HTTPS request payload size limit.\nDefault: 1024 * 1024 * "
+			"10(10MB)"
 		);
 		po_desc.add_options()(
 			"model-dir", po::value<std::string>()->default_value("models"),
-			"env: ONNX_SERVER_MODEL_DIR\nModel directory path.\nThe onnx model files must be located in the following path:\n"
-			"\"${model_dir}/${model_name}/${model_version}/model.onnx\" or \n\"${model_dir}/${model_name}/${model_version}.onnx\"\nDefault: ./models"
+			"env: ONNX_SERVER_MODEL_DIR\nModel directory path.\nThe onnx model files must be located in the following "
+			"path:\n"
+			"\"${model_dir}/${model_name}/${model_version}/model.onnx\" or "
+			"\n\"${model_dir}/${model_name}/${model_version}.onnx\"\nDefault: ./models"
 		);
 		po_desc.add_options()(
 			"prepare-model", po::value<std::string>(),
@@ -156,9 +154,6 @@ int onnxruntime_server::standalone::init_config(int argc, char **argv) {
 
 		AixLog::Log::init({log_file, log_access_file});
 
-		if (vm.count("workers"))
-			config.num_threads = vm["workers"].as<long>();
-
 		if (vm.count("request-payload-limit"))
 			config.request_payload_limit = vm["request-payload-limit"].as<long>();
 
@@ -232,7 +227,8 @@ int onnxruntime_server::standalone::init_config(int argc, char **argv) {
 	config.model_bin_getter = [this](const std::string &model_name, const std::string &model_version) {
 		return onnxruntime_server::get_model_bin(model_root.string(), model_name, model_version);
 	};
-	// config.model_bin_getter = std::bind(&onnxruntime_server::get_model_bin, this, std::placeholders::_1, std::placeholders::_2);
+	// config.model_bin_getter = std::bind(&onnxruntime_server::get_model_bin, this, std::placeholders::_1,
+	// std::placeholders::_2);
 
 	return 0;
 }
@@ -250,7 +246,6 @@ void onnxruntime_server::standalone::prepare_models(onnxruntime_server::onnx::se
 void onnxruntime_server::standalone::print_config() {
 	// print config values
 	auto config_json = ordered_json::object();
-	config_json["workers"] = config.num_threads;
 	config_json["model_dir"] = config.model_dir;
 
 	config_json["tcp"] = json::object();

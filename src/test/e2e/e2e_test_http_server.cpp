@@ -15,8 +15,7 @@ TEST(test_onnxruntime_server_http, HttpServerTest) {
 
 	boost::asio::io_context io_context;
 	Orts::onnx::session_manager manager(config.model_bin_getter);
-	Orts::builtin_thread_pool worker_pool(config.num_threads);
-	Orts::transport::http::http_server server(io_context, config, &manager, &worker_pool);
+	Orts::transport::http::http_server server(io_context, config, manager);
 
 	bool running = true;
 	std::thread server_thread([&io_context, &running]() { test_server_run(io_context, &running); });
@@ -141,8 +140,7 @@ TEST(test_onnxruntime_server_http, HttpServerTest3) {
 
 	boost::asio::io_context io_context;
 	Orts::onnx::session_manager manager(config.model_bin_getter);
-	Orts::builtin_thread_pool worker_pool(config.num_threads);
-	Orts::transport::http::http_server server(io_context, config, &manager, &worker_pool);
+	Orts::transport::http::http_server server(io_context, config, manager);
 
 	bool running = true;
 	std::thread server_thread([&io_context, &running]() { test_server_run(io_context, &running); });
@@ -225,7 +223,7 @@ beast::http::response<beast::http::dynamic_body>
 http_request(beast::http::verb method, const std::string &target, short port, std::string body) {
 	boost::asio::io_context ioc;
 	boost::asio::ip::tcp::socket socket(ioc);
-	boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::address::from_string("127.0.0.1"), port);
+	boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::make_address("127.0.0.1"), port);
 	socket.connect(endpoint);
 
 	beast::http::request<beast::http::string_body> req(method, target, 11);

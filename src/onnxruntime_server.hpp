@@ -14,7 +14,6 @@
 #include <thread>
 #include <utility>
 
-#include "thread_pool.hpp"
 #include "utils/aixlog.hpp"
 #include "utils/exceptions.hpp"
 #include "utils/json.hpp"
@@ -128,7 +127,7 @@ namespace onnxruntime_server {
 			model_bin_getter_t model_bin_getter;
 
 		  public:
-			explicit session_manager(const model_bin_getter_t& model_bin_getter);
+			explicit session_manager(const model_bin_getter_t &model_bin_getter);
 			~session_manager();
 
 			std::map<session_key, std::shared_ptr<session>> &get_sessions() {
@@ -212,15 +211,15 @@ namespace onnxruntime_server {
 
 		class session_task : public task {
 		  protected:
-			onnx::session_manager *onnx_session_manager;
+			onnx::session_manager &onnx_session_manager;
 
 		  public:
 			std::string model_name;
 			std::string model_version;
 
-			explicit session_task(onnx::session_manager *onnx_session_manager, const json &request_json);
+			explicit session_task(onnx::session_manager &onnx_session_manager, const json &request_json);
 			explicit session_task(
-				onnx::session_manager *onnx_session_manager, std::string model_name, std::string model_version
+				onnx::session_manager &onnx_session_manager, std::string model_name, std::string model_version
 			);
 		};
 
@@ -231,11 +230,11 @@ namespace onnxruntime_server {
 			size_t model_data_length = 0;
 
 			explicit create_session(
-				onnx::session_manager *onnx_session_manager, const json &request_json, const char *model_data = nullptr,
+				onnx::session_manager &onnx_session_manager, const json &request_json, const char *model_data = nullptr,
 				size_t model_data_length = 0
 			);
 			explicit create_session(
-				onnx::session_manager *onnx_session_manager, const std::string &model_name,
+				onnx::session_manager &onnx_session_manager, const std::string &model_name,
 				const std::string &model_version, json option, const char *model_data = nullptr,
 				size_t model_data_length = 0
 			);
@@ -247,9 +246,9 @@ namespace onnxruntime_server {
 		  public:
 			json data;
 
-			explicit execute_session(onnx::session_manager *onnx_session_manager, const json &request_json);
+			explicit execute_session(onnx::session_manager &onnx_session_manager, const json &request_json);
 			explicit execute_session(
-				onnx::session_manager *onnx_session_manager, const std::string &model_name,
+				onnx::session_manager &onnx_session_manager, const std::string &model_name,
 				const std::string &model_version, json data
 			);
 			std::string name() override;
@@ -258,9 +257,9 @@ namespace onnxruntime_server {
 
 		class get_session : public session_task {
 		  public:
-			explicit get_session(onnx::session_manager *onnx_session_manager, const json &request_json);
+			explicit get_session(onnx::session_manager &onnx_session_manager, const json &request_json);
 			explicit get_session(
-				onnx::session_manager *onnx_session_manager, const std::string &model_name,
+				onnx::session_manager &onnx_session_manager, const std::string &model_name,
 				const std::string &model_version
 			);
 			std::string name() override;
@@ -268,19 +267,19 @@ namespace onnxruntime_server {
 		};
 
 		class list_session : public task {
-			onnx::session_manager *onnx_session_manager;
+			onnx::session_manager &onnx_session_manager;
 
 		  public:
-			explicit list_session(onnx::session_manager *onnx_session_manager);
+			explicit list_session(onnx::session_manager &onnx_session_manager);
 			std::string name() override;
 			json run() override;
 		};
 
 		class destroy_session : public session_task {
 		  public:
-			explicit destroy_session(onnx::session_manager *onnx_session_manager, const json &request_json);
+			explicit destroy_session(onnx::session_manager &onnx_session_manager, const json &request_json);
 			explicit destroy_session(
-				onnx::session_manager *onnx_session_manager, const std::string &model_name,
+				onnx::session_manager &onnx_session_manager, const std::string &model_name,
 				const std::string &model_version
 			);
 			std::string name() override;
@@ -307,7 +306,6 @@ namespace onnxruntime_server {
 		std::string log_file;
 		std::string access_log_file;
 
-		long num_threads = 4;
 		std::string model_dir;
 		std::string prepare_model;
 		model_bin_getter_t model_bin_getter{};
@@ -325,20 +323,18 @@ namespace onnxruntime_server {
 			uint_least16_t assigned_port = 0;
 			long request_payload_limit_;
 
-			onnx::session_manager *onnx_session_manager;
+			onnx::session_manager &onnx_session_manager;
 
-			builtin_thread_pool *worker_pool;
 			virtual void client_connected(asio::socket socket) = 0;
 
 		  public:
 			server(
-				boost::asio::io_context &io_context, onnx::session_manager *onnx_session_manager,
-				builtin_thread_pool *worker_pool, int port, long request_payload_limit
+				boost::asio::io_context &io_context, onnx::session_manager &onnx_session_manager, int port,
+				long request_payload_limit
 			);
 			~server();
 
-			builtin_thread_pool *get_worker_pool();
-			onnx::session_manager *get_onnx_session_manager();
+			onnx::session_manager &get_onnx_session_manager();
 			[[nodiscard]] long request_payload_limit() const;
 			[[nodiscard]] uint_least16_t port() const;
 		};
@@ -348,5 +344,9 @@ namespace onnxruntime_server {
 } // namespace onnxruntime_server
 
 namespace Orts = onnxruntime_server;
+
+// consts
+#define NUM_MAX(a, b) (a > b ? a : b)
+#define NUM_MIN(a, b) (a < b ? a : b)
 
 #endif // ONNX_RUNTIME_SERVER_HPP

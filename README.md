@@ -72,9 +72,11 @@ sudo apt install cmake pkg-config libboost-all-dev libssl-dev
 ```
 
 ##### (optional) CUDA support (CUDA 12.x, cuDNN 9.x)
+
 - Follow the instructions below to install the CUDA Toolkit and cuDNN.
-  - [CUDA Toolkit Installation Guide](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html)
-  - [CUDA Download for Ubuntu](https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=22.04&target_type=deb_network)
+    - [CUDA Toolkit Installation Guide](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html)
+    - [CUDA Download for Ubuntu](https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=22.04&target_type=deb_network)
+
 ```shell
 sudo apt install cuda-toolkit-12 libcudnn9-dev-cuda-12
 # optional, for Nvidia GPU support with Docker 
@@ -136,7 +138,6 @@ sudo cmake --install build --prefix /usr/local/onnxruntime-server
 
 | Option                    | Environment                         | Description                                                                                                                                                                                                                                                                                                                                     |
 |---------------------------|-------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `--workers`               | `ONNX_SERVER_WORKERS`               | Worker thread pool size.<br/>Default: `4`                                                                                                                                                                                                                                                                                                       |
 | `--request-payload-limit` | `ONNX_SERVER_REQUEST_PAYLOAD_LIMIT` | HTTP/HTTPS request payload size limit.<br />Default: 1024 * 1024 * 10(10MB)`                                                                                                                                                                                                                                                                    |
 | `--model-dir`             | `ONNX_SERVER_MODEL_DIR`             | Model directory path<br/>The onnx model files must be located in the following path:<br/>`${model_dir}/${model_name}/${model_version}/model.onnx` or<br/>`${model_dir}/${model_name}/${model_version}.onnx`<br/>Default: `models`                                                                                                               |
 | `--prepare-model`         | `ONNX_SERVER_PREPARE_MODEL`         | Pre-create some model sessions at server startup.<br/><br/>Format as a space-separated list of `model_name:model_version` or `model_name:model_version(session_options, ...)`.<br/><br/>Available session_options are<br/>- cuda=device_id`[ or true or false]`<br/><br/>eg) `model1:v1 model2:v9`<br/>`model1:v1(cuda=true) model2:v9(cuda=1)` |
@@ -165,8 +166,12 @@ sudo cmake --install build --prefix /usr/local/onnxruntime-server
 # Docker
 
 - Docker hub: [kibaes/onnxruntime-server](https://hub.docker.com/r/kibaes/onnxruntime-server)
-    - [`1.20.1-linux-cuda12`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cuda12.dockerfile) amd64(CUDA 12.x, cuDNN 9.x)
-    - [`1.20.1-linux-cpu`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cpu.dockerfile) amd64, arm64
+    - [
+      `1.20.1-linux-cuda12`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cuda12.dockerfile)
+      amd64(CUDA 12.x, cuDNN 9.x)
+    - [
+      `1.20.1-linux-cpu`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cpu.dockerfile)
+      amd64, arm64
 
 ```shell
 DOCKER_IMAGE=kibae/onnxruntime-server:1.20.1-linux-cuda12 # or kibae/onnxruntime-server:1.20.1-linux-cpu	

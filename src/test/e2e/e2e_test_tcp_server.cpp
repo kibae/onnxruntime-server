@@ -10,7 +10,7 @@ json tcp_request(
 ) {
 	boost::asio::io_context io_context;
 	boost::asio::ip::tcp::socket socket(io_context);
-	boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::address::from_string("127.0.0.1"), port);
+	boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::make_address("127.0.0.1"), port);
 	socket.connect(endpoint);
 
 	auto json_data = json.dump();
@@ -53,8 +53,7 @@ TEST(test_onnxruntime_server_tcp, TcpServerTest) {
 
 	boost::asio::io_context io_context;
 	Orts::onnx::session_manager manager(config.model_bin_getter);
-	Orts::builtin_thread_pool worker_pool(config.num_threads);
-	Orts::transport::tcp::tcp_server server(io_context, config, &manager, &worker_pool);
+	Orts::transport::tcp::tcp_server server(io_context, config, manager);
 	ASSERT_GT(server.port(), 0);
 
 	bool running = true;

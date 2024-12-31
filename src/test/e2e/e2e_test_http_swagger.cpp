@@ -16,8 +16,7 @@ TEST(test_onnxruntime_server_http_swagger, HttpSwaggerTest) {
 
 	boost::asio::io_context io_context;
 	Orts::onnx::session_manager manager(config.model_bin_getter);
-	Orts::builtin_thread_pool worker_pool(config.num_threads);
-	Orts::transport::http::http_server server(io_context, config, &manager, &worker_pool);
+	Orts::transport::http::http_server server(io_context, config, manager);
 	std::cout << server.port() << std::endl;
 
 	bool running = true;
@@ -87,7 +86,7 @@ beast::http::response<beast::http::dynamic_body>
 http_request(beast::http::verb method, const std::string &target, short port, std::string body, int keep_alive) {
 	boost::asio::io_context ioc;
 	boost::asio::ip::tcp::socket socket(ioc);
-	boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::address::from_string("127.0.0.1"), port);
+	boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::make_address("127.0.0.1"), port);
 	socket.connect(endpoint);
 
 	beast::http::request<beast::http::string_body> req(method, target, 11);

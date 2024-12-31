@@ -18,6 +18,7 @@
 #endif
 
 namespace beast = boost::beast;
+using boost::system::error_code;
 
 namespace onnxruntime_server::transport::http {
 	class swagger_serve {
@@ -26,43 +27,50 @@ namespace onnxruntime_server::transport::http {
 		std::shared_ptr<std::string> _cache_openapi_yaml = nullptr;
 
 	  public:
-		swagger_serve(const std::string &swagger_url_path);
+		explicit swagger_serve(const std::string &swagger_url_path);
 
-		bool is_swagger_url(const std::string &url) const;
+		[[nodiscard]] bool is_swagger_url(const std::string &url) const;
 		std::shared_ptr<beast::http::response<beast::http::string_body>>
 		get_response(const std::string &url, unsigned http_version);
 	};
 
-	template <class Session> class http_session_base : public std::enable_shared_from_this<Session> {
+	class http_session_base {
 	  protected:
+		std::size_t body_limit;
 		beast::flat_buffer buffer;
-		std::shared_ptr<beast::http::request_parser<beast::http::string_body>> req_parser;
 
-		virtual onnx::session_manager *get_onnx_session_manager() = 0;
-		std::shared_ptr<beast::http::response<beast::http::string_body>> handle_request();
-
-		virtual void do_read() = 0;
-		virtual void on_read(beast::error_code ec, std::size_t bytes_transferred) = 0;
-		virtual void do_write(std::shared_ptr<beast::http::response<beast::http::string_body>> msg) = 0;
+		std::shared_ptr<beast::http::response<beast::http::string_body>> handle_request(
+			onnx::session_manager &session_manager, swagger_serve &swagger,
+			beast::http::request_parser<beast::http::string_body> &req_parser
+		);
 
 		std::string _remote_endpoint;
+
+	  private:
 		onnxruntime_server::task::benchmark request_time;
 
 	  public:
-		http_session_base();
+		explicit http_session_base(std::size_t body_limit);
 
-		virtual void run() = 0;
-		virtual void close() = 0;
+		void run(onnx::session_manager &session_manager, swagger_serve &swagger);
+		virtual error_code do_read(beast::http::request_parser<beast::http::string_body> &req_parser) = 0;
+		virtual error_code do_write(std::shared_ptr<beast::http::response<beast::http::string_body>> msg) = 0;
 		virtual std::string get_remote_endpoint() = 0;
-		virtual swagger_serve &get_swagger() = 0;
 	};
 
-	class http_session;
+	class http_session : public http_session_base {
+	  private:
+		beast::tcp_stream stream;
+
+		error_code do_read(beast::http::request_parser<beast::http::string_body> &req_parser) override;
+		error_code do_write(std::shared_ptr<beast::http::response<beast::http::string_body>> msg) override;
+		std::string get_remote_endpoint() override;
+
+	  public:
+		http_session(asio::socket socket, size_t body_limit);
+	};
 
 	class http_server : public server {
-	  private:
-		std::list<std::shared_ptr<http_session>> sessions;
-
 	  protected:
 		void client_connected(asio::socket socket) override;
 
@@ -70,38 +78,25 @@ namespace onnxruntime_server::transport::http {
 		swagger_serve swagger;
 
 		http_server(
-			boost::asio::io_context &io_context, const class config &config,
-			onnx::session_manager *onnx_session_manager, builtin_thread_pool *worker_pool
+			boost::asio::io_context &io_context, const class config &config, onnx::session_manager &onnx_session_manager
 		);
-		void remove_session(const std::shared_ptr<http_session> &session);
-	};
-
-	class http_session : public http_session_base<http_session> {
-	  private:
-		http_server *server;
-		beast::tcp_stream stream;
-
-		onnx::session_manager *get_onnx_session_manager() override;
-		void do_read() override;
-		void on_read(beast::error_code ec, std::size_t bytes_transferred) override;
-		void do_write(std::shared_ptr<beast::http::response<beast::http::string_body>> msg) override;
-
-		std::string get_remote_endpoint() override;
-
-	  public:
-		http_session(asio::socket socket, http_server *server);
-		~http_session();
-		void run() override;
-		void close() override;
-		swagger_serve &get_swagger() override;
 	};
 
 #ifdef HAS_OPENSSL
-	class https_session;
+	class https_session : public http_session_base {
+	  private:
+		boost::asio::ssl::stream<asio::socket> stream;
+
+		error_code do_read(beast::http::request_parser<beast::http::string_body> &req_parser) override;
+		error_code do_write(std::shared_ptr<beast::http::response<beast::http::string_body>> msg) override;
+		std::string get_remote_endpoint() override;
+
+	  public:
+		https_session(asio::socket socket, boost::asio::ssl::context &ctx, size_t body_limit);
+	};
 
 	class https_server : public server {
 	  private:
-		std::list<std::shared_ptr<https_session>> sessions;
 		boost::asio::ssl::context ctx;
 
 	  protected:
@@ -111,30 +106,8 @@ namespace onnxruntime_server::transport::http {
 		swagger_serve swagger;
 
 		https_server(
-			boost::asio::io_context &io_context, const class config &config,
-			onnx::session_manager *onnx_session_manager, builtin_thread_pool *worker_pool
+			boost::asio::io_context &io_context, const class config &config, onnx::session_manager &onnx_session_manager
 		);
-		void remove_session(const std::shared_ptr<https_session> &session);
-	};
-
-	class https_session : public http_session_base<https_session> {
-	  private:
-		https_server *server;
-		boost::asio::ssl::stream<asio::socket> stream;
-
-		onnx::session_manager *get_onnx_session_manager() override;
-		void do_read() override;
-		void on_read(beast::error_code ec, std::size_t bytes_transferred) override;
-		void do_write(std::shared_ptr<beast::http::response<beast::http::string_body>> msg) override;
-
-		std::string get_remote_endpoint() override;
-
-	  public:
-		https_session(asio::socket socket, https_server *server, boost::asio::ssl::context &ctx);
-		~https_session();
-		void run() override;
-		void close() override;
-		swagger_serve &get_swagger() override;
 	};
 
 #endif

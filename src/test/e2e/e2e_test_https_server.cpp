@@ -17,8 +17,7 @@ TEST(test_onnxruntime_server_http, HttpsServerTest) {
 
 	boost::asio::io_context io_context;
 	Orts::onnx::session_manager manager(config.model_bin_getter);
-	Orts::builtin_thread_pool worker_pool(config.num_threads);
-	Orts::transport::http::https_server server(io_context, config, &manager, &worker_pool);
+	Orts::transport::http::https_server server(io_context, config, manager);
 
 	bool running = true;
 	std::thread server_thread([&io_context, &running]() { test_server_run(io_context, &running); });
@@ -146,7 +145,7 @@ http_request(beast::http::verb method, const std::string &target, short port, st
 	ssl_context.set_verify_mode(boost::asio::ssl::verify_none);
 
 	boost::asio::ssl::stream<asio::tcp::socket> stream(ioc, ssl_context);
-	boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::address::from_string("127.0.0.1"), port);
+	boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::make_address("127.0.0.1"), port);
 	stream.lowest_layer().connect(endpoint);
 	boost::system::error_code ec;
 	stream.handshake(boost::asio::ssl::stream_base::client, ec);
