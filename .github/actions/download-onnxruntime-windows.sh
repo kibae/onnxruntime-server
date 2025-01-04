@@ -21,7 +21,7 @@ echo
 echo "Downloading $item"
 echo
 
-curl --output "$FILENAME" -L "$item"
+curl -q --output "$FILENAME" -L "$item"
 
 unzip "$FILENAME"
 mv ${DIRNAME} C:/msys64/usr/local/onnxruntime

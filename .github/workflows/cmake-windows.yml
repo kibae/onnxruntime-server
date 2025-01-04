@@ -21,18 +21,28 @@ jobs:
         with:
           lfs: false
 
-      - name: Prepare container(onnxruntime)
-        shell: bash
+      - name: Restore vcpkg cache
+        id: cache-windows-vcpkg
+        uses: actions/cache@v4
+        with:
+          path: |
+            C:\vcpkg\installed
+            C:\vcpkg\buildtrees
+          key: windows-vcpkg-v1
+
+      - name: Install dependencies with vcpkg
+        if: steps.cache-windows-vcpkg.outputs.cache-hit != 'true'
         run: |
-          ./.github/actions/download-onnxruntime-windows.sh
+          C:\vcpkg\vcpkg.exe install boost-serialization boost-system boost-filesystem boost-program-options boost-thread gtest
 
       - name: Install dependencies with MSYS2
         run: |
           C:\msys64\usr\bin\pacman.exe -S --noconfirm mingw-w64-x86_64-pkg-config
 
-      - name: Install dependencies with vcpkg
+      - name: Prepare container(onnxruntime)
+        shell: bash
         run: |
-          C:\vcpkg\vcpkg.exe install boost-serialization boost-system boost-filesystem boost-program-options boost-thread gtest
+          ./.github/actions/download-onnxruntime-windows.sh
 
       - name: Set reusable strings
         # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
@@ -47,7 +57,9 @@ jobs:
         run: >
           cmake -B ${{ steps.strings.outputs.build-output-dir }}
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-          -DPKG_CONFIG_EXECUTABLE:FILEPATH=C:\msys64\mingw64\bin\pkg-config.exe
+          -DPKG_CONFIG_EXECUTABLE:FILEPATH=C:/msys64/mingw64/bin/pkg-config.exe
+          -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake
+          -DVCPKG_FEATURE_FLAGS=binarycaching
           -S ${{ github.workspace }}
 
       - name: Build
