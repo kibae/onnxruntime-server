@@ -46,6 +46,7 @@ jobs:
             C:\vcpkg\installed
             C:\vcpkg\buildtrees
           key: windows-vcpkg-v1
+          fail-on-cache-miss: true
 
       - name: Install dependencies with vcpkg
         if: steps.cache-windows-vcpkg.outputs.cache-hit != 'true'
