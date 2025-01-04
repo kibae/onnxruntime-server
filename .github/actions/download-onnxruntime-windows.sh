@@ -24,8 +24,8 @@ echo
 curl --output "$FILENAME" -L "$item"
 ls -al
 
-mkdir -p C:/msys64/usr/local/onnxruntime
-unzip -j -d C:/msys64/usr/local/onnxruntime "$FILENAME"
+unzip "$FILENAME"
+mv onnxruntime* C:/msys64/usr/local/onnxruntime
 ls -al C:/msys64/usr/local/onnxruntime
 
 rm -f "$FILENAME"
