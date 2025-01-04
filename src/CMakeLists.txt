@@ -60,7 +60,7 @@ endif ()
 
 # boost
 #set(Boost_USE_STATIC_LIBS ON)
-find_package(Boost COMPONENTS serialization system filesystem program_options thread REQUIRED)
+find_package(Boost COMPONENTS serialization system filesystem program_options thread asio beast REQUIRED)
 
 # openssl
 if (NOT NO_ONNXRUNTIME_SERVER_OPENSSL)
