@@ -4,9 +4,9 @@ set(CMAKE_CXX_STANDARD 17)
 enable_testing()
 
 set(TEST_LIBS
-        onnxruntime
-        onnxruntime_server
+        ${ONNX_RUNTIME_LIBRARIES}
         ${Boost_LIBRARIES}
+        onnxruntime_server_static
         GTest::GTest
         GTest::Main
 )
@@ -14,6 +14,18 @@ set(TEST_LIBS
 add_executable(lib_version test_lib_version.cpp)
 target_link_libraries(lib_version PRIVATE ${TEST_LIBS})
 add_test(NAME lib_version COMMAND lib_version)
+
+if (WIN32)
+    file(GLOB ONNXRUNTIME_LIB_FILES_TO_COPY "${ONNX_RUNTIME_LIBRARY_DIRS}/onnxruntime*")
+
+    foreach(FILE ${ONNXRUNTIME_LIB_FILES_TO_COPY})
+        add_custom_command(TARGET lib_version POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy
+                ${FILE}
+                $<TARGET_FILE_DIR:lib_version>
+        )
+    endforeach()
+endif ()
 
 # __    __  .__   __.  __  .___________.
 #|  |  |  | |  \ |  | |  | |           |

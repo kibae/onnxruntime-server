@@ -56,7 +56,7 @@ std::optional<Orts::transport::tcp::protocol_header> Orts::transport::tcp::tcp_s
 	// process header
 	protocol_header header = {0, 0, 0, 0};
 	std::size_t length = socket.read_some(boost::asio::buffer(&header, sizeof(protocol_header)), ec);
-	if (ec || length < sizeof(protocol_header))
+	if (length < sizeof(protocol_header) || ec.value())
 		return std::nullopt;
 
 	header.type = ntohs(header.type);

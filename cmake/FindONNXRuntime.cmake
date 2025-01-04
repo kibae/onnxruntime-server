@@ -1,6 +1,6 @@
 message(STATUS "Looking for ONNX Runtime")
 
-set(ONNX_RUNTIME_ROOT_DIR ENV ONNX_ROOT /usr/local/onnxruntime /usr /usr/local /opt/homebrew)
+set(ONNX_RUNTIME_ROOT_DIR ENV ONNX_ROOT /usr/local/onnxruntime /usr /usr/local /opt/homebrew C:/msys64/usr/local/onnxruntime)
 set(ONNX_RUNTIME_INCLUDE_PATHS /usr/local/include/onnxruntime)
 set(MACOS_ONNX_RUNTIME_INCLUDE_PATHS /opt/homebrew/include/onnxruntime /opt/homebrew/include/onnxruntime/core/session /usr/local/include/onnxruntime/core/session)
 

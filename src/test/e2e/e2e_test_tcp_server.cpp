@@ -28,23 +28,30 @@ json tcp_request(
 
 	boost::asio::write(socket, buffers);
 
-	struct Orts::transport::tcp::protocol_header res_header;
-	std::string res_data;
-	while (true) {
-		char buffer[1024 * 4];
-		std::size_t bytes_read = socket.read_some(boost::asio::buffer(buffer));
-		res_data.append(buffer, bytes_read);
+	Orts::transport::tcp::protocol_header res_header = {0, 0, 0, 0};
 
-		if (res_data.size() > sizeof(struct Orts::transport::tcp::protocol_header)) {
-			res_header = *(struct Orts::transport::tcp::protocol_header *)res_data.data();
-			res_header.type = ntohs(res_header.type);
-			res_header.length = NTOHLL(res_header.length);
+	std::size_t length = socket.read_some(boost::asio::buffer(&res_header, sizeof(Orts::transport::tcp::protocol_header)));
+	if (length < sizeof(Orts::transport::tcp::protocol_header))
+		return json::object();
 
-			if (res_data.length() >= res_header.length)
-				break;
-		}
+	res_header.type = ntohs(res_header.type);
+	res_header.length = NTOHLL(res_header.length);
+	res_header.json_length = NTOHLL(res_header.json_length);
+	res_header.post_length = NTOHLL(res_header.post_length);
+
+	std::string chunk;
+	chunk.resize(MAX_RECV_BUF_LENGTH);
+	std::string buffer;
+	while (buffer.size() < res_header.length) {
+		length = socket.read_some(
+			boost::asio::buffer(chunk.data(), NUM_MIN(MAX_RECV_BUF_LENGTH, header.length - buffer.length())));
+		if (length <= 0)
+			return json::object();
+
+		buffer.append(chunk.data(), length);
 	}
-	return json::parse(res_data.c_str() + sizeof(res_header));
+
+	return json::parse(buffer);
 }
 
 TEST(test_onnxruntime_server_tcp, TcpServerTest) {

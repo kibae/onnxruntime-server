@@ -12,19 +12,19 @@
 #define HTONLL(x) (x)
 #define NTOHLL(x) (x)
 #else
-#define HTONLL(x) ((((uint64_t)htonl(x)) << 32) + htonl(x >> 32))
-#define NTOHLL(x) ((((uint64_t)ntohl(x)) << 32) + ntohl(x >> 32))
+#define HTONLL(x) ((((uint64_t)htonl(x)) << 32) + htonl((uint64_t)x >> 32))
+#define NTOHLL(x) ((((uint64_t)ntohl(x)) << 32) + ntohl((uint64_t)x >> 32))
 #endif
 
 #define MAX_RECV_BUF_LENGTH (1024 * 1024 * 4)
 
 namespace onnxruntime_server::transport::tcp {
-	struct protocol_header {
+	PACKED_STRUCT(protocol_header) {
 		int16_t type;
 		int64_t length;
 		int64_t json_length;
 		int64_t post_length;
-	} __attribute__((packed));
+	};
 
 	class tcp_session {
 	  private:

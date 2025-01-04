@@ -1,7 +1,3 @@
-//
-// Created by kibae on 23. 8. 17.
-//
-
 #include "../../transport/http/http_server.hpp"
 #include "../test_common.hpp"
 

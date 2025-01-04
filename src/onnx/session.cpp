@@ -24,7 +24,17 @@ Orts::onnx::session::session(session_key key, const json &option)
 }
 
 Orts::onnx::session::session(session_key key, const std::string &path, const json &option) : session(std::move(key), option) {
-	ort_session = new Ort::Session(env, path.c_str(), session_options);
+#ifdef _WIN32
+	int size_needed = MultiByteToWideChar(CP_ACP, 0, path.c_str(), -1, NULL, 0);
+	std::wstring wstr(size_needed, 0);
+	MultiByteToWideChar(CP_ACP, 0, path.c_str(), -1, &wstr[0], size_needed);
+
+	auto model_path = wstr.c_str();
+#else
+	auto model_path = path.c_str();
+#endif
+
+	ort_session = new Ort::Session(env, model_path, session_options);
 	init();
 }
 
