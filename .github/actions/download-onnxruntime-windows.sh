@@ -15,17 +15,19 @@ RAW_LIST=$(curl -s -H "Accept: application/vnd.github+json" \
 item=${RAW_LIST[0]}
 
 FILENAME=$(basename "$item")
+DIRNAME="${FILENAME%.zip}"
 
 echo
 echo "Downloading $item"
 echo "to $FILENAME"
+echo "to $DIRNAME"
 echo
 
 curl --output "$FILENAME" -L "$item"
-ls -al
 
 unzip "$FILENAME"
-mv onnxruntime* C:/msys64/usr/local/onnxruntime
+ls -al
+mv ${DIRNAME} C:/msys64/usr/local/onnxruntime
 ls -al C:/msys64/usr/local/onnxruntime
 
 rm -f "$FILENAME"
