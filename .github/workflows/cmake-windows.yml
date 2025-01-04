@@ -1,5 +1,5 @@
 # See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-single-platform.yml
-name: CMake on MacOS
+name: CMake on Windows
 
 on:
   push:
@@ -9,32 +9,25 @@ on:
 
 jobs:
   build:
-    # disable
-    if: false
-
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      fail-fast: false
-
-      matrix:
-        os: [ macos-latest ]
-        build_type: [ Debug ]
-        c_compiler: [ clang ]
-        include:
-          - c_compiler: clang
-            cpp_compiler: clang++
+    runs-on: windows-latest
 
     steps:
       - uses: actions/checkout@v4
         with:
           lfs: false
 
-      - name: Prepare container(homebrew)
+      - name: Install dependencies with MSYS2
+        run: |
+          pacman -S --noconfirm mingw-w64-x86_64-pkg-config
+
+      - name: Install dependencies with vcpkg
+        run: |
+          C:\vcpkg\vcpkg.exe install boost-serialization boost-system boost-filesystem boost-program_options boost-thread gtest
+
+      - name: Prepare container(onnxruntime)
         shell: bash
         run: |
-          brew update
-          HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 HOMEBREW_NO_AUTO_UPDATE=1 brew install cmake boost openssl googletest onnxruntime
+          ./.github/actions/download-onnxruntime-linux.sh
 
       - name: Set reusable strings
         # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
@@ -63,12 +56,6 @@ jobs:
         with:
           path: test/fixture
           key: test-fixtures-v1
-
-      - name: Download assets(models)
-        if: steps.cache-test-fixtures.outputs.cache-hit != 'true'
-        shell: bash
-        run: |
-          ./test/fixture/download-test-fixtures.sh
 
       - name: Test
         working-directory: ${{ steps.strings.outputs.build-output-dir }}

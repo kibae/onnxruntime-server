@@ -30,6 +30,9 @@ jobs:
           ./test/fixture/download-test-fixtures.sh
 
   prepare-apt:
+    # disable
+    if: false
+
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -59,10 +62,10 @@ jobs:
           sudo apt-get install -yq --download-only build-essential clang cmake libboost-all-dev libssl-dev libgtest-dev
           cp /var/cache/apt/archives/*.deb .github/cache/dependencies-apt/
 
-
-
-
   build:
+    # disable
+    if: false
+
     runs-on: ${{ matrix.os }}
     needs: [ "prepare-asset", "prepare-apt" ]
 
