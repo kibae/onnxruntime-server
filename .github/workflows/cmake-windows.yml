@@ -8,6 +8,23 @@ on:
     branches: [ "*" ]
 
 jobs:
+  prepare-vcpkg:
+    runs-on: windows-latest
+    steps:
+      - name: Restore vcpkg cache
+        id: cache-windows-vcpkg
+        uses: actions/cache@v4
+        with:
+          path: |
+            C:\vcpkg\installed
+            C:\vcpkg\buildtrees
+          key: windows-vcpkg-v1
+
+      - name: Install dependencies with vcpkg
+        if: steps.cache-windows-vcpkg.outputs.cache-hit != 'true'
+        run: |
+          C:\vcpkg\vcpkg.exe install boost-serialization boost-system boost-filesystem boost-program-options boost-thread boost-asio gtest
+
   build:
     runs-on: windows-latest
 
