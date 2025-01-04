@@ -26,6 +26,7 @@ jobs:
           C:\vcpkg\vcpkg.exe install boost-serialization boost-system boost-filesystem boost-program-options boost-thread boost-asio gtest
 
   build:
+    needs: [ "prepare-vcpkg" ]
     runs-on: windows-latest
 
     strategy:
