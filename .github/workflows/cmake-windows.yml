@@ -22,7 +22,7 @@ jobs:
 
       - name: Install dependencies with vcpkg
         run: |
-          C:\vcpkg\vcpkg.exe install boost-serialization boost-system boost-filesystem boost-program_options boost-thread gtest
+          C:\vcpkg\vcpkg.exe install boost-serialization boost-system boost-filesystem boost-program-options boost-thread gtest
 
       - name: Prepare container(onnxruntime)
         shell: bash
