@@ -19,14 +19,11 @@ DIRNAME="${FILENAME%.zip}"
 
 echo
 echo "Downloading $item"
-echo "to $FILENAME"
-echo "to $DIRNAME"
 echo
 
 curl --output "$FILENAME" -L "$item"
 
 unzip "$FILENAME"
-ls -al
 mv ${DIRNAME} C:/msys64/usr/local/onnxruntime
 ls -al C:/msys64/usr/local/onnxruntime
 
