@@ -18,7 +18,7 @@ jobs:
 
       - name: Install dependencies with MSYS2
         run: |
-          pacman -S --noconfirm mingw-w64-x86_64-pkg-config
+          C:\msys64\usr\bin\pacman.exe -S --noconfirm mingw-w64-x86_64-pkg-config
 
       - name: Install dependencies with vcpkg
         run: |
