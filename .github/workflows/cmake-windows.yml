@@ -44,25 +44,21 @@ jobs:
         id: cache-windows-vcpkg
         uses: actions/cache/restore@v4
         with:
-          path: |
-            C:\vcpkg\installed
-            C:\vcpkg\buildtrees
-          key: windows-vcpkg-v2
+          path: C:\vcpkg\downloads
+          key: windows-vcpkg-v3
           lookup-only: true
 
       - name: Install dependencies with vcpkg
         if: steps.cache-windows-vcpkg.outputs.cache-hit != 'true'
         run: |
-          C:\vcpkg\vcpkg.exe install boost-serialization boost-system boost-filesystem boost-program-options boost-thread boost-asio boost-beast gtest
+          C:\vcpkg\vcpkg.exe install --editable boost-serialization boost-system boost-filesystem boost-program-options boost-thread boost-asio boost-beast gtest
 
       - name: (Cache) Save vcpkg cache
         if: steps.cache-windows-vcpkg.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
-          path: |
-            C:\vcpkg\installed
-            C:\vcpkg\buildtrees
-          key: windows-vcpkg-v2
+          path: C:\vcpkg\downloads
+          key: windows-vcpkg-v3
 
   build:
     needs: [ "prepare-asset", "prepare-vcpkg" ]
@@ -82,11 +78,13 @@ jobs:
         id: cache-windows-vcpkg
         uses: actions/cache/restore@v4
         with:
-          path: |
-            C:\vcpkg\installed
-            C:\vcpkg\buildtrees
-          key: windows-vcpkg-v2
+          path: C:\vcpkg\downloads
+          key: windows-vcpkg-v3
           fail-on-cache-miss: true
+
+      - name: Install dependencies with vcpkg
+        run: |
+          C:\vcpkg\vcpkg.exe install boost-serialization boost-system boost-filesystem boost-program-options boost-thread boost-asio boost-beast gtest
 
       - name: Install dependencies with MSYS2
         run: |
