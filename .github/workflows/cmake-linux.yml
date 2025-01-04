@@ -16,18 +16,26 @@ jobs:
         with:
           lfs: false
 
-      - name: Cache test fixtures
+      - name: (Cache) Restore test fixtures
         id: cache-test-fixtures
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: test/fixture
           key: test-fixtures-v1
+          lookup-only: true
 
       - name: Download assets(models)
         if: steps.cache-test-fixtures.outputs.cache-hit != 'true'
         shell: bash
         run: |
           ./test/fixture/download-test-fixtures.sh
+
+      - name: (Cache) Save test fixtures
+        if: steps.cache-test-fixtures.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: test/fixture
+          key: test-fixtures-v1
 
   prepare-apt:
     runs-on: ${{ matrix.os }}
@@ -43,12 +51,13 @@ jobs:
         with:
           lfs: false
 
-      - name: Cache dependencies(apt)
+      - name: (Cache) Restore dependencies(apt)
         id: cache-dependencies-apt
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: .github/cache/dependencies-apt
           key: ${{ matrix.os }}-dependencies-apt-v1
+          lookup-only: true
 
       - name: Prepare container(apt download)
         shell: bash
@@ -58,6 +67,13 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -yq --download-only build-essential clang cmake libboost-all-dev libssl-dev libgtest-dev
           cp /var/cache/apt/archives/*.deb .github/cache/dependencies-apt/
+
+      - name: (Cache) Save dependencies(apt)
+        if: steps.cache-dependencies-apt.outputs.cache-hit != 'true' && (startsWith(matrix.os, 'debian-') || startsWith(matrix.os, 'ubuntu-'))
+        uses: actions/cache/save@v4
+        with:
+          path: .github/cache/dependencies-apt
+          key: ${{ matrix.os }}-dependencies-apt-v1
 
   build:
     runs-on: ${{ matrix.os }}
@@ -80,20 +96,13 @@ jobs:
         with:
           lfs: false
 
-      - name: Cache dependencies(apt)
+      - name: (Cache) Restore dependencies(apt)
         id: cache-dependencies-apt
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: .github/cache/dependencies-apt
           key: ${{ matrix.os }}-dependencies-apt-v1
-
-      - name: Prepare container(apt download)
-        shell: bash
-        if: steps.cache-dependencies-apt.outputs.cache-hit != 'true' && (startsWith(matrix.os, 'debian-') || startsWith(matrix.os, 'ubuntu-'))
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -yq --download-only build-essential clang cmake libboost-all-dev libssl-dev libgtest-dev
-          cp /var/cache/apt/archives/*.deb .github/cache/dependencies-apt/
+          fail-on-cache-miss: true
 
       - name: Prepare container(apt)
         shell: bash
@@ -128,9 +137,8 @@ jobs:
         # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
         run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --parallel 4
 
-      - name: Cache test fixtures
-        id: cache-test-fixtures
-        uses: actions/cache@v4
+      - name: (Cache) Restore test fixtures
+        uses: actions/cache/restore@v4
         with:
           path: test/fixture
           key: test-fixtures-v1

@@ -16,12 +16,13 @@ jobs:
         with:
           lfs: false
 
-      - name: Cache test fixtures
+      - name: (Cache) Restore test fixtures
         id: cache-test-fixtures
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: test/fixture
           key: test-fixtures-windows-v1
+          lookup-only: true
 
       - name: Download assets(models)
         if: steps.cache-test-fixtures.outputs.cache-hit != 'true'
@@ -29,10 +30,17 @@ jobs:
         run: |
           ./test/fixture/download-test-fixtures.sh
 
+      - name: (Cache) Save test fixtures
+        if: steps.cache-test-fixtures.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: test/fixture
+          key: test-fixtures-windows-v1
+
   prepare-vcpkg:
     runs-on: windows-latest
     steps:
-      - name: Restore vcpkg cache
+      - name: (Cache) Restore vcpkg cache
         id: cache-windows-vcpkg
         uses: actions/cache/restore@v4
         with:
@@ -47,7 +55,7 @@ jobs:
         run: |
           C:\vcpkg\vcpkg.exe install boost-serialization boost-system boost-filesystem boost-program-options boost-thread boost-asio boost-beast gtest
 
-      - name: Save vcpkg cache
+      - name: (Cache) Save vcpkg cache
         if: steps.cache-windows-vcpkg.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
@@ -70,20 +78,15 @@ jobs:
         with:
           lfs: false
 
-      - name: Restore vcpkg cache
+      - name: (Cache) Restore vcpkg cache
         id: cache-windows-vcpkg
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: |
             C:\vcpkg\installed
             C:\vcpkg\buildtrees
           key: windows-vcpkg-v2
           fail-on-cache-miss: true
-
-      - name: Install dependencies with vcpkg
-        if: steps.cache-windows-vcpkg.outputs.cache-hit != 'true'
-        run: |
-          C:\vcpkg\vcpkg.exe install boost-serialization boost-system boost-filesystem boost-program-options boost-thread boost-asio boost-beast gtest
 
       - name: Install dependencies with MSYS2
         run: |
@@ -116,9 +119,8 @@ jobs:
         # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
         run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --parallel 4
 
-      - name: Cache test fixtures
-        id: cache-test-fixtures
-        uses: actions/cache@v4
+      - name: (Cache) Restore test fixtures
+        uses: actions/cache/restore@v4
         with:
           path: test/fixture
           key: test-fixtures-windows-v1
