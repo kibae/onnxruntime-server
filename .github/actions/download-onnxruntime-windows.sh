@@ -18,9 +18,11 @@ FILENAME=$(basename "$item")
 
 echo
 echo "Downloading $item"
+echo "to $FILENAME"
 echo
 
-curl --output "$FILENAME" "$item"
+curl --output "$FILENAME" -L "$item"
+ls -al
 
 mkdir -p C:/msys64/usr/local/onnxruntime
 unzip -q "$FILENAME" -d C:/msys64/usr/local/onnxruntime
