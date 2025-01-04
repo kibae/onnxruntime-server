@@ -1,5 +1,5 @@
 # See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-single-platform.yml
-name: CMake on Linux
+name: CMake on Windows
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
 
 jobs:
   prepare-asset:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -21,7 +21,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: test/fixture
-          key: test-fixtures-v1
+          key: test-fixtures-windows-v1
           lookup-only: true
 
       - name: Download assets(models)
@@ -35,86 +35,61 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: test/fixture
-          key: test-fixtures-v1
+          key: test-fixtures-windows-v1
 
-  prepare-apt:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ ubuntu-20.04, ubuntu-22.04, ubuntu-24.04 ]
-        build_type: [ Debug ]
-
+  prepare-vcpkg:
+    runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          lfs: false
-
-      - name: (Cache) Restore dependencies(apt)
-        id: cache-dependencies-apt
+      - name: (Cache) Restore vcpkg cache
+        id: cache-windows-vcpkg
         uses: actions/cache/restore@v4
         with:
-          path: .github/cache/dependencies-apt
-          key: ${{ matrix.os }}-dependencies-apt-v1
+          path: C:\vcpkg\installed
+          key: windows-vcpkg-v4
           lookup-only: true
 
-      - name: Prepare container(apt download)
-        shell: bash
-        if: steps.cache-dependencies-apt.outputs.cache-hit != 'true' && (startsWith(matrix.os, 'debian-') || startsWith(matrix.os, 'ubuntu-'))
+      - name: Install dependencies with vcpkg
+        if: steps.cache-windows-vcpkg.outputs.cache-hit != 'true'
         run: |
-          cat /etc/os-release
-          sudo apt-get update -qq
-          sudo apt-get install -yq --download-only build-essential clang cmake libboost-all-dev libssl-dev libgtest-dev
-          cp /var/cache/apt/archives/*.deb .github/cache/dependencies-apt/
+          C:\vcpkg\vcpkg.exe install boost-serialization boost-system boost-filesystem boost-program-options boost-thread boost-asio boost-beast gtest
 
-      - name: (Cache) Save dependencies(apt)
-        if: steps.cache-dependencies-apt.outputs.cache-hit != 'true' && (startsWith(matrix.os, 'debian-') || startsWith(matrix.os, 'ubuntu-'))
+      - name: (Cache) Save vcpkg cache
+        if: steps.cache-windows-vcpkg.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
-          path: .github/cache/dependencies-apt
-          key: ${{ matrix.os }}-dependencies-apt-v1
+          path: C:\vcpkg\installed
+          key: windows-vcpkg-v4
 
   build:
-    runs-on: ${{ matrix.os }}
-    needs: [ "prepare-asset", "prepare-apt" ]
+    needs: [ "prepare-asset", "prepare-vcpkg" ]
+    runs-on: windows-latest
 
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-20.04, ubuntu-22.04, ubuntu-24.04 ]
-        c_compiler: [ gcc, clang ]
         build_type: [ Debug ]
-        include:
-          - c_compiler: gcc
-            cpp_compiler: g++
-          - c_compiler: clang
-            cpp_compiler: clang++
 
     steps:
       - uses: actions/checkout@v4
         with:
           lfs: false
 
-      - name: (Cache) Restore dependencies(apt)
-        id: cache-dependencies-apt
+      - name: (Cache) Restore vcpkg cache
+        id: cache-windows-vcpkg
         uses: actions/cache/restore@v4
         with:
-          path: .github/cache/dependencies-apt
-          key: ${{ matrix.os }}-dependencies-apt-v1
+          path: C:\vcpkg\installed
+          key: windows-vcpkg-v4
           fail-on-cache-miss: true
 
-      - name: Prepare container(apt)
-        shell: bash
-        if: startsWith(matrix.os, 'debian-') || startsWith(matrix.os, 'ubuntu-')
+      - name: Install dependencies with MSYS2
         run: |
-          cat /etc/os-release
-          sudo dpkg -i .github/cache/dependencies-apt/*.deb
+          C:\msys64\usr\bin\pacman.exe -S --noconfirm mingw-w64-x86_64-pkg-config
 
       - name: Prepare container(onnxruntime)
         shell: bash
         run: |
-          ./.github/actions/download-onnxruntime-linux.sh
+          ./.github/actions/download-onnxruntime-windows.sh
 
       - name: Set reusable strings
         # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
@@ -128,9 +103,10 @@ jobs:
         # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
         run: >
           cmake -B ${{ steps.strings.outputs.build-output-dir }}
-          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
-          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          -DPKG_CONFIG_EXECUTABLE:FILEPATH=C:/msys64/mingw64/bin/pkg-config.exe
+          -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake
+          -DVCPKG_FEATURE_FLAGS=binarycaching
           -S ${{ github.workspace }}
 
       - name: Build
@@ -141,7 +117,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: test/fixture
-          key: test-fixtures-v1
+          key: test-fixtures-windows-v1
           fail-on-cache-miss: true
 
       - name: Test

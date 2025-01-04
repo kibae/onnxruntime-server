@@ -60,7 +60,11 @@ endif ()
 
 # boost
 #set(Boost_USE_STATIC_LIBS ON)
-find_package(Boost COMPONENTS serialization system filesystem program_options thread REQUIRED)
+if (WIN32)
+    find_package(Boost COMPONENTS serialization system filesystem program_options thread asio beast REQUIRED)
+else ()
+    find_package(Boost COMPONENTS serialization system filesystem program_options thread REQUIRED)
+endif ()
 
 # openssl
 if (NOT NO_ONNXRUNTIME_SERVER_OPENSSL)
@@ -94,11 +98,11 @@ if (NOT NO_ONNXRUNTIME_SERVER_TEST)
 endif ()
 
 # install
-if (NOT NO_ONNXRUNTIME_SERVER_INSTALL)
-    set_target_properties(onnxruntime_server_standalone PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
+if (NOT NO_ONNXRUNTIME_SERVER_INSTALL AND NOT WIN32)
+    set_target_properties(${PROJECT_NAME}_standalone PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
     set_target_properties(${PROJECT_NAME}_static PROPERTIES OUTPUT_NAME ${PROJECT_NAME})
 
-    install(TARGETS onnxruntime_server_standalone DESTINATION bin)
+    install(TARGETS ${PROJECT_NAME}_standalone DESTINATION bin)
     install(TARGETS ${PROJECT_NAME} DESTINATION lib)
     install(TARGETS ${PROJECT_NAME}_static DESTINATION lib RENAME ${PROJECT_NAME})
     install(FILES onnxruntime_server.hpp DESTINATION include)

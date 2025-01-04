@@ -58,7 +58,9 @@ int main(int argc, char *argv[]) {
 #endif
 
 		signal(SIGTERM, on_sigterm);
+#ifndef _WIN32
 		signal(SIGPIPE, SIG_IGN);
+#endif
 
 		auto timeout = std::chrono::milliseconds{1000};
 		while (!terminated) {
