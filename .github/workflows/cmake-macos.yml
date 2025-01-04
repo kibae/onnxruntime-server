@@ -9,9 +9,6 @@ on:
 
 jobs:
   build:
-    # disable
-    if: false
-
     runs-on: ${{ matrix.os }}
 
     strategy:

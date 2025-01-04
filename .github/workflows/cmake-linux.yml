@@ -30,9 +30,6 @@ jobs:
           ./test/fixture/download-test-fixtures.sh
 
   prepare-apt:
-    # disable
-    if: false
-
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -63,9 +60,6 @@ jobs:
           cp /var/cache/apt/archives/*.deb .github/cache/dependencies-apt/
 
   build:
-    # disable
-    if: false
-
     runs-on: ${{ matrix.os }}
     needs: [ "prepare-asset", "prepare-apt" ]
 
@@ -140,12 +134,7 @@ jobs:
         with:
           path: test/fixture
           key: test-fixtures-v1
-
-      - name: Download assets(models)
-        if: steps.cache-test-fixtures.outputs.cache-hit != 'true'
-        shell: bash
-        run: |
-          ./test/fixture/download-test-fixtures.sh
+          fail-on-cache-miss: true
 
       - name: Test
         working-directory: ${{ steps.strings.outputs.build-output-dir }}
