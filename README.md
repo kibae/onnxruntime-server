@@ -1,6 +1,6 @@
 # ONNX Runtime Server
 
-[![ONNX Runtime](https://img.shields.io/github/v/release/microsoft/onnxruntime?filter=v1.20.1b&label=ONNX%20Runtime)](https://github.com/microsoft/onnxruntime)
+[![ONNX Runtime](https://img.shields.io/github/v/release/microsoft/onnxruntime?filter=v1.20.1&label=ONNX%20Runtime)](https://github.com/microsoft/onnxruntime)
 [![CMake on Linux](https://github.com/kibae/onnxruntime-server/actions/workflows/cmake-linux.yml/badge.svg)](https://github.com/kibae/onnxruntime-server/actions/workflows/cmake-linux.yml)
 [![CMake on MacOS](https://github.com/kibae/onnxruntime-server/actions/workflows/cmake-macos.yml/badge.svg)](https://github.com/kibae/onnxruntime-server/actions/workflows/cmake-macos.yml)
 [![CMake on Windows](https://github.com/kibae/onnxruntime-server/actions/workflows/cmake-windows.yml/badge.svg)](https://github.com/kibae/onnxruntime-server/actions/workflows/cmake-windows.yml)
