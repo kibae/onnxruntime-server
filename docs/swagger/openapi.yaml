@@ -8,9 +8,6 @@ externalDocs:
   url: https://github.com/kibae/onnxruntime-server
 tags:
   - name: ONNX Runtime Session
-servers:
-  - url: http://localhost:8080
-    description: Local server
 paths:
   /health:
     get:
