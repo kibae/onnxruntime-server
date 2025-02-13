@@ -2,7 +2,7 @@
 
 ## x64 with CUDA
 
-- [ONNX Runtime Binary](https://github.com/microsoft/onnxruntime/releases) v1.20.1b(latest) requires CUDA 11/12, cudnn 8/9.
+- [ONNX Runtime Binary](https://github.com/microsoft/onnxruntime/releases) v1.20.2(latest) requires CUDA 11/12, cudnn 8/9.
   ```
   $ ldd libonnxruntime_providers_cuda.so 
   linux-vdso.so.1 (0x00007fffa4bf8000)
