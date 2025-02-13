@@ -248,10 +248,27 @@ components:
       properties:
         cuda:
           nullable: true
+          required: false
           oneOf:
             - type: boolean
               description: Use CUDA
             - $ref: '#/components/schemas/ONNXSessionOptionCUDA'
+        input_shape:
+          type: object
+          description: Input shape
+          required: false
+          example: {
+            "x": [ 1, 1 ],
+            "y": [ 1, 1 ],
+            "z": [ 1, 1 ]
+          }
+        output_shape:
+          type: object
+          description: Output shape
+          required: false
+          example: {
+            "output": [ 1, 1 ]
+          }
     ONNXSessionOptionCUDA:
       type: object
       properties:

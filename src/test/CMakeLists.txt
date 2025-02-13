@@ -18,13 +18,13 @@ add_test(NAME lib_version COMMAND lib_version)
 if (WIN32)
     file(GLOB ONNXRUNTIME_LIB_FILES_TO_COPY "${ONNX_RUNTIME_LIBRARY_DIRS}/onnxruntime*")
 
-    foreach(FILE ${ONNXRUNTIME_LIB_FILES_TO_COPY})
+    foreach (FILE ${ONNXRUNTIME_LIB_FILES_TO_COPY})
         add_custom_command(TARGET lib_version POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy
                 ${FILE}
                 $<TARGET_FILE_DIR:lib_version>
         )
-    endforeach()
+    endforeach ()
 endif ()
 
 # __    __  .__   __.  __  .___________.
@@ -45,9 +45,9 @@ if (CUDA_FOUND)
     add_test(NAME unit_test_context_cuda COMMAND unit_test_context_cuda)
 endif ()
 
-add_executable(unit_test_session_key unit/unit_test_session_key.cpp)
-target_link_libraries(unit_test_session_key PRIVATE ${TEST_LIBS})
-add_test(NAME unit_test_session_key COMMAND unit_test_session_key)
+add_executable(unit_test_session unit/unit_test_session.cpp)
+target_link_libraries(unit_test_session PRIVATE ${TEST_LIBS})
+add_test(NAME unit_test_session COMMAND unit_test_session)
 
 
 # _______ ___    _______

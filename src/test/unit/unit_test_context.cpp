@@ -40,6 +40,26 @@ TEST(test_onnxruntime_server_context, SimpleModelBatchTest) {
 	ASSERT_GT(json["output"][0], 0);
 }
 
+TEST(test_onnxruntime_server_context, SimpleModelWithShapeOption) {
+	Orts::onnx::session_key key("sample", "1");
+	auto session = std::make_shared<Orts::onnx::session>(
+		key, model1_path.string(), R"({"input_shape":{"x":[-1,1],"y":[3,1],"z":[3,1]}})"_json
+	);
+
+	Orts::onnx::execution::context ctx(session, R"({"x":[[1],[2],[3]],"y":[[2],[3],[4]],"z":[[3],[4],[5]]})");
+
+	TIME_MEASURE_INIT
+	TIME_MEASURE_START
+	auto result = ctx.run();
+	TIME_MEASURE_STOP
+	auto json = ctx.tensors_to_json(result);
+	std::cout << json.dump(4) << "\n";
+
+	ASSERT_TRUE(json.contains("output"));
+	ASSERT_EQ(json["output"].size(), 3);
+	ASSERT_GT(json["output"][0], 0);
+}
+
 TEST(test_onnxruntime_server_context, BertSquadModelTest) {
 	Orts::onnx::session_key key("sample", "2");
 	auto session = std::make_shared<Orts::onnx::session>(key, model2_path.string());
