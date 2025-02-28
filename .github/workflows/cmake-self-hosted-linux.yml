@@ -16,12 +16,6 @@ jobs:
         with:
           lfs: false
 
-      - name: Prepare container(apt)
-        shell: bash
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -yq build-essential clang cmake libboost-all-dev libssl-dev libgtest-dev
-
       - name: Prepare container(onnxruntime)
         shell: bash
         run: |
