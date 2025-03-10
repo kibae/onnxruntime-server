@@ -4,6 +4,7 @@
 [![CMake on Linux](https://github.com/kibae/onnxruntime-server/actions/workflows/cmake-linux.yml/badge.svg)](https://github.com/kibae/onnxruntime-server/actions/workflows/cmake-linux.yml)
 [![CMake on MacOS](https://github.com/kibae/onnxruntime-server/actions/workflows/cmake-macos.yml/badge.svg)](https://github.com/kibae/onnxruntime-server/actions/workflows/cmake-macos.yml)
 [![CMake on Windows](https://github.com/kibae/onnxruntime-server/actions/workflows/cmake-windows.yml/badge.svg)](https://github.com/kibae/onnxruntime-server/actions/workflows/cmake-windows.yml)
+[![CodeQL](https://github.com/kibae/onnxruntime-server/actions/workflows/codeql.yml/badge.svg)](https://github.com/kibae/onnxruntime-server/actions/workflows/codeql.yml)
 [![License](https://img.shields.io/github/license/kibae/onnxruntime-server)](https://github.com/kibae/onnxruntime-server/blob/main/LICENSE)
 
 - [ONNX: Open Neural Network Exchange](https://onnx.ai/)
