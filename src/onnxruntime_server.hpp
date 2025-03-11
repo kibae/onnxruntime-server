@@ -43,7 +43,7 @@ namespace onnxruntime_server {
 		  public:
 			const std::string name;
 			const ONNXTensorElementDataType element_type;
-			const std::vector<int64_t> shape;
+			std::vector<int64_t> shape;
 
 			value_info(std::string name, ONNXTensorElementDataType element_type, std::vector<int64_t> shape);
 
@@ -101,6 +101,7 @@ namespace onnxruntime_server {
 			json _option = json::object();
 
 			void init();
+			void override_shape(const char *option_key, value_info &value);
 
 			explicit session(session_key key, const json &option);
 
@@ -122,10 +123,12 @@ namespace onnxruntime_server {
 			[[nodiscard]] const std::vector<value_info> &outputs() const;
 		};
 
+		typedef std::shared_ptr<session> session_ptr;
+
 		class session_manager {
 		  private:
 			std::recursive_mutex mutex;
-			std::map<session_key, std::shared_ptr<session>> sessions;
+			std::map<session_key, session_ptr> sessions;
 			model_bin_getter_t model_bin_getter;
 
 		  public:
@@ -134,13 +137,13 @@ namespace onnxruntime_server {
 
 			builtin_thread_pool thread_pool;
 
-			std::map<session_key, std::shared_ptr<session>> &get_sessions() {
+			const std::map<session_key, session_ptr> &get_sessions() {
 				return sessions;
 			}
 
-			std::shared_ptr<session> get_session(const std::string &model_name, const std::string &model_version);
-			std::shared_ptr<session> get_session(const session_key &key);
-			std::shared_ptr<session> create_session(
+			session_ptr get_session(const std::string &model_name, const std::string &model_version);
+			session_ptr get_session(const session_key &key);
+			session_ptr create_session(
 				const std::string &model_name, const std::string &model_version, const json &option,
 				const char *model_data = nullptr, size_t model_data_length = 0
 			);
