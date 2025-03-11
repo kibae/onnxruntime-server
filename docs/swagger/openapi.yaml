@@ -45,8 +45,13 @@ paths:
       description: Create a new session
       operationId: createSession
       requestBody:
+        required: true
+        description: option, option.input_shape, option.output_shape are optional
         content:
-          application/json:
+          application/json(simple, wo/option):
+            schema:
+              $ref: '#/components/schemas/ONNXSessionCreateRequestSimple'
+          application/json(w/option):
             schema:
               $ref: '#/components/schemas/ONNXSessionCreateRequest'
       responses:
@@ -136,6 +141,7 @@ paths:
           schema:
             type: string
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -253,9 +259,21 @@ components:
             - type: boolean
               description: Use CUDA
             - $ref: '#/components/schemas/ONNXSessionOptionCUDA'
+    ONNXSessionOptionRequest:
+      type: object
+      nullable: true
+      properties:
+        cuda:
+          nullable: true
+          required: false
+          oneOf:
+            - type: boolean
+              description: Use CUDA
+            - $ref: '#/components/schemas/ONNXSessionOptionCUDA'
         input_shape:
           type: object
           description: Input shape
+          nullable: true
           required: false
           example: {
             "x": [ 1, 1 ],
@@ -265,6 +283,7 @@ components:
         output_shape:
           type: object
           description: Output shape
+          nullable: true
           required: false
           example: {
             "output": [ 1, 1 ]
@@ -282,13 +301,38 @@ components:
         model:
           type: string
           description: Model name
+          required: true
           nullable: false
         version:
           type: string
           description: Model version
+          required: true
           nullable: false
         option:
-          $ref: '#/components/schemas/ONNXSessionOption'
+          required: false
+          nullable: true
+          $ref: '#/components/schemas/ONNXSessionOptionRequest'
+    ONNXSessionCreateRequestSimple:
+      type: object
+      example: {
+        "model": "string",
+        "version": "string"
+      }
+      properties:
+        model:
+          type: string
+          description: Model name
+          required: true
+          nullable: false
+        version:
+          type: string
+          description: Model version
+          required: true
+          nullable: false
+        option:
+          required: false
+          nullable: true
+          $ref: '#/components/schemas/ONNXSessionOptionRequest'
     ONNXSessionExecuteRequest:
       type: object
       example: {
