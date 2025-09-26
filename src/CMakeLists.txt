@@ -61,9 +61,9 @@ endif ()
 # boost
 #set(Boost_USE_STATIC_LIBS ON)
 if (WIN32)
-    find_package(Boost COMPONENTS serialization system filesystem program_options thread asio beast REQUIRED)
+    find_package(Boost COMPONENTS serialization filesystem program_options thread asio beast REQUIRED)
 else ()
-    find_package(Boost COMPONENTS serialization system filesystem program_options thread REQUIRED)
+    find_package(Boost COMPONENTS serialization filesystem program_options thread REQUIRED)
 endif ()
 
 # openssl
