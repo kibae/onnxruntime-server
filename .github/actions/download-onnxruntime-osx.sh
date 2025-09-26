@@ -14,6 +14,12 @@ RAW_LIST=$(curl -s -H "Accept: application/vnd.github+json" \
 
 item=${RAW_LIST[0]}
 
+# check item is not empty
+if [ -z "$item" ]; then
+  echo "Error: Could not find onnxruntime download link."
+  exit 1
+fi
+
 FILENAME=$(basename "$item")
 
 echo
@@ -30,3 +36,5 @@ rm -f "$FILENAME"
 echo
 echo "Done"
 echo
+
+exit 0
