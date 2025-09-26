@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: ONNX Runtime Server
   description: |-
-  version: 1.22.0
+  version: 1.23.0
 externalDocs:
   description: ONNX Runtime Server
   url: https://github.com/kibae/onnxruntime-server
