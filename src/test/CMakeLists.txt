@@ -39,7 +39,7 @@ add_executable(unit_test_context unit/unit_test_context.cpp)
 target_link_libraries(unit_test_context PRIVATE ${TEST_LIBS})
 add_test(NAME unit_test_context COMMAND unit_test_context)
 
-if (CUDA_FOUND)
+if (ONNX_RUNTIME_WITH_CUDA_PROVIDER)
     add_executable(unit_test_context_cuda unit/unit_test_context_cuda.cpp)
     target_link_libraries(unit_test_context_cuda PRIVATE ${TEST_LIBS})
     add_test(NAME unit_test_context_cuda COMMAND unit_test_context_cuda)
