@@ -12,6 +12,7 @@ set(SOURCE_FILES
         task/get_session.cpp
 
         onnx/version.cpp
+        onnx/providers.cpp
         onnx/session_key.cpp
         onnx/session_key_with_option.cpp
         onnx/session.cpp
@@ -42,12 +43,15 @@ endif ()
 if (CUDA_FOUND)
     message(STATUS "CUDA support found. Compiling with CUDA support.")
     enable_language(CUDA)
-    add_definitions(-DHAS_CUDA)
-    set(SOURCE_FILES ${SOURCE_FILES} onnx/cuda/session_options.cpp)
     pkg_search_module(ONNX_RUNTIME IMPORTED_TARGET libonnxruntime_cuda)
     if (NOT ONNX_RUNTIME_FOUND)
         list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../cmake" "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
         find_package(ONNXRuntime COMPONENTS cuda REQUIRED)
+    endif ()
+
+    if (ONNX_RUNTIME_HAS_CUDA_PROVIDER)
+        add_definitions(-DHAS_CUDA)
+        set(SOURCE_FILES ${SOURCE_FILES} onnx/cuda/session_options.cpp)
     endif ()
 else ()
     message(STATUS "CUDA support not found. Compiling without CUDA support.")

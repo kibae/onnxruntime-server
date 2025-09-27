@@ -14,7 +14,7 @@ Orts::onnx::session::session(session_key key, const json &option)
 	: session_options(), created_at(std::chrono::system_clock::now()), allocator(), key(std::move(key)) {
 	_option["cuda"] = false;
 
-	if (option.contains("cuda") && (!option["cuda"].is_boolean() || option["cuda"].get<bool>())) {
+	if (Orts::onnx::providers::available_providers.has_cuda() && option.contains("cuda") && (!option["cuda"].is_boolean() || option["cuda"].get<bool>())) {
 #ifdef HAS_CUDA
 		_option["cuda"] = append_cuda_session_options(session_options, option);
 #else
