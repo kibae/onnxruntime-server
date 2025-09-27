@@ -9,19 +9,6 @@ externalDocs:
 tags:
   - name: ONNX Runtime Session
 paths:
-  /health:
-    get:
-      summary: Health check
-      description: Health check
-      operationId: healthCheck
-      responses:
-        '200':
-          description: OK
-          content:
-            plain/text:
-              schema:
-                type: string
-                example: OK
   /api/sessions:
     get:
       tags:
@@ -204,6 +191,38 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ONNXNotFoundError'
+
+  /api/version:
+    get:
+      tags:
+        - ONNX Runtime
+      summary: ONNX Runtime version
+      description: Get ONNX Runtime version
+      operationId: getONNXRuntimeVersion
+      responses:
+        '200':
+          description: OK
+          content:
+            plain/text:
+              schema:
+                type: string
+                example: 1.0.0
+
+  /health:
+    get:
+      tags:
+        - Default
+      summary: Health check
+      description: Health check
+      operationId: healthCheck
+      responses:
+        '200':
+          description: OK
+          content:
+            plain/text:
+              schema:
+                type: string
+                example: OK
 
 components:
   schemas:
