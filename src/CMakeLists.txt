@@ -81,7 +81,6 @@ if (NOT NO_ONNXRUNTIME_SERVER_OPENSSL)
     endif ()
 endif ()
 
-
 include_directories(${Boost_INCLUDE_DIR} ${ONNX_RUNTIME_INCLUDE_DIRS} ${OPENSSL_INCLUDE_DIR})
 link_directories(${Boost_LIBRARY_DIRS} ${ONNX_RUNTIME_LIBRARY_DIRS} ${OPENSSL_LIBRARY_DIRS})
 
@@ -90,6 +89,11 @@ target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} ${ONNX_RUNTIME_LIBRARIE
 
 add_library(${PROJECT_NAME}_static STATIC $<TARGET_OBJECTS:${PROJECT_NAME}>)
 target_link_libraries(${PROJECT_NAME}_static ${Boost_LIBRARIES} ${ONNX_RUNTIME_LIBRARIES} ${OPENSSL_LIBRARIES})
+
+if (WIN32)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE _WIN32_WINNT=0x0A00 WINVER=0x0A00)
+    target_compile_definitions(${PROJECT_NAME}_static PRIVATE _WIN32_WINNT=0x0A00 WINVER=0x0A00)
+endif ()
 
 add_subdirectory(standalone)
 
