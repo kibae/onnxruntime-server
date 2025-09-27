@@ -105,6 +105,12 @@ onnxruntime_server::transport::http::http_session_base::handle_request(
 			}
 		}
 
+		if (target == "/api/version" && req.method() == boost::beast::http::verb::get) {
+			// API: Get version
+			auto version = onnxruntime_server::onnx::version();
+			return simple_response(beast::http::status::ok, CONTENT_TYPE_PLAIN_TEXT, version);
+		}
+
 		if (target == "/health")
 			return simple_response(beast::http::status::ok, CONTENT_TYPE_PLAIN_TEXT, "OK");
 

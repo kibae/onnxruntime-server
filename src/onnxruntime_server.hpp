@@ -39,6 +39,19 @@ namespace onnxruntime_server {
 	namespace onnx {
 		std::string version();
 
+		class providers {
+			std::vector<std::string> _providers;
+			bool _has_cuda = false;
+
+		  public:
+			explicit providers();
+			bool has_cuda() const {
+				return _has_cuda;
+			}
+
+			static const providers available_providers;
+		};
+
 		class value_info {
 		  public:
 			const std::string name;
