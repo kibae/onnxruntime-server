@@ -66,7 +66,6 @@ endif ()
 # boost
 #set(Boost_USE_STATIC_LIBS ON)
 if (WIN32)
-    set_target_properties(onnxruntime_server PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
     find_package(Boost COMPONENTS serialization filesystem program_options thread asio beast REQUIRED)
 else ()
     find_package(Boost COMPONENTS serialization filesystem program_options thread REQUIRED)
@@ -91,6 +90,11 @@ target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} ${ONNX_RUNTIME_LIBRARIE
 
 add_library(${PROJECT_NAME}_static STATIC $<TARGET_OBJECTS:${PROJECT_NAME}>)
 target_link_libraries(${PROJECT_NAME}_static ${Boost_LIBRARIES} ${ONNX_RUNTIME_LIBRARIES} ${OPENSSL_LIBRARIES})
+
+if (WIN32)
+    set_target_properties(${PROJECT_NAME} PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
+    set_target_properties(${PROJECT_NAME}_static PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif ()
 
 add_subdirectory(standalone)
 
