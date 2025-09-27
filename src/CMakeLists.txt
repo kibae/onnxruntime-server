@@ -51,7 +51,7 @@ if (CUDA_FOUND)
 
     if (ONNX_RUNTIME_WITH_CUDA_PROVIDER)
         message(STATUS "ONNX Runtime with CUDA provider found. Enabling CUDA support.")
-        add_definitions(-DWITH_CUDA_PROVIDER)
+        add_definitions(-DHAS_CUDA)
         set(SOURCE_FILES ${SOURCE_FILES} onnx/cuda/session_options.cpp)
     endif ()
 else ()
@@ -66,7 +66,7 @@ endif ()
 # boost
 #set(Boost_USE_STATIC_LIBS ON)
 if (WIN32)
-    find_package(Boost COMPONENTS serialization filesystem program_options thread asio beast REQUIRED)
+    find_package(Boost COMPONENTS serialization system filesystem program_options thread asio beast REQUIRED)
 else ()
     find_package(Boost COMPONENTS serialization filesystem program_options thread REQUIRED)
 endif ()
@@ -90,11 +90,6 @@ target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} ${ONNX_RUNTIME_LIBRARIE
 
 add_library(${PROJECT_NAME}_static STATIC $<TARGET_OBJECTS:${PROJECT_NAME}>)
 target_link_libraries(${PROJECT_NAME}_static ${Boost_LIBRARIES} ${ONNX_RUNTIME_LIBRARIES} ${OPENSSL_LIBRARIES})
-
-if (WIN32)
-    set_target_properties(${PROJECT_NAME} PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
-    set_target_properties(${PROJECT_NAME}_static PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
-endif ()
 
 add_subdirectory(standalone)
 
