@@ -25,7 +25,7 @@ pwd
 for file in "${FILES[@]}"
 do
     echo "Updating $file"
-    sed -i '' "s/${FROM_VERSION}/${TO_VERSION}/g" "$file"
+    sed -i "s/${FROM_VERSION}/${TO_VERSION}/g" "$file"
 done
 
 echo "Done"

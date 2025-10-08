@@ -6,5 +6,5 @@
 #include "./test_common.hpp"
 
 TEST(test_lib_version, LibVersion) {
-	EXPECT_EQ(onnxruntime_server::onnx::version(), "1.23.0");
+	EXPECT_EQ(onnxruntime_server::onnx::version(), "1.23.1");
 }
