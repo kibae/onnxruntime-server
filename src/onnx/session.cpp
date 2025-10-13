@@ -10,23 +10,6 @@
 #include "cuda/session_options.hpp"
 #endif
 
-#ifdef _WIN32
-inline std::wstring convert_to_wstring(const std::string &str) {
-	if (str.empty())
-		return std::wstring();
-
-	// null terminator 제외한 크기 계산
-	int size_needed = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), static_cast<int>(str.size()), NULL, 0);
-	if (size_needed <= 0)
-		return std::wstring();
-
-	std::wstring wstr(size_needed, 0);
-	MultiByteToWideChar(CP_UTF8, 0, str.c_str(), static_cast<int>(str.size()), &wstr[0], size_needed);
-
-	return wstr;
-}
-#endif
-
 Orts::onnx::session::session(session_key key, const json &option)
 	: session_options(), created_at(std::chrono::system_clock::now()), allocator(), key(std::move(key)) {
 	_option["cuda"] = false;
@@ -34,7 +17,11 @@ Orts::onnx::session::session(session_key key, const json &option)
 	if (option.contains("ortextensions_path") && option["ortextensions_path"].is_string()) {
 		auto ext_path_str = option["ortextensions_path"].get<std::string>();
 #ifdef _WIN32
-		auto ext_path = convert_to_wstring(ext_path_str).c_str();
+		int size_needed = MultiByteToWideChar(CP_ACP, 0, ext_path_str.c_str(), -1, NULL, 0);
+		std::wstring wstr(size_needed, 0);
+		MultiByteToWideChar(CP_ACP, 0, ext_path_str.c_str(), -1, &wstr[0], size_needed);
+
+		auto ext_path = wstr.c_str();
 #else
 		auto ext_path = ext_path_str.c_str();
 #endif
@@ -67,7 +54,11 @@ Orts::onnx::session::session(session_key key, const json &option)
 Orts::onnx::session::session(session_key key, const std::string &path, const json &option)
 	: session(std::move(key), option) {
 #ifdef _WIN32
-	auto model_path = convert_to_wstring(path).c_str();
+	int size_needed = MultiByteToWideChar(CP_ACP, 0, path.c_str(), -1, NULL, 0);
+	std::wstring wstr(size_needed, 0);
+	MultiByteToWideChar(CP_ACP, 0, path.c_str(), -1, &wstr[0], size_needed);
+
+	auto model_path = wstr.c_str();
 #else
 	auto model_path = path.c_str();
 #endif
