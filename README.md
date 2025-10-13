@@ -217,6 +217,16 @@ docker run --name onnxruntime_server_container -d --rm --gpus all \
 
 - A few things have been left out to help you get a rough idea of the usage flow.
 
+### ORT Extensions Support
+ 
+To enable custom ops from [onnxruntime-extensions](https://github.com/microsoft/onnxruntime-extensions), set the following in your session options:
+ 
+```json
+{
+  "ortextensions_path": "/absolute/path/to/libonnxruntime_extensions.so"
+}
+```
+
 ## Simple usage examples
 
 #### Example of creating ONNX sessions at server startup
