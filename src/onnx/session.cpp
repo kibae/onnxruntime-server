@@ -16,7 +16,11 @@ Orts::onnx::session::session(session_key key, const json &option)
 
 	if (option.contains("ortextensions_path") && option["ortextensions_path"].is_string()) {
 		auto ext_path_str = option["ortextensions_path"].get<std::string>();
+#ifdef _WIN32
+		const char *ext_path = convert_to_wstring(ext_path_str).c_str();
+#else
 		const char *ext_path = ext_path_str.c_str();
+#endif
 		OrtStatus *status = Ort::GetApi().RegisterCustomOpsLibrary_V2(session_options, ext_path);
 		if (status != nullptr) {
 			const char *err = Ort::GetApi().GetErrorMessage(status);
@@ -46,11 +50,7 @@ Orts::onnx::session::session(session_key key, const json &option)
 Orts::onnx::session::session(session_key key, const std::string &path, const json &option)
 	: session(std::move(key), option) {
 #ifdef _WIN32
-	int size_needed = MultiByteToWideChar(CP_ACP, 0, path.c_str(), -1, NULL, 0);
-	std::wstring wstr(size_needed, 0);
-	MultiByteToWideChar(CP_ACP, 0, path.c_str(), -1, &wstr[0], size_needed);
-
-	auto model_path = wstr.c_str();
+	auto model_path = convert_to_wstring(path).c_str();
 #else
 	auto model_path = path.c_str();
 #endif
