@@ -10,27 +10,23 @@
 #include "cuda/session_options.hpp"
 #endif
 
-namespace {
-    // register ORT extensions if option has a path
-    inline void register_ort_extensions(Ort::SessionOptions &session_options, const json &opt) {
-        if (opt.contains("ortextensions_path") && opt["ortextensions_path"].is_string()) {
-            void* handle = nullptr;
-            auto ext_path_str = opt["ortextensions_path"].get<std::string>();
-            const char* ext_path = ext_path_str.c_str();
-            OrtStatus* status = Ort::GetApi().RegisterCustomOpsLibrary(session_options, ext_path, &handle);
-            if (status != nullptr) {
-                const char* err = Ort::GetApi().GetErrorMessage(status);
-                std::string msg = err ? err : "unknown error";
-                Ort::GetApi().ReleaseStatus(status);
-                throw onnxruntime_server::runtime_error(std::string("Failed to register ORT extensions: ") + msg);
-            }
-        }
-    }
-}
-
 Orts::onnx::session::session(session_key key, const json &option)
 	: session_options(), created_at(std::chrono::system_clock::now()), allocator(), key(std::move(key)) {
 	_option["cuda"] = false;
+
+	if (option.contains("ortextensions_path") && option["ortextensions_path"].is_string()) {
+		auto ext_path_str = option["ortextensions_path"].get<std::string>();
+		const char *ext_path = ext_path_str.c_str();
+		OrtStatus *status = Ort::GetApi().RegisterCustomOpsLibrary_V2(session_options, ext_path);
+		if (status != nullptr) {
+			const char *err = Ort::GetApi().GetErrorMessage(status);
+			std::string msg = err ? err : "unknown error";
+			Ort::GetApi().ReleaseStatus(status);
+			throw runtime_error(std::string("Failed to register ORT extensions: ") + msg);
+		}
+
+		_option["ortextensions_path"] = option["ortextensions_path"];
+	}
 
 	if (providers::available_providers.has_cuda() && option.contains("cuda") && (
 		    !option["cuda"].is_boolean() || option["cuda"].get<bool>())) {
@@ -40,9 +36,6 @@ Orts::onnx::session::session(session_key key, const json &option)
 		throw runtime_error("CUDA is not supported");
 #endif
 	}
-
-	if (option.contains("ortextensions_path") && option["ortextensions_path"].is_string())
-		_option["ortextensions_path"] = option["ortextensions_path"];
 
 	if (option.contains("input_shape") && option["input_shape"].is_object())
 		_option["input_shape"] = option["input_shape"];
@@ -62,8 +55,6 @@ Orts::onnx::session::session(session_key key, const std::string &path, const jso
 	auto model_path = path.c_str();
 #endif
 
-	register_ort_extensions(session_options, _option);
-
 	ort_session = new Ort::Session(env, model_path, session_options);
 	init();
 }
@@ -72,9 +63,6 @@ Orts::onnx::session::session(
 	session_key key, const char *model_data, const size_t model_data_length, const json &option
 )
 	: session(std::move(key), option) {
-
-	register_ort_extensions(session_options, _option);
-
 	ort_session = new Ort::Session(env, model_data, model_data_length, session_options);
 	init();
 }

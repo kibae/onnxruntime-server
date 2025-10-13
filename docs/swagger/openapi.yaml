@@ -283,7 +283,7 @@ components:
       nullable: true
       properties:
         cuda:
-          nullable: true
+          nullable: false
           required: false
           oneOf:
             - type: boolean
@@ -292,7 +292,7 @@ components:
         input_shape:
           type: object
           description: Input shape
-          nullable: true
+          nullable: false
           required: false
           example: {
             "x": [ 1, 1 ],
@@ -302,11 +302,17 @@ components:
         output_shape:
           type: object
           description: Output shape
-          nullable: true
+          nullable: false
           required: false
           example: {
             "output": [ 1, 1 ]
           }
+        ortextensions_path:
+          type: string
+          description: To use the ONNXRuntime Extension (Custom Ops Library), you must provide the library path.
+          nullable: false
+          required: false
+          example: /absolute/path/to/libonnxruntime_extensions
     ONNXSessionOptionCUDA:
       type: object
       properties:
