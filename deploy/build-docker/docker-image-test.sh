@@ -2,6 +2,8 @@
 
 cd "$(dirname "$0")" || exit
 
+source ./VERSION
+
 IMAGE_NAME=$1
 IS_CUDA=$2
 
@@ -22,6 +24,18 @@ docker rm docker_test || true
 docker run --name docker_test -d -p 8080:80 --gpus all -e "ONNX_SERVER_SWAGGER_URL_PATH=/api-docs" ${IMAGE_NAME} || exit 1
 sleep 1;
 docker cp ../../test/fixture/sample docker_test:/app/models/ || exit 1
+
+API_VERSION_RESULT=$(curl -s \
+  'http://localhost:8080/api/version' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' || exit 1)
+
+if [ "${API_VERSION_RESULT}" != "${VERSION}" ]; then
+  echo "API version mismatch. Expected: ${VERSION}, Got: ${API_VERSION_RESULT}"
+  exit 1
+fi
+
+echo "ONNX Server Version: ${VERSION}"
 
 if [[ -v ${IS_CUDA} ]]; then
   curl -sX 'POST' \
