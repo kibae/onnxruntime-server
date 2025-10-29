@@ -9,7 +9,7 @@ Orts::onnx::execution::input_value::~input_value() {
 	}
 }
 
-#define SHAPE_ARG batched_shape(info.shape, values->size()).data(), info.shape.size()
+#define SHAPE_ARG info.input_shape.data(), info.shape.size()
 #define ORT_VALUE_RETURN(t)                                                                                            \
 	{                                                                                                                  \
 		auto *values = new std::vector<t>();                                                                           \

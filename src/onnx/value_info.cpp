@@ -8,6 +8,10 @@ Orts::onnx::value_info::value_info(std::string name, ONNXTensorElementDataType e
 	: name(std::move(name)), element_type(element_type), shape(std::move(shape)) {
 }
 
+void Orts::onnx::value_info::set_input_shape(std::vector<int64_t> input_shape) {
+	this->input_shape = move(input_shape);
+}
+
 std::string Orts::onnx::value_info::type_name() const {
 	return value_info::type_name(element_type);
 }

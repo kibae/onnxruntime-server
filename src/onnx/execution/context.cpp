@@ -18,13 +18,17 @@ Orts::onnx::execution::context::context(std::shared_ptr<Orts::onnx::session> ses
 		throw bad_request_error("Top-level JSON dataset is not object");
 	}
 
-	for (auto &input : session->inputs()) {
+	for (auto input : session->inputs()) {
 		if (!dataset[input.name].is_array())
 			throw bad_request_error("Input " + input.name + " is not array");
 
 		// batch first. first dimension is batch size
 		std::vector<json::value_type> json_values;
 		flat_json_values(dataset[input.name], &json_values);
+
+		std::vector<int64_t> input_shape;
+		calcShape(dataset[input.name], input.shape.size(), &input_shape);
+		input.set_input_shape(input_shape);
 
 		inputs[input.name] = new Orts::onnx::execution::input_value(memory_info, input, json_values);
 	}
@@ -33,6 +37,26 @@ Orts::onnx::execution::context::context(std::shared_ptr<Orts::onnx::session> ses
 Orts::onnx::execution::context::~context() {
 	for (auto &p : inputs) {
 		delete p.second;
+	}
+}
+
+void Orts::onnx::execution::context::calcShape(
+	const json::value_type &data, int count, std::vector<int64_t> *input_shape
+) {
+	bool is_first_val = true;
+	if (data.is_array() && count != 0) {
+		for (auto &item : data) {
+			if (is_first_val) {
+				is_first_val = false;
+				input_shape->push_back(data.size());
+				calcShape(item, count - 1, input_shape);
+			} else
+				break;
+		}
+	}
+
+	if (input_shape->size() == count - 1) {
+		input_shape->push_back(1);
 	}
 }
 
