@@ -56,10 +56,14 @@ namespace onnxruntime_server {
 		  public:
 			const std::string name;
 			const ONNXTensorElementDataType element_type;
+			/* Original defined shape (may include dynamic dimensions) */
 			std::vector<int64_t> shape;
+			/* Current actual input shape (runtime dimensions) */
+			std::vector<int64_t> input_shape;
 
 			value_info(std::string name, ONNXTensorElementDataType element_type, std::vector<int64_t> shape);
 
+			void set_input_shape(std::vector<int64_t> input_shape);
 			[[nodiscard]] std::string type_name() const;
 			[[nodiscard]] std::string type_to_string() const;
 			static const char *type_name(ONNXTensorElementDataType element_type);
@@ -189,6 +193,7 @@ namespace onnxruntime_server {
 				~context();
 
 				void flat_json_values(const json::value_type &data, std::vector<json::value_type> *json_values);
+				void calcShape(const json::value_type &data, int count, std::vector<int64_t> *input_shape);
 				std::vector<Ort::Value> run();
 				json tensors_to_json(std::vector<Ort::Value> &tensors);
 			};
