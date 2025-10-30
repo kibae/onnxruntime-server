@@ -324,3 +324,9 @@ sequenceDiagram
         Note over SP, C: {<br />"output": [<br />[0.6492120623588562],<br />[0.7610487341880798],<br />[0.8728854656219482]<br />]<br />}
     end
 ```
+
+## Contributors
+
+<a href="https://github.com/kibae/onnxruntime-server/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=kibae/onnxruntime-server" />
+</a>
