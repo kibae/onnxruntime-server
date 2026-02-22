@@ -15,13 +15,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           lfs: false
 
       - name: (Cache) Restore test fixtures
         id: cache-test-fixtures
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: test/fixture
           key: test-fixtures-v1
@@ -35,7 +35,7 @@ jobs:
 
       - name: (Cache) Save test fixtures
         if: steps.cache-test-fixtures.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: test/fixture
           key: test-fixtures-v1
@@ -50,13 +50,13 @@ jobs:
         build_type: [ Debug ]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           lfs: false
 
       - name: (Cache) Restore dependencies(apt)
         id: cache-dependencies-apt
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: .github/cache/dependencies-apt
           key: ${{ matrix.os }}-dependencies-apt-v1
@@ -73,7 +73,7 @@ jobs:
 
       - name: (Cache) Save dependencies(apt)
         if: steps.cache-dependencies-apt.outputs.cache-hit != 'true' && (startsWith(matrix.os, 'debian-') || startsWith(matrix.os, 'ubuntu-'))
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: .github/cache/dependencies-apt
           key: ${{ matrix.os }}-dependencies-apt-v1
@@ -95,13 +95,13 @@ jobs:
             cpp_compiler: clang++
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           lfs: false
 
       - name: (Cache) Restore dependencies(apt)
         id: cache-dependencies-apt
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: .github/cache/dependencies-apt
           key: ${{ matrix.os }}-dependencies-apt-v1
@@ -141,7 +141,7 @@ jobs:
         run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --parallel 4
 
       - name: (Cache) Restore test fixtures
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: test/fixture
           key: test-fixtures-v1
