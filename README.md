@@ -1,6 +1,6 @@
 # ONNX Runtime Server
 
-[![ONNX Runtime](https://img.shields.io/github/v/release/microsoft/onnxruntime?filter=v1.23.2&label=ONNX%20Runtime)](https://github.com/microsoft/onnxruntime)
+[![ONNX Runtime](https://img.shields.io/github/v/release/microsoft/onnxruntime?filter=v1.24.2&label=ONNX%20Runtime)](https://github.com/microsoft/onnxruntime)
 [![CMake on Linux](https://github.com/kibae/onnxruntime-server/actions/workflows/cmake-linux.yml/badge.svg)](https://github.com/kibae/onnxruntime-server/actions/workflows/cmake-linux.yml)
 [![CMake on MacOS](https://github.com/kibae/onnxruntime-server/actions/workflows/cmake-macos.yml/badge.svg)](https://github.com/kibae/onnxruntime-server/actions/workflows/cmake-macos.yml)
 [![CMake on Windows](https://github.com/kibae/onnxruntime-server/actions/workflows/cmake-windows.yml/badge.svg)](https://github.com/kibae/onnxruntime-server/actions/workflows/cmake-windows.yml)
@@ -73,16 +73,20 @@ brew install onnxruntime
 sudo apt install cmake pkg-config libboost-all-dev libssl-dev
 ```
 
-##### (optional) CUDA support (CUDA 12.x, cuDNN 9.x)
+##### (optional) CUDA support (CUDA 12.x/13.x, cuDNN 9.x)
 
 - Follow the instructions below to install the CUDA Toolkit and cuDNN.
     - [CUDA Toolkit Installation Guide](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html)
     - [CUDA Download for Ubuntu](https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=22.04&target_type=deb_network)
 
 ```shell
+# CUDA 12
 sudo apt install cuda-toolkit-12 libcudnn9-dev-cuda-12
-# optional, for Nvidia GPU support with Docker 
-sudo apt install nvidia-container-toolkit 
+# CUDA 13
+sudo apt install cuda-toolkit-13 libcudnn9-dev-cuda-13
+
+# optional, for Nvidia GPU support with Docker
+sudo apt install nvidia-container-toolkit
 ```
 
 #### Mac OS
@@ -170,14 +174,17 @@ sudo cmake --install build --prefix /usr/local/onnxruntime-server
 
 - Docker hub: [kibaes/onnxruntime-server](https://hub.docker.com/r/kibaes/onnxruntime-server)
     - [
-      `1.23.2a-linux-cuda12`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cuda12.dockerfile)
+      `1.24.2-linux-cuda13`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cuda13.dockerfile)
+      amd64(CUDA 13.x, cuDNN 9.x)
+    - [
+      `1.24.2-linux-cuda12`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cuda12.dockerfile)
       amd64(CUDA 12.x, cuDNN 9.x)
     - [
-      `1.23.2a-linux-cpu`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cpu.dockerfile)
+      `1.24.2-linux-cpu`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cpu.dockerfile)
       amd64, arm64
 
 ```shell
-DOCKER_IMAGE=kibae/onnxruntime-server:1.23.2a-linux-cuda12 # or kibae/onnxruntime-server:1.23.2a-linux-cpu	
+DOCKER_IMAGE=kibae/onnxruntime-server:1.24.2-linux-cuda13 # or 1.24.2-linux-cuda12 or 1.24.2-linux-cpu
 
 docker pull ${DOCKER_IMAGE}
 

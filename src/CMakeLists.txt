@@ -34,14 +34,17 @@ set(SOURCE_FILES
 find_package(PkgConfig REQUIRED)
 
 # cuda, onnxruntime
-find_package(CUDA)
-if (NOT CUDA_FOUND)
-    set(CUDA_SDK_ROOT_DIR "/usr/local/cuda")
-    find_package(CUDA)
+find_package(CUDAToolkit)
+if (NOT CUDAToolkit_FOUND)
+    set(CUDAToolkit_ROOT "/usr/local/cuda")
+    find_package(CUDAToolkit)
 endif ()
 
-if (CUDA_FOUND)
+if (CUDAToolkit_FOUND)
     message(STATUS "CUDA library found.")
+    if (NOT CMAKE_CUDA_COMPILER)
+        find_program(CMAKE_CUDA_COMPILER nvcc PATHS "${CUDAToolkit_BIN_DIR}" NO_DEFAULT_PATH)
+    endif ()
     enable_language(CUDA)
     pkg_search_module(ONNX_RUNTIME IMPORTED_TARGET libonnxruntime_cuda)
     if (NOT ONNX_RUNTIME_FOUND)

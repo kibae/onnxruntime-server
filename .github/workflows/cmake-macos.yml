@@ -26,7 +26,7 @@ jobs:
             cpp_compiler: clang++
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           lfs: false
 
@@ -59,7 +59,7 @@ jobs:
         run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --parallel 4
 
       - name: (Cache) Restore test fixtures
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: test/fixture
           key: test-fixtures-v1
