@@ -4,8 +4,14 @@ cd "$(dirname "$0")" || exit
 
 echo
 echo "Select onnxruntime version to download:"
-RAW_LIST=$(curl -s -H "Accept: application/vnd.github+json" \
+AUTH_HEADER=""
+if [ -n "$GITHUB_TOKEN" ]; then
+  AUTH_HEADER="-H \"Authorization: Bearer $GITHUB_TOKEN\""
+fi
+
+RAW_LIST=$(eval curl -s -H "Accept: application/vnd.github+json" \
   -H "X-GitHub-Api-Version: 2022-11-28" \
+  $AUTH_HEADER \
   https://api.github.com/repos/microsoft/onnxruntime/releases/latest \
   | grep browser_download_url \
   | grep -E "onnxruntime-linux-x64-([.0-9]+)tgz" \
