@@ -12,6 +12,7 @@ on:
 
 jobs:
   prepare-asset:
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'documentation') }}
     runs-on: windows-latest
 
     steps:
@@ -41,6 +42,7 @@ jobs:
           key: test-fixtures-windows-v1
 
   prepare-vcpkg:
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'documentation') }}
     runs-on: windows-latest
     steps:
       - name: (Cache) Restore vcpkg cache
