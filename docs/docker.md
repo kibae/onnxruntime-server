@@ -29,7 +29,7 @@
     - API documentation will be available at http://localhost/api-docs.
 
 ```shell
-DOCKER_IMAGE=kibae/onnxruntime-server:1.24.2-linux-cuda13 # or 1.24.2-linux-cuda12 or 1.24.2-linux-cpu
+DOCKER_IMAGE=kibaes/onnxruntime-server:1.24.2-linux-cuda13 # or 1.24.2-linux-cuda12 or 1.24.2-linux-cpu
 
 docker pull ${DOCKER_IMAGE}
 

@@ -12,6 +12,7 @@ on:
 
 jobs:
   prepare-asset:
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'documentation') }}
     runs-on: ubuntu-latest
 
     steps:
@@ -41,6 +42,7 @@ jobs:
           key: test-fixtures-v1
 
   prepare-apt:
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'documentation') }}
     runs-on: ${{ matrix.os }}
 
     strategy:
