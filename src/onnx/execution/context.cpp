@@ -76,8 +76,9 @@ std::vector<Ort::Value> Orts::onnx::execution::context::run() {
 	std::vector<Ort::Value> input_values;
 	input_values.reserve(inputs.size());
 
-	for (auto &input : inputs) {
-		input_values.emplace_back(std::move(input.second->tensors));
+	// Fix: iterate in session-defined order, not map alphabetical order
+	for (auto &input_info : session->inputs()) {
+		input_values.emplace_back(std::move(inputs[input_info.name]->tensors));
 	}
 
 	return this->session->run(memory_info, input_values);
