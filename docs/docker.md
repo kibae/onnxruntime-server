@@ -5,9 +5,9 @@
 
 # Supported tags and respective Dockerfile links
 
-- [`1.24.4-linux-cuda13`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cuda13.dockerfile) amd64(CUDA 13.x, cuDNN 9.x)
-- [`1.24.4-linux-cuda12`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cuda12.dockerfile) amd64(CUDA 12.x, cuDNN 9.x)
-- [`1.24.4-linux-cpu`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cpu.dockerfile) amd64, arm64
+- [`1.25.0-linux-cuda13`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cuda13.dockerfile) amd64(CUDA 13.x, cuDNN 9.x)
+- [`1.25.0-linux-cuda12`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cuda12.dockerfile) amd64(CUDA 12.x, cuDNN 9.x)
+- [`1.25.0-linux-cpu`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cpu.dockerfile) amd64, arm64
 
 # How to use this image
 
@@ -29,7 +29,7 @@
     - API documentation will be available at http://localhost/api-docs.
 
 ```shell
-DOCKER_IMAGE=kibaes/onnxruntime-server:1.24.4-linux-cuda13 # or 1.24.4-linux-cuda12 or 1.24.4-linux-cpu
+DOCKER_IMAGE=kibaes/onnxruntime-server:1.25.0-linux-cuda13 # or 1.25.0-linux-cuda12 or 1.25.0-linux-cpu
 
 docker pull ${DOCKER_IMAGE}
 
@@ -70,7 +70,7 @@ services:
   onnxruntime_server_simple:
     # After the docker container is up, you can use the REST API (http://localhost:8080).
     # API documentation will be available at http://localhost:8080/api-docs.
-    image: kibaes/onnxruntime-server:1.24.4-linux-cuda13 # or 1.24.4-linux-cuda12
+    image: kibaes/onnxruntime-server:1.25.0-linux-cuda13 # or 1.25.0-linux-cuda12
     ports:
       - "8080:80" # for http backend
     volumes:
@@ -102,7 +102,7 @@ services:
   onnxruntime_server_advanced:
     # After the docker container is up, you can use the REST API (http://localhost, https://localhost).
     # API documentation wl be available at http://localhost/api-docs.
-    image: kibaes/onnxruntime-server:1.24.4-linux-cuda13 # or 1.24.4-linux-cuda12
+    image: kibaes/onnxruntime-server:1.25.0-linux-cuda13 # or 1.25.0-linux-cuda12
     ports:
       - "80:80" # for http backend
       - "443:443" # for https backend
