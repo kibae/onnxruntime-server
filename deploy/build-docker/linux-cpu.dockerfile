@@ -1,4 +1,4 @@
-FROM ubuntu:latest AS builder
+FROM ubuntu:24.04 AS builder
 
 RUN apt update && apt install -y curl wget git build-essential cmake pkg-config libboost-all-dev libssl-dev
 RUN mkdir -p /app/source
@@ -21,7 +21,7 @@ RUN cmake --build build --parallel 8 --target onnxruntime_server_standalone
 RUN cmake --install build --prefix /app/onnxruntime-server
 
 # target
-FROM ubuntu:latest AS target
+FROM ubuntu:24.04 AS target
 COPY --from=builder /app/onnxruntime-server /app
 COPY --from=builder /usr/local/onnxruntime /usr/local/onnxruntime
 
