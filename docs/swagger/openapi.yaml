@@ -269,6 +269,11 @@ components:
           $ref: '#/components/schemas/ONNXSessionOption'
     ONNXSessionOption:
       type: object
+      description: |
+        Normalized echo of the options applied to the session. The server only includes
+        keys whose corresponding ORT calls succeeded; values reflect what ORT actually
+        stored (read back via GetCUDAProviderOptionsAsString and GetSessionConfigEntry
+        where applicable).
       nullable: true
       properties:
         cuda:
@@ -276,8 +281,18 @@ components:
           required: false
           oneOf:
             - type: boolean
-              description: Use CUDA
+              description: CUDA disabled (false) — present for backward compatibility.
             - $ref: '#/components/schemas/ONNXSessionOptionCUDA'
+        extensions:
+          type: array
+          description: Registered onnxruntime-extensions library paths in registration order, deduplicated.
+          required: false
+          items:
+            type: string
+          example:
+            - /absolute/path/to/libonnxruntime_extensions.so
+        session_options:
+          $ref: '#/components/schemas/ONNXSessionOptionsGroup'
     ONNXSessionOptionRequest:
       type: object
       nullable: true
@@ -287,11 +302,13 @@ components:
           required: false
           oneOf:
             - type: boolean
-              description: Use CUDA
+              description: Enable CUDA with all defaults (device_id=0).
+            - type: integer
+              description: Enable CUDA on the given device_id.
             - $ref: '#/components/schemas/ONNXSessionOptionCUDA'
         input_shape:
           type: object
-          description: Input shape
+          description: Input shape overrides keyed by input name.
           nullable: false
           required: false
           example: {
@@ -301,25 +318,157 @@ components:
           }
         output_shape:
           type: object
-          description: Output shape
+          description: Output shape overrides keyed by output name.
           nullable: false
           required: false
           example: {
             "output": [ 1, 1 ]
           }
-        ortextensions_path:
-          type: string
-          description: To use the ONNXRuntime Extension (Custom Ops Library), you must provide the library path.
+        extensions:
+          type: array
+          description: |
+            One or more absolute paths to onnxruntime-extensions custom-ops libraries.
+            Each path is registered with ORT in array order; duplicate paths are deduplicated.
           nullable: false
           required: false
-          example: /absolute/path/to/libonnxruntime_extensions
+          items:
+            type: string
+          example:
+            - /absolute/path/to/libonnxruntime_extensions.so
+        ortextensions_path:
+          type: string
+          description: |
+            Deprecated alias for `extensions`. A single library path. The server normalizes
+            it into the `extensions` array on input and the response always echoes the
+            normalized form.
+          deprecated: true
+          nullable: false
+          required: false
+          example: /absolute/path/to/libonnxruntime_extensions.so
+        session_options:
+          $ref: '#/components/schemas/ONNXSessionOptionsGroup'
     ONNXSessionOptionCUDA:
       type: object
+      description: |
+        CUDA Execution Provider V2 options. The server forwards every supplied key to
+        UpdateCUDAProviderOptions in a single batched call; if ORT rejects any key the
+        whole session creation fails with the ORT error message. The response is built
+        from GetCUDAProviderOptionsAsString readback, so it shows exactly what ORT
+        stored (which may differ from the requested value if ORT normalized it).
       properties:
         device_id:
           type: integer
           description: CUDA device ID
           nullable: false
+        gpu_mem_limit:
+          type: integer
+          description: Per-session GPU memory limit, in bytes.
+          nullable: false
+        arena_extend_strategy:
+          type: string
+          description: Arena extension strategy, e.g. "kNextPowerOfTwo" or "kSameAsRequested".
+          nullable: false
+        cudnn_conv_algo_search:
+          type: string
+          description: cuDNN convolution algorithm search policy. Accepted values are ORT-defined enum names.
+          nullable: false
+        cudnn_conv_use_max_workspace:
+          type: boolean
+          nullable: false
+        do_copy_in_default_stream:
+          type: boolean
+          nullable: false
+        enable_cuda_graph:
+          type: boolean
+          description: Capture and replay a CUDA graph (requires static input shapes).
+          nullable: false
+        tunable_op_enable:
+          type: boolean
+          nullable: false
+        tunable_op_tuning_enable:
+          type: boolean
+          nullable: false
+        cudnn_conv1d_pad_to_nc1d:
+          type: boolean
+          nullable: false
+      additionalProperties:
+        description: |
+          Any additional CUDA Execution Provider V2 key understood by your ORT build is
+          forwarded as-is. Refer to the ORT CUDA EP documentation for the full list of
+          accepted keys.
+    ONNXSessionOptionsGroup:
+      type: object
+      description: |
+        Session-level options forwarded to onnxruntime SessionOptions. The server only
+        validates JSON shape (types and our enum-string mapping); ORT decides whether the
+        value itself is acceptable. Keys whose ORT setter throws are silently dropped from
+        the echoed response. The `config_entries` object is round-tripped through
+        GetSessionConfigEntry so the echo shows what ORT actually stored (always strings).
+      nullable: false
+      required: false
+      properties:
+        intra_op_num_threads:
+          type: integer
+          description: Number of threads used for parallelizing operators. 0 means ORT default.
+          nullable: false
+        inter_op_num_threads:
+          type: integer
+          description: Number of threads used for parallelizing the graph. 0 means ORT default.
+          nullable: false
+        execution_mode:
+          type: string
+          enum: [sequential, parallel]
+          nullable: false
+        graph_optimization_level:
+          type: string
+          enum: [disable, basic, extended, all]
+          nullable: false
+        enable_cpu_mem_arena:
+          type: boolean
+          nullable: false
+        enable_mem_pattern:
+          type: boolean
+          nullable: false
+        log_severity_level:
+          type: integer
+          description: ORT log severity level (0=verbose ... 4=fatal).
+          nullable: false
+        logid:
+          type: string
+          nullable: false
+        enable_profiling:
+          type: boolean
+          description: Enable profiling. When true, profile_file_prefix must also be supplied.
+          nullable: false
+        profile_file_prefix:
+          type: string
+          nullable: false
+        optimized_model_filepath:
+          type: string
+          description: Filepath where ORT writes the optimized model after graph transformations.
+          nullable: false
+        free_dimension_overrides:
+          type: object
+          description: Map of free dimension name to a fixed integer size.
+          additionalProperties:
+            type: integer
+          nullable: false
+          example:
+            batch: 1
+        config_entries:
+          type: object
+          description: |
+            Generic passthrough to AddSessionConfigEntry (e.g. "session.disable_prepacking").
+            Booleans and integers are stringified before being passed to ORT; values in the
+            response are always strings (round-tripped through GetSessionConfigEntry).
+          additionalProperties:
+            oneOf:
+              - type: string
+              - type: boolean
+              - type: integer
+          nullable: false
+          example:
+            session.disable_prepacking: "1"
     ONNXSessionCreateRequest:
       type: object
       properties:

@@ -4,6 +4,8 @@
 #include "../../onnxruntime_server.hpp"
 #include "../test_common.hpp"
 
+// End-to-end smoke test: build a session on the CUDA EP with the simplest "cuda": true input,
+// run the BERT SQuAD sample model, and assert the output tensor shape.
 TEST(test_onnxruntime_server_context_cuda, BertSquadModelTest) {
 	Orts::onnx::session_key key("sample", "2");
 	auto session = std::make_shared<Orts::onnx::session>(key, model2_path.string(), json::parse(R"({"cuda": true})"));
@@ -30,4 +32,59 @@ TEST(test_onnxruntime_server_context_cuda, BertSquadModelTest) {
 	auto json = ctx.tensors_to_json(result);
 	std::cout << json.dump(4) << "\n";
 	ASSERT_EQ(json["output"].size(), 3);
+}
+
+// CUDA EP V2 options passed as a "cuda" object are forwarded to ORT in a single batched
+// UpdateCUDAProviderOptions call (ORT silently resets sibling keys when called per-key, so a
+// single batched call is the only safe way). The echoed value comes from
+// GetCUDAProviderOptionsAsString readback, i.e. what ORT actually stored. Every supplied key
+// that ORT accepted should round-trip; if ORT had rejected any of them the whole session
+// construction would have thrown rather than silently returning a partial echo.
+TEST(test_onnxruntime_server_context_cuda, CudaObjectOptionsEcho) {
+	Orts::onnx::session_key key("sample", "2");
+	auto session = std::make_shared<Orts::onnx::session>(
+		key, model2_path.string(),
+		R"({
+			"cuda": {
+				"device_id": 0,
+				"gpu_mem_limit": 2147483648,
+				"arena_extend_strategy": "kNextPowerOfTwo",
+				"cudnn_conv_algo_search": "HEURISTIC"
+			}
+		})"_json
+	);
+	auto j = session->to_json();
+	ASSERT_TRUE(j["option"]["cuda"].is_object());
+	auto cu = j["option"]["cuda"];
+
+	ASSERT_EQ(cu["device_id"], 0);
+	ASSERT_EQ(cu["gpu_mem_limit"], 2147483648);
+	ASSERT_EQ(cu["arena_extend_strategy"], "kNextPowerOfTwo");
+	ASSERT_EQ(cu["cudnn_conv_algo_search"], "HEURISTIC");
+}
+
+// An unknown CUDA option key (or one ORT cannot parse) must abort session construction with a
+// clear error rather than silently producing a partial echo. This is the natural consequence of
+// the batched-update strategy and is the contract callers can rely on.
+TEST(test_onnxruntime_server_context_cuda, CudaObjectRejectsUnknownKey) {
+	Orts::onnx::session_key key("sample", "2");
+	EXPECT_ANY_THROW(
+		auto session = std::make_shared<Orts::onnx::session>(
+			key, model2_path.string(),
+			R"({"cuda": {"device_id": 0, "totally_not_a_real_cuda_option": "xyz"}})"_json
+		);
+	);
+}
+
+// Backward compatibility: the legacy scalar shortcuts ("cuda": true and "cuda": <int device_id>)
+// must keep working under the V2 EP path and still echo as a normalized object with device_id.
+TEST(test_onnxruntime_server_context_cuda, CudaScalarShortcutStillWorks) {
+	// Backward compat: cuda=true (boolean) and cuda=<int device_id> must keep working
+	Orts::onnx::session_key key("sample", "2");
+	auto session_bool = std::make_shared<Orts::onnx::session>(
+		key, model2_path.string(), R"({"cuda": true})"_json
+	);
+	auto j_bool = session_bool->to_json();
+	ASSERT_TRUE(j_bool["option"]["cuda"].is_object());
+	ASSERT_EQ(j_bool["option"]["cuda"]["device_id"], 0);
 }
