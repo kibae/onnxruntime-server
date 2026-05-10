@@ -138,6 +138,11 @@ namespace onnxruntime_server {
 
 			[[nodiscard]] const std::vector<value_info> &inputs() const;
 			[[nodiscard]] const std::vector<value_info> &outputs() const;
+
+			// Normalize the extensions input (the new "extensions" array and the legacy
+			// "ortextensions_path" string) into a single deduplicated array of paths in the
+			// order they would be registered. Pure function; no file system or onnxruntime calls.
+			static json collect_extensions(const json &option);
 		};
 
 		typedef std::shared_ptr<session> session_ptr;

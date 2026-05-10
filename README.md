@@ -150,7 +150,7 @@ sudo cmake --install build --prefix /usr/local/onnxruntime-server
 | `--workers`               | `ONNX_SERVER_WORKERS`               | Worker thread pool size.<br/>Default: `4`                                                                                                                                                                                                                                                                                                       |
 | `--request-payload-limit` | `ONNX_SERVER_REQUEST_PAYLOAD_LIMIT` | HTTP/HTTPS request payload size limit.<br />Default: 1024 * 1024 * 10(10MB)`                                                                                                                                                                                                                                                                    |
 | `--model-dir`             | `ONNX_SERVER_MODEL_DIR`             | Model directory path<br/>The onnx model files must be located in the following path:<br/>`${model_dir}/${model_name}/${model_version}/model.onnx` or<br/>`${model_dir}/${model_name}/${model_version}.onnx`<br/>Default: `models`                                                                                                               |
-| `--prepare-model`         | `ONNX_SERVER_PREPARE_MODEL`         | Pre-create some model sessions at server startup.<br/><br/>Format as a space-separated list of `model_name:model_version` or `model_name:model_version(session_options, ...)`.<br/><br/>Available session_options are<br/>- cuda=device_id`[ or true or false]`<br/><br/>eg) `model1:v1 model2:v9`<br/>`model1:v1(cuda=true) model2:v9(cuda=1)` |
+| `--prepare-model`         | `ONNX_SERVER_PREPARE_MODEL`         | Pre-create some model sessions at server startup.<br/><br/>Format as a space-separated list of `model_name:model_version` or `model_name:model_version(opt1=val1, opt2=val2, ...)`. Option keys may use dotted notation to address nested groups (e.g. `cuda.device_id`, `session_options.intra_op_num_threads`). Repeating the `extensions` key accumulates a deduplicated array. Option entries that do not match the grammar are skipped silently rather than failing the whole list.<br/><br/>Examples:<br/>- `model1:v1 model2:v9`<br/>- `model1:v1(cuda=true) model2:v9(cuda=1)`<br/>- `bert:v1(cuda.device_id=0, cuda.gpu_mem_limit=2147483648)`<br/>- `bert:v1(session_options.intra_op_num_threads=4, session_options.graph_optimization_level=all)`<br/>- `bert:v1(extensions=/usr/local/lib/libortextensions.so)` |
 
 ### Backend options
 
@@ -223,8 +223,9 @@ docker run --name onnxruntime_server_container -d --rm --gpus all \
 
 ## ONNXRuntime Extensions Support
 
-To use the [onnxruntime-extensions](https://github.com/microsoft/onnxruntime-extensions)(Custom Ops Library), set the
-options as follows when creating a session.
+To use the [onnxruntime-extensions](https://github.com/microsoft/onnxruntime-extensions) (Custom Ops Library), supply
+one or more library paths through the `extensions` array. The server registers each path with ORT in order and
+deduplicates entries.
 
 ```json
 {
@@ -232,10 +233,81 @@ options as follows when creating a session.
   "version": "string",
   "option": {
     "cuda": ...,
-    "ortextensions_path": "/absolute/path/to/libonnxruntime_extensions.so"
+    "extensions": [
+      "/absolute/path/to/libonnxruntime_extensions.so"
+    ]
   }
 }
 ```
+
+The legacy `ortextensions_path` (single string) is still accepted for backward compatibility; it is normalized into the
+`extensions` array on the server side and the response always echoes the normalized form.
+
+## Session-level options
+
+The optional `session_options` object on a session-create request forwards the listed keys to the underlying
+onnxruntime `SessionOptions`. Only the JSON shape (types and our enum-string mapping) is validated on the server side;
+the actual value validation is delegated to ORT, and the response echoes only the values ORT accepted.
+
+```json
+{
+  "model": "string",
+  "version": "string",
+  "option": {
+    "session_options": {
+      "intra_op_num_threads": 4,
+      "inter_op_num_threads": 1,
+      "execution_mode": "sequential",
+      "graph_optimization_level": "all",
+      "enable_cpu_mem_arena": true,
+      "enable_mem_pattern": true,
+      "log_severity_level": 2,
+      "logid": "my-model",
+      "enable_profiling": false,
+      "profile_file_prefix": "/var/log/onnx/profile-",
+      "optimized_model_filepath": "/cache/optimized.onnx",
+      "free_dimension_overrides": { "batch": 1 },
+      "config_entries": {
+        "session.disable_prepacking": "1"
+      }
+    }
+  }
+}
+```
+
+`config_entries` is round-tripped through `GetSessionConfigEntry`, so the response shows what ORT actually stored
+(string values; `true`/`42` become `"1"`/`"42"`).
+
+## CUDA execution provider options
+
+When CUDA is enabled, the `cuda` field accepts either a boolean / integer (legacy shorthand) or an object that maps to
+[CUDA Execution Provider options](https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html). The
+server forwards the object to ORT via `UpdateCUDAProviderOptions` in a single batched call (per-key calls trigger a
+sibling-reset quirk in ORT V2). If any key is rejected by ORT, session creation fails with the ORT error message
+identifying the offending key. The response is built from `GetCUDAProviderOptionsAsString` readback, so it reflects
+exactly what ORT stored.
+
+```json
+{
+  "model": "string",
+  "version": "string",
+  "option": {
+    "cuda": {
+      "device_id": 0,
+      "gpu_mem_limit": 2147483648,
+      "arena_extend_strategy": "kNextPowerOfTwo",
+      "cudnn_conv_algo_search": "EXHAUSTIVE",
+      "cudnn_conv_use_max_workspace": true,
+      "do_copy_in_default_stream": true,
+      "enable_cuda_graph": false
+    }
+  }
+}
+```
+
+Backward-compatible shortcuts:
+- `"cuda": true`  — enable CUDA with all defaults (`device_id=0`).
+- `"cuda": 1`     — enable CUDA on `device_id=1`.
 
 For more details on the session creation request, please refer to
 the [API documentation](https://kibae.github.io/onnxruntime-server/swagger/#/ONNX%20Runtime%20Session/createSession).
