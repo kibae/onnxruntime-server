@@ -114,6 +114,7 @@ jobs:
           -DPKG_CONFIG_EXECUTABLE:FILEPATH=C:/msys64/mingw64/bin/pkg-config.exe
           -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake
           -DVCPKG_FEATURE_FLAGS=binarycaching
+          -DONNX_RUNTIME_WITH_CUDA_PROVIDER=OFF
           -S ${{ github.workspace }}
 
       - name: Build

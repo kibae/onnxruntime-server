@@ -234,7 +234,12 @@ json::array_t Orts::onnx::value_info::get_tensor_data(Ort::Value &tensors) const
 	case ONNX_TENSOR_ELEMENT_DATA_TYPE_INT64: // maps to c type int64_t
 		GET_TENSOR_DATA(int64_t);
 	case ONNX_TENSOR_ELEMENT_DATA_TYPE_STRING: // maps to c++ type std::string
-		GET_TENSOR_DATA(std::string);
+		// Use the dedicated ORT string accessor; GetTensorData<std::string> happens to work on
+		// libstdc++ but crashes on the Windows MSVC build where the std::string ABI does not
+		// match across the runtime/DLL boundary.
+		for (size_t i = 0; i < size; i++)
+			values.emplace_back(tensors.GetStringTensorElement(i));
+		break;
 	case ONNX_TENSOR_ELEMENT_DATA_TYPE_BOOL: //
 		GET_TENSOR_DATA(bool);
 	case ONNX_TENSOR_ELEMENT_DATA_TYPE_DOUBLE: // maps to c type double
