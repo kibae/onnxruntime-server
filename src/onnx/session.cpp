@@ -403,7 +403,7 @@ std::vector<Ort::Value>
 Orts::onnx::session::run(const Ort::MemoryInfo &memory_info, const std::vector<Ort::Value> &input_values) {
 	assert(ort_session != nullptr);
 
-	if (input_values.empty() || input_values.size() != inputCount) {
+	if (input_values.size() != inputCount) {
 		throw runtime_error("params size is not same as: " + std::to_string(inputCount));
 	}
 
