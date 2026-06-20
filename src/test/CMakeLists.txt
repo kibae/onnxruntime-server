@@ -49,6 +49,10 @@ add_executable(unit_test_session unit/unit_test_session.cpp)
 target_link_libraries(unit_test_session PRIVATE ${TEST_LIBS})
 add_test(NAME unit_test_session COMMAND unit_test_session)
 
+add_executable(unit_test_value_info unit/unit_test_value_info.cpp)
+target_link_libraries(unit_test_value_info PRIVATE ${TEST_LIBS})
+add_test(NAME unit_test_value_info COMMAND unit_test_value_info)
+
 
 # _______ ___    _______
 #|   ____|__ \  |   ____|
