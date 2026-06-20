@@ -149,12 +149,13 @@ TEST(test_onnxruntime_server_context, AllDataTypesModel) {
 	EXPECT_EQ(j["uint4"], (json::array({15, 0, 9})));
 	EXPECT_EQ(j["int2"], (json::array({-2, -1, 0, 1})));
 
-	// uint2 tripwire: the model embeds [3, 0, 2, 1, 3] as a packed uint2 constant. onnxruntime
-	// 1.27 mis-loads it (treats uint2 as unpacked storage, memcpy's the 2 packed bytes 0x63 0x03
-	// into a 5-byte buffer, leaves the trailing bytes as zero), so the values that reach
-	// get_tensor_data are [3, 3, 0, 0, 0]. int2 with the same structure works, so this is an
-	// onnxruntime bug, not ours; see the upstream issue tracking the fix. We assert the broken
-	// value on purpose: once onnxruntime ships the fix this assertion will fail, which is the
-	// signal to flip the expectation to {3, 0, 2, 1, 3} and drop this comment.
-	EXPECT_EQ(j["uint2"], (json::array({3, 3, 0, 0, 0})));
+	// uint2 tripwire: the model embeds [3, 0, 2, 1, 3] as a packed uint2 constant, but onnxruntime
+	// 1.27 mis-loads it (treats uint2 as unpacked storage, memcpy's the 2 packed bytes into a
+	// 5-byte buffer, leaves the trailing bytes uninitialised). The exact wrong values vary across
+	// runtime/EP builds (locally [3, 3, 0, 0, 0]; on Linux CI [3, 3, 0, 3, 0]), so we can only
+	// assert that the output is *not* the correct decoded sequence. int2 with the same structure
+	// works, so this is an onnxruntime bug, not ours; see the upstream issue tracking the fix.
+	// Once onnxruntime ships the fix this NE will start to be equal — flip it to EQ and drop this
+	// comment.
+	EXPECT_NE(j["uint2"], (json::array({3, 0, 2, 1, 3})));
 }
