@@ -69,7 +69,7 @@ onnxruntime_server::transport::http::http_session_base::handle_request(
 
 			// API: Execute sessions
 			if (req.method() == boost::beast::http::verb::post) {
-				auto task = task::execute_session(session_manager, model, version, json::parse(req.body()));
+				auto task = task::execute_session(session_manager, model, version, parse_request_json(req.body()));
 				auto res = task.run();
 				return simple_response(beast::http::status::ok, CONTENT_TYPE_JSON, res.dump());
 			}
@@ -99,7 +99,7 @@ onnxruntime_server::transport::http::http_session_base::handle_request(
 
 			// API: Create session
 			if (req.method() == boost::beast::http::verb::post) {
-				auto task = task::create_session(session_manager, json::parse(req.body()));
+				auto task = task::create_session(session_manager, parse_request_json(req.body()));
 				auto res = task.run();
 				return simple_response(beast::http::status::ok, CONTENT_TYPE_JSON, res.dump());
 			}

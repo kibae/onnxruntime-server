@@ -36,6 +36,24 @@ using ordered_json = nlohmann::ordered_json;
 namespace onnxruntime_server {
 	typedef std::function<std::string(const std::string &, const std::string &)> model_bin_getter_t;
 
+	// Maximum accepted JSON nesting depth for request bodies. Real inference tensors are a
+	// handful of dimensions; anything deeper is malformed and, left unbounded, overflows the
+	// stack in the recursive per-level tensor walk (execution::context::flat_json_values and
+	// calcShape). Reject the over-nested body here before those recursive walks run on it.
+	constexpr int MAX_JSON_NESTING_DEPTH = 64;
+
+	inline json parse_request_json(const char *first, const char *last) {
+		return json::parse(first, last, [](int depth, json::parse_event_t, json &) {
+			if (depth > MAX_JSON_NESTING_DEPTH)
+				throw bad_request_error("Request JSON nesting exceeds the maximum depth");
+			return true;
+		});
+	}
+
+	inline json parse_request_json(const std::string &body) {
+		return parse_request_json(body.data(), body.data() + body.size());
+	}
+
 	namespace onnx {
 		std::string version();
 
@@ -341,6 +359,14 @@ namespace onnxruntime_server {
 		std::string prepare_model;
 		model_bin_getter_t model_bin_getter{};
 		long request_payload_limit = 1024 * 1024 * 10;
+		// CREATE_SESSION model-binary upload size limit (TCP only). Kept separate from
+		// request_payload_limit (which bounds inference JSON) and typed int64 so it can
+		// exceed 2GB on platforms where `long` is 32-bit. Default: 2GB.
+		int64_t model_upload_limit = 1024LL * 1024 * 1024 * 2;
+		// Directory for streaming uploaded model binaries to disk. Empty => the OS temp
+		// directory. Set this to a disk-backed path when the temp dir is tmpfs (RAM), so
+		// large uploads don't defeat the streaming (OOM-avoidance) purpose.
+		std::string model_upload_dir;
 	};
 
 	namespace transport {

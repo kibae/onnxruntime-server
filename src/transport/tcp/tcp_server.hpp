@@ -34,13 +34,21 @@ namespace onnxruntime_server::transport::tcp {
 	class tcp_session {
 	  private:
 		asio::socket socket;
+		long request_payload_limit;
+		int64_t model_upload_limit;
+		std::string model_upload_dir;
 		std::string chunk;
 		std::string buffer;
+		// Path of the model binary streamed to disk for the in-flight CREATE_SESSION
+		// request (empty if none). Removed at the start of the next read and on destruction.
+		std::string uploaded_model_path;
 
 		onnxruntime_server::task::benchmark request_time;
 		std::string _remote_endpoint;
 
 		std::optional<protocol_header> do_read();
+		bool read_exact(int64_t length, const std::function<void(const char *, size_t)> &sink);
+		void cleanup_upload();
 		bool do_write(protocol_header &header, const std::string &buf);
 
 		static std::shared_ptr<onnxruntime_server::task::task> create_task(
@@ -49,7 +57,8 @@ namespace onnxruntime_server::transport::tcp {
 		);
 
 	  public:
-		explicit tcp_session(asio::socket socket);
+		tcp_session(asio::socket socket, long request_payload_limit, int64_t model_upload_limit, std::string model_upload_dir);
+		~tcp_session();
 		void run(onnx::session_manager &session_manager);
 
 		bool send_error(std::string type, std::string what);
@@ -58,8 +67,12 @@ namespace onnxruntime_server::transport::tcp {
 
 	class tcp_server : public server {
 	  protected:
+		int64_t model_upload_limit;
+		std::string model_upload_dir;
+
 		void client_connected(asio::socket socket) override {
-			tcp_session(std::move(socket)).run(get_onnx_session_manager());
+			tcp_session(std::move(socket), request_payload_limit(), model_upload_limit, model_upload_dir)
+				.run(get_onnx_session_manager());
 
 			try {
 				socket.close();
@@ -73,7 +86,8 @@ namespace onnxruntime_server::transport::tcp {
 		tcp_server(
 			boost::asio::io_context &io_context, const class config &config, onnx::session_manager &onnx_session_manager
 		)
-			: server(io_context, onnx_session_manager, config.tcp_port, config.request_payload_limit) {
+			: server(io_context, onnx_session_manager, config.tcp_port, config.request_payload_limit),
+			  model_upload_limit(config.model_upload_limit), model_upload_dir(config.model_upload_dir) {
 			acceptor.set_option(boost::asio::socket_base::reuse_address(true));
 		}
 	};
