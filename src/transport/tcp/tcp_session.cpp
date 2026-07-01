@@ -3,10 +3,29 @@
 //
 #include "tcp_server.hpp"
 
-onnxruntime_server::transport::tcp::tcp_session::tcp_session(asio::socket socket, long request_payload_limit)
-	: socket(std::move(socket)), request_payload_limit(request_payload_limit) {
+#include <boost/filesystem.hpp>
+#include <fstream>
+
+onnxruntime_server::transport::tcp::tcp_session::tcp_session(
+	asio::socket socket, long request_payload_limit, int64_t model_upload_limit, std::string model_upload_dir
+)
+	: socket(std::move(socket)), request_payload_limit(request_payload_limit), model_upload_limit(model_upload_limit),
+	  model_upload_dir(std::move(model_upload_dir)) {
 	// use heap memory to avoid stack overflow
 	chunk.resize(MAX_RECV_BUF_LENGTH);
+}
+
+onnxruntime_server::transport::tcp::tcp_session::~tcp_session() {
+	cleanup_upload();
+}
+
+void onnxruntime_server::transport::tcp::tcp_session::cleanup_upload() {
+	if (uploaded_model_path.empty())
+		return;
+
+	boost::system::error_code ec;
+	boost::filesystem::remove(uploaded_model_path, ec);
+	uploaded_model_path.clear();
 }
 
 void Orts::transport::tcp::tcp_session::run(onnx::session_manager &session_manager) {
@@ -20,11 +39,24 @@ void Orts::transport::tcp::tcp_session::run(onnx::session_manager &session_manag
 
 			auto cstr = buffer.c_str();
 			auto json = header.json_length > 0 ? parse_request_json(cstr, cstr + header.json_length) : json::object();
-			auto post = header.post_length > 0 ? cstr + header.json_length : nullptr;
+
+			const char *post = nullptr;
+			size_t post_length = 0;
+			if (!uploaded_model_path.empty()) {
+				// The model binary was streamed to disk (see do_read); load it via the
+				// existing option.path branch of session_manager instead of an in-memory
+				// buffer, so a large upload never has to reside in RAM.
+				if (!json.is_object())
+					json = json::object();
+				json["option"]["path"] = uploaded_model_path;
+			} else {
+				post = header.post_length > 0 ? cstr + header.json_length : nullptr;
+				post_length = header.post_length;
+			}
 
 			// create task
 			request_time.touch();
-			auto task = create_task(session_manager, header.type, json, post, header.post_length);
+			auto task = create_task(session_manager, header.type, json, post, post_length);
 			auto result = task->run();
 
 			PLOG(L_INFO, "ACCESS") << get_remote_endpoint() << " task: " << task->name()
@@ -49,8 +81,24 @@ void Orts::transport::tcp::tcp_session::run(onnx::session_manager &session_manag
 	}
 }
 
+bool onnxruntime_server::transport::tcp::tcp_session::read_exact(
+	int64_t length, const std::function<void(const char *, size_t)> &sink
+) {
+	boost::system::error_code ec;
+	while (length > 0) {
+		std::size_t n =
+			socket.read_some(boost::asio::buffer(chunk.data(), NUM_MIN((int64_t)MAX_RECV_BUF_LENGTH, length)), ec);
+		if (ec || n == 0)
+			return false;
+		sink(chunk.data(), n);
+		length -= (int64_t)n;
+	}
+	return true;
+}
+
 std::optional<Orts::transport::tcp::protocol_header> Orts::transport::tcp::tcp_session::do_read() {
 	buffer.clear();
+	cleanup_upload();
 
 	boost::system::error_code ec;
 
@@ -65,29 +113,55 @@ std::optional<Orts::transport::tcp::protocol_header> Orts::transport::tcp::tcp_s
 	header.json_length = NTOHLL(header.json_length);
 	header.post_length = NTOHLL(header.post_length);
 
-	// Reject malformed/oversized framing before it drives allocation or is trusted
-	// as a read length. The header fields are attacker-controlled signed int64 read
-	// off the wire: each byte-length must be non-negative and within the payload
-	// limit, and json_length + post_length must fit inside the received body length
-	// (so post/json pointers can never read past the received buffer). The HTTP/HTTPS
-	// paths already bound the body via Beast body_limit; the TCP path had no gate.
-	if (header.length < 0 || header.json_length < 0 || header.post_length < 0 ||
-		header.length > request_payload_limit || header.json_length > header.length ||
-		header.post_length > header.length - header.json_length) {
+	// Reject malformed/oversized framing before it drives allocation or is trusted as a
+	// read length. The header fields are attacker-controlled signed int64 read off the
+	// wire: each byte-length must be non-negative, the JSON body is bounded by
+	// request_payload_limit, and the post body by model_upload_limit for a CREATE_SESSION
+	// model upload (request_payload_limit otherwise, since no other request type carries a
+	// post body). length must equal json_length + post_length, which also bounds the total
+	// read (each part is bounded and non-negative, so their sum cannot overflow int64). The
+	// HTTP/HTTPS paths already bound the body via Beast body_limit; the TCP path had none.
+	const bool is_create = header.type == task::CREATE_SESSION;
+	const int64_t post_limit = is_create ? model_upload_limit : request_payload_limit;
+	if (header.json_length < 0 || header.post_length < 0 || header.json_length > request_payload_limit ||
+		header.post_length > post_limit || header.length != header.json_length + header.post_length) {
 		PLOG(L_WARNING) << get_remote_endpoint() << " transport::tcp_session::do_read: invalid protocol header"
 						<< std::endl;
+		// Tell the client why before the connection is closed, instead of a bare disconnect.
+		send_error("bad_request_error", "invalid or oversized protocol header");
 		return std::nullopt;
 	}
 
-	while (buffer.size() < header.length) {
-		length = socket.read_some(
-			boost::asio::buffer(chunk.data(), NUM_MIN(MAX_RECV_BUF_LENGTH, header.length - buffer.length())), ec
-		);
-		if (ec)
-			return std::nullopt;
+	// JSON body -> in-memory buffer (bounded by request_payload_limit).
+	if (!read_exact(header.json_length, [this](const char *p, size_t n) { buffer.append(p, n); }))
+		return std::nullopt;
 
-		buffer.append(chunk.data(), length);
+	if (is_create && header.post_length > 0) {
+		// Model binary -> temp file, streamed chunk by chunk so it never resides in RAM.
+		boost::filesystem::path dir = model_upload_dir.empty() ? boost::filesystem::temp_directory_path()
+															   : boost::filesystem::path(model_upload_dir);
+		// unique_path yields an unpredictable name, avoiding symlink races in a shared temp dir.
+		boost::filesystem::path path =
+			dir / boost::filesystem::unique_path("onnxruntime-server-upload-%%%%-%%%%-%%%%-%%%%.onnx");
+		uploaded_model_path = path.string();
+
+		std::ofstream ofs(uploaded_model_path, std::ios::binary | std::ios::trunc);
+		if (!ofs) {
+			PLOG(L_WARNING) << get_remote_endpoint() << " transport::tcp_session::do_read: cannot open upload temp file"
+							<< std::endl;
+			send_error("runtime_error", "cannot store uploaded model");
+			return std::nullopt;
+		}
+		bool ok = read_exact(header.post_length, [&ofs](const char *p, size_t n) { ofs.write(p, (std::streamsize)n); });
+		ofs.close();
+		if (!ok || ofs.fail())
+			return std::nullopt;
+	} else if (header.post_length > 0) {
+		// Non-upload post payload -> buffer, contiguous after the JSON body (unchanged layout).
+		if (!read_exact(header.post_length, [this](const char *p, size_t n) { buffer.append(p, n); }))
+			return std::nullopt;
 	}
+
 	return header;
 }
 

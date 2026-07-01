@@ -359,6 +359,14 @@ namespace onnxruntime_server {
 		std::string prepare_model;
 		model_bin_getter_t model_bin_getter{};
 		long request_payload_limit = 1024 * 1024 * 10;
+		// CREATE_SESSION model-binary upload size limit (TCP only). Kept separate from
+		// request_payload_limit (which bounds inference JSON) and typed int64 so it can
+		// exceed 2GB on platforms where `long` is 32-bit. Default: 2GB.
+		int64_t model_upload_limit = 1024LL * 1024 * 1024 * 2;
+		// Directory for streaming uploaded model binaries to disk. Empty => the OS temp
+		// directory. Set this to a disk-backed path when the temp dir is tmpfs (RAM), so
+		// large uploads don't defeat the streaming (OOM-avoidance) purpose.
+		std::string model_upload_dir;
 	};
 
 	namespace transport {
