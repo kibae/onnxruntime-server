@@ -34,6 +34,7 @@ namespace onnxruntime_server::transport::tcp {
 	class tcp_session {
 	  private:
 		asio::socket socket;
+		long request_payload_limit;
 		std::string chunk;
 		std::string buffer;
 
@@ -49,7 +50,7 @@ namespace onnxruntime_server::transport::tcp {
 		);
 
 	  public:
-		explicit tcp_session(asio::socket socket);
+		tcp_session(asio::socket socket, long request_payload_limit);
 		void run(onnx::session_manager &session_manager);
 
 		bool send_error(std::string type, std::string what);
@@ -59,7 +60,7 @@ namespace onnxruntime_server::transport::tcp {
 	class tcp_server : public server {
 	  protected:
 		void client_connected(asio::socket socket) override {
-			tcp_session(std::move(socket)).run(get_onnx_session_manager());
+			tcp_session(std::move(socket), request_payload_limit()).run(get_onnx_session_manager());
 
 			try {
 				socket.close();

@@ -3,7 +3,8 @@
 //
 #include "tcp_server.hpp"
 
-onnxruntime_server::transport::tcp::tcp_session::tcp_session(asio::socket socket) : socket(std::move(socket)) {
+onnxruntime_server::transport::tcp::tcp_session::tcp_session(asio::socket socket, long request_payload_limit)
+	: socket(std::move(socket)), request_payload_limit(request_payload_limit) {
 	// use heap memory to avoid stack overflow
 	chunk.resize(MAX_RECV_BUF_LENGTH);
 }
@@ -18,7 +19,7 @@ void Orts::transport::tcp::tcp_session::run(onnx::session_manager &session_manag
 			auto header = req.value();
 
 			auto cstr = buffer.c_str();
-			auto json = header.json_length > 0 ? json::parse(cstr, cstr + header.json_length) : json::object();
+			auto json = header.json_length > 0 ? parse_request_json(cstr, cstr + header.json_length) : json::object();
 			auto post = header.post_length > 0 ? cstr + header.json_length : nullptr;
 
 			// create task
@@ -63,6 +64,20 @@ std::optional<Orts::transport::tcp::protocol_header> Orts::transport::tcp::tcp_s
 	header.length = NTOHLL(header.length);
 	header.json_length = NTOHLL(header.json_length);
 	header.post_length = NTOHLL(header.post_length);
+
+	// Reject malformed/oversized framing before it drives allocation or is trusted
+	// as a read length. The header fields are attacker-controlled signed int64 read
+	// off the wire: each byte-length must be non-negative and within the payload
+	// limit, and json_length + post_length must fit inside the received body length
+	// (so post/json pointers can never read past the received buffer). The HTTP/HTTPS
+	// paths already bound the body via Beast body_limit; the TCP path had no gate.
+	if (header.length < 0 || header.json_length < 0 || header.post_length < 0 ||
+		header.length > request_payload_limit || header.json_length > header.length ||
+		header.post_length > header.length - header.json_length) {
+		PLOG(L_WARNING) << get_remote_endpoint() << " transport::tcp_session::do_read: invalid protocol header"
+						<< std::endl;
+		return std::nullopt;
+	}
 
 	while (buffer.size() < header.length) {
 		length = socket.read_some(

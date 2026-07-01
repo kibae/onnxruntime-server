@@ -36,6 +36,24 @@ using ordered_json = nlohmann::ordered_json;
 namespace onnxruntime_server {
 	typedef std::function<std::string(const std::string &, const std::string &)> model_bin_getter_t;
 
+	// Maximum accepted JSON nesting depth for request bodies. Real inference tensors are a
+	// handful of dimensions; anything deeper is malformed and, left unbounded, overflows the
+	// stack in the recursive per-level tensor walk (execution::context::flat_json_values and
+	// calcShape). Reject the over-nested body here before those recursive walks run on it.
+	constexpr int MAX_JSON_NESTING_DEPTH = 64;
+
+	inline json parse_request_json(const char *first, const char *last) {
+		return json::parse(first, last, [](int depth, json::parse_event_t, json &) {
+			if (depth > MAX_JSON_NESTING_DEPTH)
+				throw bad_request_error("Request JSON nesting exceeds the maximum depth");
+			return true;
+		});
+	}
+
+	inline json parse_request_json(const std::string &body) {
+		return parse_request_json(body.data(), body.data() + body.size());
+	}
+
 	namespace onnx {
 		std::string version();
 
