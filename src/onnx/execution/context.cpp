@@ -10,8 +10,12 @@ Orts::onnx::execution::context::context(std::shared_ptr<Orts::onnx::session> ses
 
 	json dataset = json_str;
 
+	// A string-encoded dataset is re-parsed here; route it through the same
+	// bounded-depth parser as the transport parse sites so this second parse
+	// (and the recursive flat_json_values/calcShape walk it feeds) cannot be
+	// driven to a stack overflow by deeply-nested JSON smuggled inside a string.
 	if (!dataset.is_object() && dataset.is_string())
-		dataset = json::parse(dataset.get<std::string>());
+		dataset = parse_request_json(dataset.get<std::string>());
 
 	// check dataset is object
 	if (!dataset.is_object()) {
