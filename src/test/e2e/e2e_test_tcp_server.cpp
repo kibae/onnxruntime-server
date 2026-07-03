@@ -159,3 +159,74 @@ TEST(test_onnxruntime_server_tcp, TcpServerTest) {
 	running = false;
 	server_thread.join();
 }
+
+TEST(test_onnxruntime_server_tcp, TcpServerModelUploadTest) {
+	Orts::config config;
+	config.model_bin_getter = test_model_bin_getter;
+
+	boost::asio::io_context io_context;
+	Orts::onnx::session_manager manager(config.model_bin_getter, config.num_threads);
+	Orts::transport::tcp::tcp_server server(io_context, config, manager);
+	ASSERT_GT(server.port(), 0);
+
+	bool running = true;
+	std::thread server_thread([&io_context, &running]() { test_server_run(io_context, &running); });
+
+	auto model_bin = test_model_bin_getter("sample", "1");
+
+	{ // API: Create session by streaming an uploaded model binary (post payload)
+		json body = json::parse(R"({"model":"uploaded","version":"1"})");
+		auto res_json = tcp_request(
+			server.port(), Orts::task::type::CREATE_SESSION, body, (unsigned char *)model_bin.data(), model_bin.size()
+		);
+		std::cout << "API: Create session (upload)\n" << res_json.dump(2) << "\n";
+		ASSERT_EQ(res_json["model"], "uploaded");
+		ASSERT_EQ(res_json["version"], "1");
+	}
+
+	{ // API: Execute the uploaded session to confirm the streamed model actually loaded
+		auto input = json::parse(R"({"model":"uploaded","version":"1","data":{"x":[[1]],"y":[[2]],"z":[[3]]}})");
+		auto res_json = tcp_request(server.port(), Orts::task::type::EXECUTE_SESSION, input);
+		std::cout << "API: Execute uploaded session\n" << res_json.dump(2) << "\n";
+		ASSERT_TRUE(res_json.contains("output"));
+		ASSERT_EQ(res_json["output"].size(), 1);
+	}
+
+	running = false;
+	server_thread.join();
+}
+
+TEST(test_onnxruntime_server_tcp, TcpServerUploadLimitTest) {
+	Orts::config config;
+	config.model_bin_getter = test_model_bin_getter;
+	config.model_upload_limit = 10; // smaller than any real model binary
+
+	boost::asio::io_context io_context;
+	Orts::onnx::session_manager manager(config.model_bin_getter, config.num_threads);
+	Orts::transport::tcp::tcp_server server(io_context, config, manager);
+	ASSERT_GT(server.port(), 0);
+
+	bool running = true;
+	std::thread server_thread([&io_context, &running]() { test_server_run(io_context, &running); });
+
+	auto model_bin = test_model_bin_getter("sample", "1");
+
+	{ // API: Oversized upload is rejected with an error frame, not a silent disconnect
+		json body = json::parse(R"({"model":"toobig","version":"1"})");
+		auto res_json = tcp_request(
+			server.port(), Orts::task::type::CREATE_SESSION, body, (unsigned char *)model_bin.data(), model_bin.size()
+		);
+		std::cout << "API: Oversized upload rejected\n" << res_json.dump(2) << "\n";
+		ASSERT_TRUE(res_json.contains("error"));
+	}
+
+	{ // API: A normal create (no upload) still works under the same server
+		json body = json::parse(R"({"model":"sample","version":"1"})");
+		auto res_json = tcp_request(server.port(), Orts::task::type::CREATE_SESSION, body);
+		std::cout << "API: Create session (no upload)\n" << res_json.dump(2) << "\n";
+		ASSERT_EQ(res_json["model"], "sample");
+	}
+
+	running = false;
+	server_thread.join();
+}

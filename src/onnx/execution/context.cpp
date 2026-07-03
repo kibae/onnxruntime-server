@@ -10,8 +10,12 @@ Orts::onnx::execution::context::context(std::shared_ptr<Orts::onnx::session> ses
 
 	json dataset = json_str;
 
+	// A string-encoded dataset is re-parsed here; route it through the same
+	// bounded-depth parser as the transport parse sites so this second parse
+	// (and the recursive flat_json_values/calcShape walk it feeds) cannot be
+	// driven to a stack overflow by deeply-nested JSON smuggled inside a string.
 	if (!dataset.is_object() && dataset.is_string())
-		dataset = json::parse(dataset.get<std::string>());
+		dataset = parse_request_json(dataset.get<std::string>());
 
 	// check dataset is object
 	if (!dataset.is_object()) {
@@ -28,6 +32,17 @@ Orts::onnx::execution::context::context(std::shared_ptr<Orts::onnx::session> ses
 
 		std::vector<int64_t> input_shape;
 		calcShape(dataset[input.name], input.shape.size(), &input_shape);
+
+		// The client controls the JSON tensor nesting; calcShape derives input_shape from
+		// it. If its rank does not match the model input's rank, the shape/data pointers
+		// and lengths would be mismatched at CreateTensor (OOB read / null-deref). Reject
+		// as a bad request before building the tensor.
+		if (input_shape.size() != input.shape.size())
+			throw bad_request_error(
+				"Input " + input.name + " has tensor rank " + std::to_string(input_shape.size()) +
+				" but the model expects rank " + std::to_string(input.shape.size())
+			);
+
 		input.set_input_shape(input_shape);
 
 		inputs[input.name] = new Orts::onnx::execution::input_value(memory_info, input, json_values);

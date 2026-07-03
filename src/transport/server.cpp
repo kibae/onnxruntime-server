@@ -23,7 +23,17 @@ Orts::transport::server::~server() {
 void Orts::transport::server::accept() {
 	acceptor.async_accept(socket, [this](boost::system::error_code ec) {
 		if (!ec) {
-			std::thread([this](asio::socket sock) { this->client_connected(std::move(sock)); }, std::move(socket))
+			std::thread(
+				[this](asio::socket sock) {
+					try {
+						this->client_connected(std::move(sock));
+					} catch (const std::exception &e) {
+						PLOG(L_WARNING) << "transport::server: worker terminated by uncaught exception: " << e.what()
+										<< std::endl;
+					}
+				},
+				std::move(socket)
+			)
 				.detach();
 		}
 		accept();

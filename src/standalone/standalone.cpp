@@ -23,6 +23,17 @@ int onnxruntime_server::standalone::init_config(int argc, char **argv) {
 			"10(10MB)"
 		);
 		po_desc.add_options()(
+			"model-upload-limit", po::value<long long>()->default_value(1024LL * 1024 * 1024 * 2),
+			"env: ONNX_SERVER_MODEL_UPLOAD_LIMIT\nTCP CREATE_SESSION model binary upload size limit.\nDefault: 1024 * "
+			"1024 * 1024 * 2(2GB)"
+		);
+		po_desc.add_options()(
+			"model-upload-dir", po::value<std::string>()->default_value(""),
+			"env: ONNX_SERVER_MODEL_UPLOAD_DIR\nDirectory for streaming uploaded model binaries to disk (TCP "
+			"CREATE_SESSION).\nIf empty, the OS temp directory is used. Set a disk-backed path when the temp dir is "
+			"tmpfs (RAM)."
+		);
+		po_desc.add_options()(
 			"model-dir", po::value<std::string>()->default_value("models"),
 			"env: ONNX_SERVER_MODEL_DIR\nModel directory path.\nThe onnx model files must be located in the following "
 			"path:\n"
@@ -164,6 +175,12 @@ int onnxruntime_server::standalone::init_config(int argc, char **argv) {
 
 		if (vm.count("request-payload-limit"))
 			config.request_payload_limit = vm["request-payload-limit"].as<long>();
+
+		if (vm.count("model-upload-limit"))
+			config.model_upload_limit = vm["model-upload-limit"].as<long long>();
+
+		if (vm.count("model-upload-dir"))
+			config.model_upload_dir = vm["model-upload-dir"].as<std::string>();
 
 		if (vm.count("model-dir"))
 			config.model_dir = vm["model-dir"].as<std::string>();
