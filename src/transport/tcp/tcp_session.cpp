@@ -3,8 +3,31 @@
 //
 #include "tcp_server.hpp"
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <fstream>
+#include <random>
+
+namespace {
+	// Replacement for boost::filesystem::unique_path (std::filesystem has no equivalent): build an
+	// unpredictable upload file name so an attacker cannot pre-create a symlink at a guessable path
+	// in a shared temp directory. Uses std::filesystem/std::random_device so no non-PIC static Boost
+	// object is pulled into the shared library (linking libboost_filesystem.a into libonnxruntime_server.so
+	// fails on distros that ship non-PIC static Boost).
+	std::string unique_upload_filename() {
+		static const char hex[] = "0123456789abcdef";
+		std::random_device rd;
+		std::uniform_int_distribution<int> dist(0, 15);
+		std::string name = "onnxruntime-server-upload-";
+		for (int group = 0; group < 4; ++group) {
+			if (group)
+				name += '-';
+			for (int i = 0; i < 4; ++i)
+				name += hex[dist(rd)];
+		}
+		name += ".onnx";
+		return name;
+	}
+} // namespace
 
 onnxruntime_server::transport::tcp::tcp_session::tcp_session(
 	asio::socket socket, long request_payload_limit, int64_t model_upload_limit, std::string model_upload_dir
@@ -23,8 +46,8 @@ void onnxruntime_server::transport::tcp::tcp_session::cleanup_upload() {
 	if (uploaded_model_path.empty())
 		return;
 
-	boost::system::error_code ec;
-	boost::filesystem::remove(uploaded_model_path, ec);
+	std::error_code ec;
+	std::filesystem::remove(uploaded_model_path, ec);
 	uploaded_model_path.clear();
 }
 
@@ -138,11 +161,10 @@ std::optional<Orts::transport::tcp::protocol_header> Orts::transport::tcp::tcp_s
 
 	if (is_create && header.post_length > 0) {
 		// Model binary -> temp file, streamed chunk by chunk so it never resides in RAM.
-		boost::filesystem::path dir = model_upload_dir.empty() ? boost::filesystem::temp_directory_path()
-															   : boost::filesystem::path(model_upload_dir);
-		// unique_path yields an unpredictable name, avoiding symlink races in a shared temp dir.
-		boost::filesystem::path path =
-			dir / boost::filesystem::unique_path("onnxruntime-server-upload-%%%%-%%%%-%%%%-%%%%.onnx");
+		std::filesystem::path dir = model_upload_dir.empty() ? std::filesystem::temp_directory_path()
+															 : std::filesystem::path(model_upload_dir);
+		// unique_upload_filename yields an unpredictable name, avoiding symlink races in a shared temp dir.
+		std::filesystem::path path = dir / unique_upload_filename();
 		uploaded_model_path = path.string();
 
 		std::ofstream ofs(uploaded_model_path, std::ios::binary | std::ios::trunc);
