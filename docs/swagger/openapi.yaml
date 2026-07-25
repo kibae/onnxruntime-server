@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: ONNX Runtime Server
   description: |-
-  version: 1.27.1
+  version: 1.28.0
 externalDocs:
   description: ONNX Runtime Server
   url: https://github.com/kibae/onnxruntime-server
@@ -421,7 +421,7 @@ components:
           nullable: false
         graph_optimization_level:
           type: string
-          enum: [disable, basic, extended, all]
+          enum: [disable, basic, extended, layout, all]
           nullable: false
         enable_cpu_mem_arena:
           type: boolean
