@@ -47,6 +47,8 @@ GraphOptimizationLevel parse_graph_opt_level(const std::string &v, bool &valid) 
 		return ORT_ENABLE_BASIC;
 	if (v == "extended")
 		return ORT_ENABLE_EXTENDED;
+	if (v == "layout")
+		return ORT_ENABLE_LAYOUT;
 	if (v == "all")
 		return ORT_ENABLE_ALL;
 	valid = false;

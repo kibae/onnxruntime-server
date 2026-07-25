@@ -84,6 +84,24 @@ TEST(unit_test_session, SessionWithSessionOptions) {
 	ASSERT_EQ(so["config_entries"]["session.disable_prepacking"], "1");
 }
 
+// ORT_ENABLE_LAYOUT sits between ORT_ENABLE_EXTENDED and ORT_ENABLE_ALL in
+// GraphOptimizationLevel, so "layout" has to map to it rather than fall through to the invalid
+// branch that would drop graph_optimization_level from the echo.
+TEST(unit_test_session, SessionOptionsGraphOptimizationLevelLayout) {
+	Orts::onnx::session_key key("sample", "1");
+	auto session = std::make_shared<Orts::onnx::session>(
+		key, model1_path.string(),
+		R"({
+			"session_options": {
+				"graph_optimization_level": "layout"
+			}
+		})"_json
+	);
+	auto j = session->to_json();
+	ASSERT_TRUE(j["option"].contains("session_options"));
+	ASSERT_EQ(j["option"]["session_options"]["graph_optimization_level"], "layout");
+}
+
 // Type-mismatched values (e.g. string for an int field), enum strings outside our mapping, and
 // keys we do not pass to ORT at all must be silently dropped from the echo. Sibling entries that
 // pass our shape check and our enum mapping are still applied and echoed. Note that ORT's own
