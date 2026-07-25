@@ -1,6 +1,6 @@
 FROM ubuntu:24.04 AS builder
 
-RUN apt update && apt install -y curl wget git build-essential cmake pkg-config libboost-all-dev libssl-dev
+RUN apt update && apt install -y curl wget unzip git build-essential cmake pkg-config libboost-all-dev libssl-dev
 RUN mkdir -p /app/source
 
 WORKDIR /app/source
