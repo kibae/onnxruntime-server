@@ -173,6 +173,18 @@ sudo cmake --install build --prefix /usr/local/onnxruntime-server
 | `--log-file`        | `ONNX_SERVER_LOG_FILE`        | Log file path.<br/>If not specified, logs will be printed to stdout.        |
 | `--access-log-file` | `ONNX_SERVER_ACCESS_LOG_FILE` | Access log file path.<br/>If not specified, logs will be printed to stdout. |
 
+### ONNX Runtime telemetry
+
+ONNX Runtime 1.29 added telemetry on Linux and macOS, and the official ONNX Runtime binaries this server
+links against are built with it enabled. **It is on by default.** On every session creation ONNX Runtime
+reports the model file name, graph name, producer, model metadata and the execution providers in use to
+`https://mobile.events.data.microsoft.com/OneCollector/1.0`. This is ONNX Runtime's own behaviour; the
+server neither adds to it nor changes its default.
+
+| Environment             | Description                                                                                                                                                                                                                                       |
+|-------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `ORT_DISABLE_TELEMETRY` | Set to `1`, `true`, `yes`, `on` or `y` before the server starts to disable ONNX Runtime telemetry for the process.<br/>ONNX Runtime also suppresses telemetry on its own when a CI environment variable (`CI`, `GITHUB_ACTIONS`, ...) is present. |
+
 ----
 
 # Docker

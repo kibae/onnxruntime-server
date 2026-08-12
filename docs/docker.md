@@ -22,6 +22,14 @@
     - `${model_dir}/${model_name}/${model_version}/model.onnx`
 - Available environment variables can be found at
     - https://github.com/kibae/onnxruntime-server#run-the-server
+- **ONNX Runtime telemetry is on by default.** ONNX Runtime 1.29 added telemetry on Linux, and the official
+  ONNX Runtime binary in these images is built with it enabled. On every session creation it reports the
+  model file name, graph name, producer, model metadata and the execution providers in use to
+  `https://mobile.events.data.microsoft.com/OneCollector/1.0`. This is ONNX Runtime's own behaviour, not the
+  server's. To turn it off, set `ORT_DISABLE_TELEMETRY=1` on the container:
+  ```shell
+  docker run ... -e "ORT_DISABLE_TELEMETRY=1" ${DOCKER_IMAGE}
+  ```
 
 ## General usage
 
