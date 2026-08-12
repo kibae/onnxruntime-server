@@ -1,6 +1,6 @@
 # ONNX Runtime Server
 
-[![ONNX Runtime](https://img.shields.io/github/v/release/microsoft/onnxruntime?filter=v1.28.0&label=ONNX%20Runtime)](https://github.com/microsoft/onnxruntime)
+[![ONNX Runtime](https://img.shields.io/github/v/release/microsoft/onnxruntime?filter=v1.29.0&label=ONNX%20Runtime)](https://github.com/microsoft/onnxruntime)
 [![CMake on Linux](https://github.com/kibae/onnxruntime-server/actions/workflows/cmake-linux.yml/badge.svg)](https://github.com/kibae/onnxruntime-server/actions/workflows/cmake-linux.yml)
 [![CMake on MacOS](https://github.com/kibae/onnxruntime-server/actions/workflows/cmake-macos.yml/badge.svg)](https://github.com/kibae/onnxruntime-server/actions/workflows/cmake-macos.yml)
 [![CMake on Windows](https://github.com/kibae/onnxruntime-server/actions/workflows/cmake-windows.yml/badge.svg)](https://github.com/kibae/onnxruntime-server/actions/workflows/cmake-windows.yml)
@@ -173,23 +173,35 @@ sudo cmake --install build --prefix /usr/local/onnxruntime-server
 | `--log-file`        | `ONNX_SERVER_LOG_FILE`        | Log file path.<br/>If not specified, logs will be printed to stdout.        |
 | `--access-log-file` | `ONNX_SERVER_ACCESS_LOG_FILE` | Access log file path.<br/>If not specified, logs will be printed to stdout. |
 
+### ONNX Runtime telemetry
+
+ONNX Runtime 1.29 added telemetry on Linux and macOS, and the official ONNX Runtime binaries this server
+links against are built with it enabled. **It is on by default.** On every session creation ONNX Runtime
+reports the model file name, graph name, producer, model metadata and the execution providers in use to
+`https://mobile.events.data.microsoft.com/OneCollector/1.0`. This is ONNX Runtime's own behaviour; the
+server neither adds to it nor changes its default.
+
+| Environment             | Description                                                                                                                                                                                                                                       |
+|-------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `ORT_DISABLE_TELEMETRY` | Set to `1`, `true`, `yes`, `on` or `y` before the server starts to disable ONNX Runtime telemetry for the process.<br/>ONNX Runtime also suppresses telemetry on its own when a CI environment variable (`CI`, `GITHUB_ACTIONS`, ...) is present. |
+
 ----
 
 # Docker
 
 - Docker hub: [kibaes/onnxruntime-server](https://hub.docker.com/r/kibaes/onnxruntime-server)
     - [
-      `1.28.0-linux-cuda13`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cuda13.dockerfile)
+      `1.29.0-linux-cuda13`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cuda13.dockerfile)
       amd64(CUDA 13.x, cuDNN 9.x)
     - [
-      `1.28.0-linux-cuda12`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cuda12.dockerfile)
+      `1.29.0-linux-cuda12`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cuda12.dockerfile)
       amd64(CUDA 12.x, cuDNN 9.x)
     - [
-      `1.28.0-linux-cpu`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cpu.dockerfile)
+      `1.29.0-linux-cpu`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cpu.dockerfile)
       amd64, arm64
 
 ```shell
-DOCKER_IMAGE=kibaes/onnxruntime-server:1.28.0-linux-cuda13 # or 1.28.0-linux-cuda12 or 1.28.0-linux-cpu
+DOCKER_IMAGE=kibaes/onnxruntime-server:1.29.0-linux-cuda13 # or 1.29.0-linux-cuda12 or 1.29.0-linux-cpu
 
 docker pull ${DOCKER_IMAGE}
 
