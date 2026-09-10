@@ -114,7 +114,14 @@ jobs:
         if: startsWith(matrix.os, 'debian-') || startsWith(matrix.os, 'ubuntu-')
         run: |
           cat /etc/os-release
-          sudo dpkg -i .github/cache/dependencies-apt/*.deb
+          # The .deb set is cached under the runner label only, so a build job can land on a
+          # different runner image than the prepare-apt job that downloaded it. When the two images
+          # ship different versions of a preinstalled library, dpkg's versioned dependencies fail
+          # (seen with libevent-core 1build3 vs libevent-dev 1ubuntu0.1). Let apt pull whatever the
+          # cached debs are missing instead of failing the build.
+          sudo dpkg -i .github/cache/dependencies-apt/*.deb || true
+          sudo apt-get update -qq
+          sudo apt-get install -yq -f
 
       - name: Prepare container(onnxruntime)
         shell: bash
