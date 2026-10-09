@@ -10,11 +10,9 @@ src/test/unit/unit_test_value_info.cpp, so the model carries values whose decode
 Excluded: complex64 / complex128 — onnxruntime cannot allocate complex tensors, so a model
 containing them fails to load. value_info still names them and has a defensive decoder.
 
-Tripwire: uint2 is included even though onnxruntime 1.27 mis-loads packed uint2 initializers (the
-runtime values come out as [3, 3, 0, 0, 0] instead of the embedded [3, 0, 2, 1, 3]; int2 with the
-same structure works). AllDataTypesModel asserts the broken value so the test will start failing as
-soon as upstream fixes the bug — that is the signal to flip the expectation back to the embedded
-values.
+UINT2 is packed four values per byte. ONNX Runtime 1.31 fixes the C API type conversion
+that previously made the server interpret its packed storage as individual bytes.
+AllDataTypesModel now asserts the embedded values [3, 0, 2, 1, 3].
 
 Usage (from this directory):
     python3 -m venv venv && . venv/bin/activate
@@ -71,12 +69,7 @@ TYPES = [
     ("uint4", TensorProto.UINT4, [3], helper.make_tensor("uint4", TensorProto.UINT4, [3], vals=bytes([0x0F, 0x09]), raw=True)),
     # int2: -2, -1, 0, 1 (packed four-per-byte: 0x4E)
     ("int2", TensorProto.INT2, [4], helper.make_tensor("int2", TensorProto.INT2, [4], vals=bytes([0x4E]), raw=True)),
-    # uint2: nominal value [3, 0, 2, 1, 3], packed as 0x63, 0x03. onnxruntime 1.27 mis-loads packed
-    # uint2 initializers (it treats uint2 as unpacked storage and memcpy's the packed bytes into a
-    # 5-byte buffer, producing the runtime values [3, 3, 0, 0, 0]). int2 with the same structure
-    # works. AllDataTypesModel asserts the broken value so that when upstream fixes the bug the
-    # test fails and prompts us to flip the expectation to [3, 0, 2, 1, 3]. See the ORT issue
-    # referenced in the test for details.
+    # uint2: 3, 0, 2, 1, 3 (packed four-per-byte: 0x63, 0x03)
     ("uint2", TensorProto.UINT2, [5], helper.make_tensor("uint2", TensorProto.UINT2, [5], vals=bytes([0x63, 0x03]), raw=True)),
 ]
 

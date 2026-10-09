@@ -200,10 +200,10 @@ json::array_t Orts::onnx::value_info::get_tensor_data(Ort::Value &tensors) const
 		}
 		break;
 	}
-	case ONNX_TENSOR_ELEMENT_DATA_TYPE_UINT2: { // onnxruntime 1.27 stores uint2 unpacked, one value (0..3) per byte
+	case ONNX_TENSOR_ELEMENT_DATA_TYPE_UINT2: { // packed: four uint2 (0..3) per byte
 		auto data = tensors.GetTensorData<uint8_t>();
 		for (size_t i = 0; i < size; i++)
-			values.emplace_back(static_cast<unsigned>(data[i] & 0x03));
+			values.emplace_back(static_cast<unsigned>(unpack_2bit(data, i)));
 		break;
 	}
 	case ONNX_TENSOR_ELEMENT_DATA_TYPE_INT2: { // packed: four int2 (two's complement, -2..1) per byte
