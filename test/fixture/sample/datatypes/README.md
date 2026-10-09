@@ -8,9 +8,8 @@ version `datatypes`.
 
 Excluded: complex64/complex128 — onnxruntime cannot allocate complex tensors.
 
-Tripwire: uint2 is included even though onnxruntime 1.27 mis-loads its packed initializer; the
-end-to-end test asserts the broken value so a future onnxruntime fix flips the test red and
-prompts us to flip the expectation back to the correct values.
+UINT2 is packed four values per byte. ONNX Runtime 1.31 corrects the C API type conversion;
+the end-to-end test verifies the decoded values `[3, 0, 2, 1, 3]`.
 
 - test/sample-onnx-generator/sample-datatypes.py
 - http://server.11math.com/static/onnxruntime-server/sample/datatypes.onnx

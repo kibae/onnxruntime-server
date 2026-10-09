@@ -1,46 +1,15 @@
 #!/usr/bin/env bash
-
-cd "$(dirname "$0")" || exit
-
-echo
-echo "Select onnxruntime version to download:"
-AUTH_HEADER=""
-if [ -n "$GITHUB_TOKEN" ]; then
-  AUTH_HEADER="-H \"Authorization: Bearer $GITHUB_TOKEN\""
-fi
-
-RAW_LIST=$(eval curl -s -H "Accept: application/vnd.github+json" \
-  -H "X-GitHub-Api-Version: 2022-11-28" \
-  $AUTH_HEADER \
-  https://api.github.com/repos/microsoft/onnxruntime/releases/latest \
-  | grep browser_download_url \
-  | grep -E "onnxruntime-osx-arm64-([.0-9]+)tgz" \
-  | awk '{print $2}' \
-  | tr -d '"')
-
-item=${RAW_LIST[0]}
-
-# check item is not empty
-if [ -z "$item" ]; then
-  echo "Error: Could not find onnxruntime download link."
-  exit 1
-fi
-
-FILENAME=$(basename "$item")
-
-echo
-echo "Downloading $item"
-echo
-
-wget -q "$item"
-
-sudo mkdir -p /usr/local/onnxruntime
-sudo tar vzxf "$FILENAME" -C /usr/local/onnxruntime --strip-components=2
-
-rm -f "$FILENAME"
-
-echo
-echo "Done"
-echo
-
-exit 0
+set -euo pipefail
+source "$(dirname "$0")/../../deploy/build-docker/release-assets.sh"
+ORT_TARGET=$(ort_version "${1:-}")
+META=$(ort_asset "$ORT_TARGET" "onnxruntime-osx-arm64-${ORT_TARGET}.tgz")
+IFS=$'\t' read -r NAME URL DIGEST <<< "$META"
+TMP=$(mktemp -d)
+trap 'rm -rf "$TMP"' EXIT
+ort_download "$URL" "$TMP/ort.tgz" "$DIGEST"
+mkdir "$TMP/runtime"
+tar -xzf "$TMP/ort.tgz" -C "$TMP/runtime" --strip-components=2
+test -f "$TMP/runtime/include/onnxruntime_cxx_api.h"
+test -f "$TMP/runtime/lib/libonnxruntime.dylib"
+test ! -e /usr/local/onnxruntime || { echo 'ONNX Runtime destination already exists' >&2; exit 1; }
+sudo mv "$TMP/runtime" /usr/local/onnxruntime

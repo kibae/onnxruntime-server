@@ -1,54 +1,58 @@
 #!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")/../.."
+source deploy/build-docker/VERSION
 
-cd "$(dirname "$0")" || exit
-source ./VERSION
+LOCAL=0
+DRY_RUN=0
+TARGET=all
+for arg in "$@"; do
+    case "$arg" in
+        --local) LOCAL=1 ;;
+        --dry-run) DRY_RUN=1 ;;
+        --target=cpu) TARGET=cpu ;;
+        --target=cuda) TARGET=cuda ;;
+        --help|-h)
+            echo 'usage: build.sh [--local] [--dry-run] [--target=cpu|cuda]'
+            echo 'Default: build, test and push release tags. --local: build and test only.'
+            echo '--dry-run: print tags and commands without executing them.'
+            exit 0 ;;
+        *) echo "unknown argument: $arg (see --help)" >&2; exit 1 ;;
+    esac
+done
 
-cd ../../
+VARIANTS=()
+[ "$TARGET" = cuda ] || VARIANTS+=(linux-cpu)
+[ "$TARGET" = cpu ] || VARIANTS+=(linux-cuda12 linux-cuda13)
 
-
-if [ "$1" != "--target=cuda" ]; then
-  #   ______ .______    __    __
-  #  /      ||   _  \  |  |  |  |
-  # |  ,----'|  |_)  | |  |  |  |
-  # |  |     |   ___/  |  |  |  |
-  # |  `----.|  |      |  `--'  |
-  #  \______|| _|       \______/
-  POSTFIX=linux-cpu
-  IMAGE_NAME=${IMAGE_PREFIX}:${VERSION}-${POSTFIX}
-
-  docker buildx build --platform linux/amd64 -t ${IMAGE_NAME} -f deploy/build-docker/${POSTFIX}.dockerfile --load . || exit 1
-  ./deploy/build-docker/docker-image-test.sh ${IMAGE_NAME} || exit 1
-  docker buildx build --platform linux/amd64,linux/arm64 -t ${IMAGE_NAME} -f deploy/build-docker/${POSTFIX}.dockerfile --push . || exit 1
+if [ "$LOCAL" = 1 ]; then
+    echo 'Images to build and test locally (no push):'
+else
+    echo 'Images to build, test and push:'
 fi
+for variant in "${VARIANTS[@]}"; do
+    printf '  %s:%s-%s\n' "$IMAGE_PREFIX" "$VERSION" "$variant"
+done
 
+run() {
+    printf '+ '; printf '%q ' "$@"; printf '\n'
+    if [ "$DRY_RUN" = 0 ]; then "$@"; fi
+}
 
-if [ "$1" != "--target=cpu" ]; then
-  #   ______  __    __   _______       ___         ___   ___    __    _  _
-  #  /      ||  |  |  | |       \     /   \        \  \ /  /   / /   | || |
-  # |  ,----'|  |  |  | |  .--.  |   /  ^  \   _____\  V  /   / /_   | || |_
-  # |  |     |  |  |  | |  |  |  |  /  /_\  \ |______>   <   | '_ \  |__   _|
-  # |  `----.|  `--'  | |  '--'  | /  _____  \      /  .  \  | (_) |    | |
-  #  \______| \______/  |_______/ /__/     \__\    /__/ \__\  \___/     |_|
-#  POSTFIX=linux-cuda11
-#  IMAGE_NAME=${IMAGE_PREFIX}:${VERSION}-${POSTFIX}
-#
-#  docker buildx build --platform linux/amd64 -t ${IMAGE_NAME} -f deploy/build-docker/${POSTFIX}.dockerfile --load . || exit 1
-#  ./deploy/build-docker/docker-image-test.sh ${IMAGE_NAME} 1 || exit 1
-#  docker buildx build --platform linux/amd64 -t ${IMAGE_NAME} -f deploy/build-docker/${POSTFIX}.dockerfile --push . || exit 1
+# Complete every selected local test before starting any upload.
+for variant in "${VARIANTS[@]}"; do
+    image="$IMAGE_PREFIX:$VERSION-$variant"
+    run docker buildx build --platform linux/amd64 -t "$image" \
+        -f "deploy/build-docker/$variant.dockerfile" --load .
+    cuda=0; [ "$variant" = linux-cpu ] || cuda=1
+    run bash deploy/build-docker/docker-image-test.sh "$image" "$cuda"
+done
 
-
-  POSTFIX=linux-cuda12
-  IMAGE_NAME=${IMAGE_PREFIX}:${VERSION}-${POSTFIX}
-
-  docker buildx build --platform linux/amd64 -t ${IMAGE_NAME} -f deploy/build-docker/${POSTFIX}.dockerfile --load . || exit 1
-  ./deploy/build-docker/docker-image-test.sh ${IMAGE_NAME} 1 || exit 1
-  docker buildx build --platform linux/amd64 -t ${IMAGE_NAME} -f deploy/build-docker/${POSTFIX}.dockerfile --push . || exit 1
-
-  POSTFIX=linux-cuda13
-  IMAGE_NAME=${IMAGE_PREFIX}:${VERSION}-${POSTFIX}
-
-  docker buildx build --platform linux/amd64 -t ${IMAGE_NAME} -f deploy/build-docker/${POSTFIX}.dockerfile --load . || exit 1
-  ./deploy/build-docker/docker-image-test.sh ${IMAGE_NAME} 1 || exit 1
-  docker buildx build --platform linux/amd64 -t ${IMAGE_NAME} -f deploy/build-docker/${POSTFIX}.dockerfile --push . || exit 1
-fi
-
+[ "$LOCAL" = 0 ] || exit 0
+for variant in "${VARIANTS[@]}"; do
+    image="$IMAGE_PREFIX:$VERSION-$variant"
+    platforms=linux/amd64
+    [ "$variant" != linux-cpu ] || platforms=linux/amd64,linux/arm64
+    run docker buildx build --platform "$platforms" -t "$image" \
+        -f "deploy/build-docker/$variant.dockerfile" --push .
+done

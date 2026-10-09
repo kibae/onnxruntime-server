@@ -20,6 +20,9 @@ jobs:
         with:
           lfs: false
 
+      - name: Test release tooling
+        run: python3 -B test/release/test_release_workflow.py
+
       - name: (Cache) Restore test fixtures
         id: cache-test-fixtures
         uses: actions/cache/restore@v5

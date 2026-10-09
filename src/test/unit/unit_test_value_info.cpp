@@ -246,9 +246,9 @@ TEST(unit_test_value_info, Int4) {
 	EXPECT_EQ(v[2].get<int>(), 1);
 }
 
-// Unlike int2, onnxruntime 1.27 stores uint2 unpacked: one value (0..3) per byte.
+// UINT2 is packed four-per-byte, low bits first. The last byte contains one logical element.
 TEST(unit_test_value_info, UInt2) {
-	uint8_t bytes[] = {3, 0, 2, 1, 3};
+	uint8_t bytes[] = {0x63, 0x03};
 	auto v = decode(ONNX_TENSOR_ELEMENT_DATA_TYPE_UINT2, {5}, bytes, sizeof(bytes));
 	ASSERT_EQ(v.size(), 5);
 	int expected[] = {3, 0, 2, 1, 3};

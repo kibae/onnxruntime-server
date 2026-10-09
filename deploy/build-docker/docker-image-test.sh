@@ -1,11 +1,16 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
 cd "$(dirname "$0")" || exit
 
 source ./VERSION
+EXPECTED_ORT_VERSION=${ORT_VERSION:-$VERSION}
 
-IMAGE_NAME=$1
-IS_CUDA=$2
+IMAGE_NAME=${1:?usage: docker-image-test.sh <image> [0|1]}
+IS_CUDA=${2:-0}
+[[ "$IS_CUDA" = 0 || "$IS_CUDA" = 1 ]] || { echo 'CUDA flag must be 0 or 1' >&2; exit 1; }
+CONTAINER="onnx_release_test_${BASHPID}"
+trap 'docker rm -f "$CONTAINER" >/dev/null 2>&1 || true' EXIT
 
 echo
 echo '.___________. _______     _______.___________.'
@@ -19,33 +24,39 @@ echo ${IMAGE_NAME}
 echo
 echo
 
-docker stop docker_test || true
-docker rm docker_test || true
-docker run --name docker_test -d -p 8080:80 --gpus all -e "ONNX_SERVER_SWAGGER_URL_PATH=/api-docs" ${IMAGE_NAME} || exit 1
-sleep 1;
-docker cp ../../test/fixture/sample docker_test:/app/models/ || exit 1
+GPU_ARGS=()
+[ "$IS_CUDA" = 0 ] || GPU_ARGS=(--gpus all)
+docker run --name "$CONTAINER" -d -p 127.0.0.1::80 "${GPU_ARGS[@]}" -e "ONNX_SERVER_SWAGGER_URL_PATH=/api-docs" "$IMAGE_NAME"
+PORT=$(docker port "$CONTAINER" 80/tcp | awk -F: '{print $NF}')
+BASE_URL="http://127.0.0.1:$PORT"
+for attempt in {1..30}; do
+  if curl -fsS "$BASE_URL/api/version" >/dev/null; then break; fi
+  if [ "$attempt" = 30 ]; then docker logs "$CONTAINER" >&2; exit 1; fi
+  sleep 1
+done
+docker cp ../../test/fixture/sample "$CONTAINER:/app/models/"
 
-API_VERSION_RESULT=$(curl -s \
-  'http://localhost:8080/api/version' \
+API_VERSION_RESULT=$(curl -fsS \
+  "$BASE_URL/api/version" \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' || exit 1)
 
-if [ "${API_VERSION_RESULT}" != "${VERSION}" ]; then
-  echo "API version mismatch. Expected: ${VERSION}, Got: ${API_VERSION_RESULT}"
+if [ "${API_VERSION_RESULT}" != "${EXPECTED_ORT_VERSION}" ]; then
+  echo "API version mismatch. Expected: ${EXPECTED_ORT_VERSION}, Got: ${API_VERSION_RESULT}"
   exit 1
 fi
 
-echo "ONNX Server Version: ${VERSION}"
+echo "ONNX Runtime Version: ${EXPECTED_ORT_VERSION}"
 
-if [[ -v ${IS_CUDA} ]]; then
-  curl -sX 'POST' \
-    'http://localhost:8080/api/sessions' \
+if [ "$IS_CUDA" = 1 ]; then
+  curl -fsSX 'POST' \
+    "$BASE_URL/api/sessions" \
     -H 'accept: application/json' \
     -H 'Content-Type: application/json' \
-    -d '{"model": "sample", "version": "2", "option":{"cuda": true}}' | jq || exit 1
+    -d '{"model": "sample", "version": "2", "option":{"cuda": true}}' | jq -e 'if type == "object" and .error != null then error(tostring) else . end' || exit 1
 
-  DEVICE_ID=$(curl -sX 'GET' \
-    'http://localhost:8080/api/sessions/sample/2' \
+  DEVICE_ID=$(curl -fsSX 'GET' \
+    "$BASE_URL/api/sessions/sample/2" \
     -H 'accept: application/json' | jq '.option.cuda.device_id' || exit 1)
 
   if [ "${DEVICE_ID}" != "0" ]; then
@@ -53,14 +64,14 @@ if [[ -v ${IS_CUDA} ]]; then
     exit 1
   fi
 else
-  curl -sX 'POST' \
-    'http://localhost:8080/api/sessions' \
+  curl -fsSX 'POST' \
+    "$BASE_URL/api/sessions" \
     -H 'accept: application/json' \
     -H 'Content-Type: application/json' \
-    -d '{"model": "sample", "version": "2"}' | jq || exit 1
+    -d '{"model": "sample", "version": "2"}' | jq -e 'if type == "object" and .error != null then error(tostring) else . end' || exit 1
 
-  ERROR=$(curl -sX 'GET' \
-    'http://localhost:8080/api/sessions/sample/2' \
+  ERROR=$(curl -fsSX 'GET' \
+    "$BASE_URL/api/sessions/sample/2" \
     -H 'accept: application/json' | jq '.error' || exit 1)
 
   if [ "${ERROR}" != "null" ]; then
@@ -69,8 +80,8 @@ else
   fi
 fi
 
-curl -sX 'POST' \
-  'http://localhost:8080/api/sessions/sample/2' \
+curl -fsSX 'POST' \
+  "$BASE_URL/api/sessions/sample/2" \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -176,11 +187,11 @@ curl -sX 'POST' \
     ]
   ]
 }
-' | jq || exit 1
+' | jq -e 'if type == "object" and .error == null and (.output | type) == "array" and (.output | length) > 0 then . else error("inference did not return model output: " + tostring) end' || exit 1
 
-curl -sX 'GET' \
-  'http://localhost:8080/api/sessions' \
-  -H 'accept: application/json' | jq || exit 1
+curl -fsSX 'GET' \
+  "$BASE_URL/api/sessions" \
+  -H 'accept: application/json' | jq -e 'if type == "object" and .error != null then error(tostring) else . end' || exit 1
 
 echo
 echo '.______      ___           _______.     _______.'
@@ -191,4 +202,4 @@ echo '|  |     /  _____  \  .----)   |   .----)   |   '
 echo '| _|    /__/     \__\ |_______/    |_______/    '
 echo
 
-docker rm docker_test -f || true
+docker rm "$CONTAINER" -f

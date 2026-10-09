@@ -1,45 +1,18 @@
 #!/usr/bin/env bash
-
-cd "$(dirname "$0")" || exit
-
-echo
-echo "Select onnxruntime version to download:"
-AUTH_HEADER=""
-if [ -n "$GITHUB_TOKEN" ]; then
-  AUTH_HEADER="-H \"Authorization: Bearer $GITHUB_TOKEN\""
-fi
-
-RAW_LIST=$(eval curl -s -H "Accept: application/vnd.github+json" \
-  -H "X-GitHub-Api-Version: 2022-11-28" \
-  $AUTH_HEADER \
-  https://api.github.com/repos/microsoft/onnxruntime/releases/latest \
-  | grep browser_download_url \
-  | grep -E "onnxruntime-linux-x64-([.0-9]+)tgz" \
-  | awk '{print $2}' \
-  | tr -d '"')
-
-item=${RAW_LIST[0]}
-
-if [ -z "$item" ]; then
-  echo "Error: Could not find onnxruntime download link (regex matched no asset; the GitHub API may be rate-limiting unauthenticated requests on this runner — pass GITHUB_TOKEN from the workflow if so)." >&2
-  exit 1
-fi
-
-FILENAME=$(basename "$item")
-
-echo
-echo "Downloading $item"
-echo
-
-wget -q "$item"
-
-sudo mkdir -p /usr/local/onnxruntime
-sudo tar vzxf "$FILENAME" -C /usr/local/onnxruntime --strip-components=1
-sudo sh -c 'echo "/usr/local/onnxruntime/lib" > /etc/ld.so.conf.d/onnxruntime.conf'
+set -euo pipefail
+source "$(dirname "$0")/../../deploy/build-docker/release-assets.sh"
+ORT_TARGET=$(ort_version "${1:-}")
+META=$(ort_asset "$ORT_TARGET" "onnxruntime-linux-x64-${ORT_TARGET}.tgz")
+IFS=$'\t' read -r NAME URL DIGEST <<< "$META"
+TMP=$(mktemp -d)
+trap 'rm -rf "$TMP"' EXIT
+ort_download "$URL" "$TMP/ort.tgz" "$DIGEST"
+tar -xzf "$TMP/ort.tgz" -C "$TMP"
+ROOT="$TMP/${NAME%.tgz}"
+test -f "$ROOT/include/onnxruntime_cxx_api.h"
+test -f "$ROOT/lib/libonnxruntime.so"
+test "$(tr -d '[:space:]' < "$ROOT/VERSION_NUMBER")" = "$ORT_TARGET"
+test ! -e /usr/local/onnxruntime || { echo 'ONNX Runtime destination already exists' >&2; exit 1; }
+sudo mv "$ROOT" /usr/local/onnxruntime
+printf '/usr/local/onnxruntime/lib\n' | sudo tee /etc/ld.so.conf.d/onnxruntime.conf >/dev/null
 sudo ldconfig
-
-rm -f "$FILENAME"
-
-echo
-echo "Done"
-echo
