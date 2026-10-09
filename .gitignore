@@ -17,3 +17,4 @@ __pycache__/
 *$py.class
 
 /deploy/build-docker/out/
+/.release-work/

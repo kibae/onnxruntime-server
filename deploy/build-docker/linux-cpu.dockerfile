@@ -1,12 +1,13 @@
 FROM ubuntu:24.04 AS builder
 
-RUN apt update && apt install -y curl wget unzip git build-essential cmake pkg-config libboost-all-dev libssl-dev
+RUN apt update && apt install -y curl wget unzip python3 git build-essential cmake pkg-config libboost-all-dev libssl-dev
 RUN mkdir -p /app/source
 
 WORKDIR /app/source
 COPY src /app/source/onnxruntime-server
 COPY cmake /app/source/onnxruntime-server/cmake
 COPY deploy/build-docker/download-onnxruntime.sh /app/source/onnxruntime-server/
+COPY deploy/build-docker/release-assets.sh deploy/build-docker/VERSION /app/source/onnxruntime-server/
 
 WORKDIR /app/source/onnxruntime-server
 
