@@ -14,11 +14,13 @@ import unittest
 REPO = Path(__file__).resolve().parents[2]
 SKILL = REPO / '.agents/skills/releasing-onnxruntime-server'
 MOCK = r'''#!/usr/bin/env python3
-import json, os, pathlib, shutil, sys
+import hashlib, io, json, os, pathlib, shutil, sys, tarfile
 name=pathlib.Path(sys.argv[0]).name
 a=sys.argv[1:]
 mode=os.environ.get('MOCK_MODE', '')
 state=pathlib.Path(os.environ['MOCK_STATE'])
+config_bytes=json.dumps({'architecture':'amd64','os':'linux','rootfs':{'type':'layers','diff_ids':[]}}).encode()
+config_digest='sha256:'+hashlib.sha256(config_bytes).hexdigest()
 with (state / 'calls').open('a') as f: f.write(json.dumps([name]+a)+'\n')
 if name == 'git':
     if a[:2] == ['rev-parse', '--show-toplevel']: print(os.environ['MOCK_REPO'])
@@ -66,12 +68,17 @@ elif name == 'docker':
         if mode == 'test-fail' and 'linux-cuda13' in a[-1]: sys.exit(1)
         print('mock-container')
     elif a[0] == 'port': print('127.0.0.1:43111')
-    elif a[:2] == ['image','inspect']: print('sha256:'+'a'*64)
+    elif a[:2] == ['image','inspect']: print('sha256:'+'e'*64)
+    elif a[:2] == ['image','save']:
+        with tarfile.open(a[a.index('--output')+1], 'w') as archive:
+            manifest=json.dumps([{'Config':'config.json','RepoTags':[],'Layers':[]}]).encode()
+            for filename,data in [('config.json',config_bytes),('manifest.json',manifest)]:
+                entry=tarfile.TarInfo(filename);entry.size=len(data);archive.addfile(entry,io.BytesIO(data))
     elif a[:2] == ['buildx','build']: pass
     elif a[:3] == ['buildx','imagetools','inspect']:
         image=a[3]
         if '--raw' in a:
-            print(json.dumps({'config': {'digest':'sha256:'+('c' if mode == 'config-mismatch' else 'a')*64}}))
+            print(json.dumps({'config': {'digest':'sha256:'+'c'*64 if mode == 'config-mismatch' else config_digest}}))
         elif ':candidate-' in image: print('sha256:'+'b'*64)
         elif mode == 'tag-conflict': print('sha256:'+'f'*64)
         elif mode == 'registry-fail': print('authentication failed', file=sys.stderr); sys.exit(1)
@@ -224,6 +231,7 @@ class WorkflowTests(unittest.TestCase):
         self.assertTrue(all(any(':candidate-' in arg for arg in calls[i]) for i in uploads))
         self.assertNotIn('--gpus', calls[tests[0]])
         self.assertIn('--gpus', calls[tests[1]])
+        self.assertEqual(len([c for c in calls if c[:3] == ['docker','image','save']]), 3)
 
     def test_test_failure_prevents_all_uploads(self):
         _, r, receipt = self.prepare('test-fail')

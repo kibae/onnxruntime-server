@@ -65,7 +65,23 @@ for variant in "${VARIANTS[@]}"; do
         -f "deploy/build-docker/$variant.dockerfile" --load .
     cuda=0; [ "$variant" = linux-cpu ] || cuda=1
     bash deploy/build-docker/docker-image-test.sh "$image" "$cuda"
-    docker image inspect "$image" --format '{{.Id}}' > "$STATE/$variant.tested-config"
+    # With containerd, inspect .Id may identify a manifest/index instead of its config.
+    # Hash the config from the image that actually passed the local tests.
+    docker image save "$image" --output "$STATE/$variant.tested.tar"
+    python3 -c '
+import hashlib, json, sys, tarfile
+with tarfile.open(sys.argv[1]) as archive:
+    manifests = json.load(archive.extractfile("manifest.json"))
+    configs = set()
+    for manifest in manifests:
+        data = archive.extractfile(manifest["Config"]).read()
+        config = json.loads(data)
+        if config.get("architecture") == "amd64" and config.get("os") == "linux":
+            configs.add("sha256:" + hashlib.sha256(data).hexdigest())
+    if len(configs) != 1:
+        sys.exit("expected exactly one tested linux/amd64 image config")
+    print(configs.pop())
+' "$STATE/$variant.tested.tar" > "$STATE/$variant.tested-config"
 done
 printf '%s\n' "$TREE" > "$STATE/tree"
 printf '%s\n' "$SHA" > "$STATE/sha"
