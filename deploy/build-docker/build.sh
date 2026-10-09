@@ -20,6 +20,12 @@ TREE=$(git rev-parse HEAD^{tree})
 STATE="deploy/build-docker/out/release-${VERSION}-${SHA}"
 mkdir -p "$STATE"
 
+image_digest() {
+    # Direct .Manifest templates can print a human-readable report in buildx.
+    docker buildx imagetools inspect "$1" --format '{{json .Manifest}}' |
+        jq -er '.digest | select(test("^sha256:[a-f0-9]{64}$"))'
+}
+
 if [ "$MODE" = publish ]; then
     # Validate all receipt entries before performing any registry mutation.
     python3 -c '
@@ -37,7 +43,7 @@ for i in r["images"]:
     # Network/auth failures must not be treated as an absent tag.
     while read -r variant digest; do
         final="$IMAGE_PREFIX:$VERSION-$variant"
-        if current=$(docker buildx imagetools inspect "$final" --format '{{.Manifest.Digest}}' 2> "$STATE/inspect-error"); then
+        if current=$(image_digest "$final" 2> "$STATE/inspect-error"); then
             [ "$current" = "$digest" ] || { echo "refusing to overwrite $final ($current != $digest)" >&2; exit 1; }
         elif ! grep -qi 'manifest unknown' "$STATE/inspect-error" &&
              ! grep -qF "$final: not found" "$STATE/inspect-error"; then
@@ -48,7 +54,7 @@ for i in r["images"]:
         final="$IMAGE_PREFIX:$VERSION-$variant"
         # --prefer-index=false preserves a single-platform manifest digest.
         docker buildx imagetools create --prefer-index=false --tag "$final" "$IMAGE_PREFIX@$digest"
-        current=$(docker buildx imagetools inspect "$final" --format '{{.Manifest.Digest}}')
+        current=$(image_digest "$final")
         [ "$current" = "$digest" ] || { echo "published digest mismatch for $final" >&2; exit 1; }
     done < "$STATE/publish-list"
     exit 0
@@ -95,7 +101,7 @@ for variant in "${VARIANTS[@]}"; do
     docker buildx build --platform "$platforms" --label "org.opencontainers.image.revision=$SHA" \
         -t "$image" \
         -f "deploy/build-docker/$variant.dockerfile" --push .
-    docker buildx imagetools inspect "$image" --format '{{.Manifest.Digest}}' > "$STATE/$variant.digest"
+    image_digest "$image" > "$STATE/$variant.digest"
     docker buildx imagetools inspect "$image" --raw > "$STATE/$variant.manifest.json"
     amd64=$(python3 -c '
 import json, sys

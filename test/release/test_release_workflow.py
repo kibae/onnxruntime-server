@@ -79,12 +79,15 @@ elif name == 'docker':
         image=a[3]
         if '--raw' in a:
             print(json.dumps({'config': {'digest':'sha256:'+'c'*64 if mode == 'config-mismatch' else config_digest}}))
-        elif ':candidate-' in image: print('sha256:'+'b'*64)
-        elif mode == 'tag-conflict': print('sha256:'+'f'*64)
+        elif '--format' in a and a[a.index('--format')+1] == '{{.Manifest.Digest}}':
+            print('Name: '+image+'\nDigest: sha256:'+'b'*64)
+        elif mode == 'registry-invalid-digest': print(json.dumps({'digest':'invalid'}))
+        elif ':candidate-' in image: print(json.dumps({'digest':'sha256:'+'b'*64}))
+        elif mode == 'tag-conflict': print(json.dumps({'digest':'sha256:'+'f'*64}))
         elif mode == 'registry-fail': print('authentication failed', file=sys.stderr); sys.exit(1)
         elif mode == 'registry-not-found': print('registry endpoint not found', file=sys.stderr); sys.exit(1)
         elif (state/'published.json').exists() and image in json.loads((state/'published.json').read_text()):
-            print(json.loads((state/'published.json').read_text())[image])
+            print(json.dumps({'digest':json.loads((state/'published.json').read_text())[image]}))
         else: print('manifest unknown', file=sys.stderr); sys.exit(1)
     elif a[:3] == ['buildx','imagetools','create']:
         tag=a[a.index('--tag')+1]
@@ -232,6 +235,11 @@ class WorkflowTests(unittest.TestCase):
         self.assertNotIn('--gpus', calls[tests[0]])
         self.assertIn('--gpus', calls[tests[1]])
         self.assertEqual(len([c for c in calls if c[:3] == ['docker','image','save']]), 3)
+
+    def test_invalid_registry_digest_prevents_receipt(self):
+        _, r, receipt = self.prepare('registry-invalid-digest')
+        self.assertNotEqual(r.returncode, 0)
+        self.assertFalse(receipt.exists())
 
     def test_test_failure_prevents_all_uploads(self):
         _, r, receipt = self.prepare('test-fail')
