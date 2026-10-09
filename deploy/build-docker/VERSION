@@ -1,3 +1,3 @@
-export VERSION=1.30.0
-export ORT_VERSION=1.30.0
+export VERSION=1.31.0
+export ORT_VERSION=1.31.0
 export IMAGE_PREFIX=kibaes/onnxruntime-server
