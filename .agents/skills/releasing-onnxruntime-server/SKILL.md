@@ -5,10 +5,11 @@ description: Release onnxruntime-server against a specified or latest ONNX Runti
 
 # Releasing onnxruntime-server
 
-For a complete release request, prepare changes, open the PR, fix CI, test/upload
-Docker candidates, merge, promote recorded digests, tag the merge commit and publish
-notes. Honor narrower requested scope. Reviewing/importing/editing this skill does
-not run a release. Preserve the original explicit-only invocation policy.
+For a complete release request, review upstream, implement and verify changes locally,
+then commit, open the PR, wait for CI, publish Docker images, merge, tag and publish
+notes. Honor narrower requested scope, including review before committing.
+Reviewing/importing/editing this skill does not run a release or require redesigning
+the project's deployment scripts. Preserve the original explicit-only invocation policy.
 
 Use the version in the user's request as `TO_VERSION`, or resolve upstream
 `microsoft/onnxruntime/releases/latest` once with `gh api`. This is conversational
@@ -24,11 +25,13 @@ and [references/release-notes.md](references/release-notes.md) when writing note
 
 - `deploy/build-docker/VERSION` distinguishes server `VERSION` and upstream
   `ORT_VERSION`. Install, CI, Docker and the version unit test must agree on ORT.
-- Test the committed source used for images. Fixes invalidate CI and candidate
-  receipts: commit, push and rerun the gates on the new SHA.
-- Finish all selected image tests before candidate uploads. Promote recorded
-  digests after merge without rebuilding. Multiple registry tags are not atomic;
-  retry a partial promotion using the same receipt, never a different build.
+- Diagnose and verify fixes locally before committing. A failed release step is not
+  a reason to push a speculative fix and use the full release cycle as its test.
+- Publish images only from the clean committed source that passed CI. Changes to
+  that source require CI on the final new SHA before publication.
+- Use the established `$IMAGE_PREFIX:$TO_VERSION-linux-{cpu,cuda12,cuda13}` tags.
+  Finish all selected image tests before uploads. Inspect the exact tags and commands
+  with `build.sh --dry-run` before publishing.
 - Bind checks/merge to a specific PR head. Require `main` to be its ancestor; if
   main moves, incorporate it on the release branch and rerun CI/images.
 - Tag the PR's actual merge SHA, never whatever main points to later.
@@ -38,10 +41,11 @@ and [references/release-notes.md](references/release-notes.md) when writing note
 
 ## 1. Preflight and versions
 
-Check repository identity, origin URL, current branch, tracked/untracked changes,
-and existing artifacts before switching branches. Do not stash or overwrite unrelated
-work. Verify `gh auth status`, Docker/buildx, CMake/CTest, Python 3, curl, jq, tar and
-NVIDIA GPU availability for CUDA tests. This installer needs Linux x64; do not assume
+Work in the user's existing source checkout. Use `.release-work/` for logs, runtime
+archives and build artifacts, not a second source checkout. Check repository identity,
+origin URL, branch, tracked/untracked changes and existing artifacts before switching
+branches. Do not stash or overwrite unrelated work. Verify `gh auth status`,
+Docker/buildx, CMake/CTest, Python 3, curl, jq, tar and NVIDIA GPU availability for CUDA tests. This installer needs Linux x64; do not assume
 WSL or driver versions from a previous release.
 
 For a fresh release, fetch origin, fast-forward main and require local main to equal
@@ -56,8 +60,9 @@ Server-only versions like `1.23.2a`/`1.24.4` need an evidenced upstream baseline
 do not guess a nearest lower tag just because it exists.
 
 Create `.release-work/`, then `WORK=$(mktemp -d "$REPO/.release-work/$TO_VERSION.XXXXXX")`.
-Record versions, baseline, branch/PR, runtime/build paths, checked head/base, receipt,
-merge SHA and publication progress. Do not source untrusted state as shell code.
+Record versions, baseline, branch/PR, runtime/build paths, checked head/base,
+merge SHA, published tags/digests and publication progress. Do not source untrusted
+state as shell code.
 
 ## 2. Install and review
 
@@ -86,9 +91,10 @@ and GPU brand constraints matter; a newer toolkit minor alone does not establish
 a higher universal driver minimum. Ask about an evidenced support-floor increase
 unless the session already authorized it. Do not universalize one WSL measurement.
 
-Update both builder/runtime stages and the base table when needed. Commit base
-alignment with sources and before/after compatibility effects. Commit API/base changes
-before the version bump, avoiding destructive restores of files they share.
+Update both builder/runtime stages and the base table when needed. Record sources
+and before/after compatibility effects. After local validation, keep API/base changes
+in separate commits ahead of the version-bump commit; use selective staging when
+they share a file rather than discarding validated changes.
 
 ## 3. Version update and local verification
 
@@ -113,8 +119,26 @@ LD_LIBRARY_PATH="$WORK/runtime/lib:${LD_LIBRARY_PATH:-}" \
 
 Inspect chosen paths and version test; require GTest and actual test discovery.
 Account for local CUDA/cuDNN loader paths. A tripwire changing is a review finding,
-not grounds to weaken tests blindly. Commit exactly the seven version files as
-`ci: release $TO_VERSION`, then push. Docker preparation later tests all images.
+not grounds to weaken tests blindly.
+
+Before committing, preview the Docker commands and run local image validation:
+
+```bash
+bash deploy/build-docker/build.sh --local --dry-run
+bash deploy/build-docker/build.sh --local
+```
+
+This accepts uncommitted changes and builds/tests the three amd64 variants without
+uploading. Use `--target=cpu` or `--target=cuda` for focused diagnosis. For a failure,
+inspect the actual command, inputs and output, reproduce the specific problem, and
+verify the fix locally. When changing CLI integration, exercise the real CLI rather
+than relying only on mocks. Do not use a commit/push/CI cycle to discover whether a
+speculative fix works. A changed base or Docker script must be exercised locally;
+a local amd64 pass does not establish arm64 or cross-platform compatibility.
+
+Once local validation passes, commit the completed API/tooling fixes separately and
+exactly the seven version files as `ci: release $TO_VERSION`, then push. If the user
+requested review before committing, leave the diff uncommitted and report validation.
 
 ## 4. PR and CI gate
 
@@ -134,35 +158,45 @@ python3 "$SKILL_DIR/scripts/check-release-ci.py" kibae/onnxruntime-server "$PR" 
 The helper checks the latest Linux/Windows/macOS/CodeQL PR workflows for that SHA,
 paginates checks on head and synthetic merge commits, checks statuses and requires
 mergeability clean. Missing/pending/skipped/stale/failed results are not success.
-Investigate, fix, commit and push failures before restarting the gate. Do not loosen
-an assertion merely to turn CI green.
+For a failure, establish the cause and verify a focused fix locally where possible
+before committing and restarting the gate. If a failure is specific to a CI platform,
+record the evidence and local validation limits. Do not loosen an assertion merely
+to turn CI green.
 
 ## 5. Images, merge and publication
 
-After CI passes, run `bash deploy/build-docker/build.sh --prepare` from a clean
-committed tree. All three amd64 images are tested before candidate uploads; uploaded
-amd64 configs must match tested configs. Keep the emitted digest receipt. CUDA
-sessions must report device ID 0 and inference must complete. The CPU image still
-includes amd64+arm64; this workflow adds no arm64 execution gate, as requested.
+After CI passes, require a clean tree, the same `RELEASE_HEAD`, and main ancestry.
+Preview the exact publication commands, then run the established build/test/push flow:
 
-On failure preserve artifacts. Code fixes require new commits and complete CI/image
-validation; retries of unchanged code remain candidate-only. Before merge, rerun CI,
-verify the same HEAD and main ancestry, then:
+```bash
+bash deploy/build-docker/build.sh --dry-run
+bash deploy/build-docker/build.sh
+```
+
+The script tests all three amd64 images before uploading the normal version tags.
+CUDA sessions must report device ID 0 and inference must complete. CPU publication
+includes amd64+arm64; local execution tests cover amd64 only. Verify the published
+platforms and record remote digests using structured manifest output:
+
+```bash
+docker buildx imagetools inspect "$IMAGE_PREFIX:$TO_VERSION-linux-cpu" --format '{{json .Manifest}}'
+```
+
+Repeat the inspection for cuda12/cuda13. Publication across three tags is not atomic;
+record successful uploads on failure. Diagnose and validate fixes locally before
+committing, rerun CI for changed source, and only then retry publication. An auth or
+network failure alone does not require a code change or a new CI run.
+
+Before merge, rerun the CI check and verify the same HEAD and main ancestry, then:
 
 ```bash
 gh pr merge "$PR" --merge --match-head-commit "$RELEASE_HEAD"
 ```
 
 Read the PR via REST, require `merged == true`, and save `merge_commit_sha` as
-`MERGE_SHA`. Fetch origin, require it to be on origin/main, and compare its tree
-with RELEASE_HEAD and the receipt. A mismatch requires validating the resulting
-code again before final artifact publication. Use a clean checkout of MERGE_SHA
-(isolated if main moved) to run `bash deploy/build-docker/build.sh --publish="$RECEIPT"`.
-
-Promotion checks all final tags first: identical digests are resumable, different
-digests stop, auth/network failures are not absent tags. A partial promotion can
-leave some final tags visible; record this and retry the same receipt. Once every
-final digest matches, create `v$TO_VERSION` at MERGE_SHA and push. On retry compare
+`MERGE_SHA`. Fetch origin, require it to be on origin/main, and compare its tree with
+`RELEASE_HEAD`. A mismatch requires reviewing and validating the resulting code
+before tagging. Create `v$TO_VERSION` at `MERGE_SHA` and push. On retry compare
 local/remote tags first; reuse matches, stop on mismatches, never force-move a tag.
 
 ## 6. Notes and handoff
@@ -179,9 +213,8 @@ https://hub.docker.com/repository/docker/kibaes/onnxruntime-server/general.
 
 ## Resume
 
-Inspect branch/PR head and checks, local state, receipt, merge state, local/remote
-tag and release first. Reuse consistent completed steps instead of restarting
-from main. Changed head/base needs fresh validation; a matching merged tree permits
-the original receipt. Failed installs/builds use new local directories; preserve
-existing developer runtime/build trees. Surface collection uses fresh output so
-incomplete old files cannot look complete.
+Inspect branch/PR head and checks, local state, published image tags, merge state,
+local/remote git tag and release first. Reuse consistent completed steps. Keep local
+diagnosis separate from committing and publication; changed head/base needs fresh
+validation before publication. Preserve existing developer runtime/build trees.
+Surface collection uses fresh output so incomplete old files cannot look complete.

@@ -6,7 +6,7 @@ preserve newlines and avoid interpolated shell heredocs for long publication tex
 Cover upstream alignment, seven-file version update, each API finding and implemented/
 skipped decision, revalidated assumptions, and CUDA base changes with compatibility
 evidence. Include checkboxes for local Debug/CTest, exact-HEAD cross-platform CI,
-Docker tests/receipt, final image publication and manual Docker Hub description update.
+local Docker tests, image publication and manual Docker Hub description update.
 Check boxes only after completion.
 
 Read the last two releases in full and retain their house style:

@@ -14,15 +14,14 @@ import unittest
 REPO = Path(__file__).resolve().parents[2]
 SKILL = REPO / '.agents/skills/releasing-onnxruntime-server'
 MOCK = r'''#!/usr/bin/env python3
-import hashlib, io, json, os, pathlib, shutil, sys, tarfile
+import json, os, pathlib, shutil, sys
 name=pathlib.Path(sys.argv[0]).name
 a=sys.argv[1:]
 mode=os.environ.get('MOCK_MODE', '')
 state=pathlib.Path(os.environ['MOCK_STATE'])
-config_bytes=json.dumps({'architecture':'amd64','os':'linux','rootfs':{'type':'layers','diff_ids':[]}}).encode()
-config_digest='sha256:'+hashlib.sha256(config_bytes).hexdigest()
 with (state / 'calls').open('a') as f: f.write(json.dumps([name]+a)+'\n')
 if name == 'git':
+    if mode == 'git-unavailable': sys.exit(1)
     if a[:2] == ['rev-parse', '--show-toplevel']: print(os.environ['MOCK_REPO'])
     elif a[:2] == ['rev-parse', 'HEAD']: print('1'*40)
     elif a[:2] == ['rev-parse', 'HEAD^{tree}']: print('2'*40)
@@ -68,34 +67,9 @@ elif name == 'docker':
         if mode == 'test-fail' and 'linux-cuda13' in a[-1]: sys.exit(1)
         print('mock-container')
     elif a[0] == 'port': print('127.0.0.1:43111')
-    elif a[:2] == ['image','inspect']: print('sha256:'+'e'*64)
-    elif a[:2] == ['image','save']:
-        with tarfile.open(a[a.index('--output')+1], 'w') as archive:
-            manifest=json.dumps([{'Config':'config.json','RepoTags':[],'Layers':[]}]).encode()
-            for filename,data in [('config.json',config_bytes),('manifest.json',manifest)]:
-                entry=tarfile.TarInfo(filename);entry.size=len(data);archive.addfile(entry,io.BytesIO(data))
-    elif a[:2] == ['buildx','build']: pass
-    elif a[:3] == ['buildx','imagetools','inspect']:
-        image=a[3]
-        if '--raw' in a:
-            print(json.dumps({'config': {'digest':'sha256:'+'c'*64 if mode == 'config-mismatch' else config_digest}}))
-        elif '--format' in a and a[a.index('--format')+1] == '{{.Manifest.Digest}}':
-            print('Name: '+image+'\nDigest: sha256:'+'b'*64)
-        elif mode == 'registry-invalid-digest': print(json.dumps({'digest':'invalid'}))
-        elif ':candidate-' in image: print(json.dumps({'digest':'sha256:'+'b'*64}))
-        elif mode == 'tag-conflict': print(json.dumps({'digest':'sha256:'+'f'*64}))
-        elif mode == 'registry-fail': print('authentication failed', file=sys.stderr); sys.exit(1)
-        elif mode == 'registry-not-found': print('registry endpoint not found', file=sys.stderr); sys.exit(1)
-        elif (state/'published.json').exists() and image in json.loads((state/'published.json').read_text()):
-            print(json.dumps({'digest':json.loads((state/'published.json').read_text())[image]}))
-        else: print('manifest unknown', file=sys.stderr); sys.exit(1)
-    elif a[:3] == ['buildx','imagetools','create']:
-        tag=a[a.index('--tag')+1]
-        if mode == 'partial-publish' and tag.endswith('linux-cuda12'): sys.exit(1)
-        p=state/'published.json'
-        data=json.loads(p.read_text()) if p.exists() else {}
-        data[tag]=a[-1].split('@')[1]
-        p.write_text(json.dumps(data))
+    elif a[:2] == ['buildx','build']:
+        if mode == 'build-fail' and any('linux-cuda13' in arg for arg in a): sys.exit(1)
+        if mode == 'push-fail' and '--push' in a and any('linux-cuda12' in arg for arg in a): sys.exit(1)
     elif a[0] in ('rm','cp','logs'): pass
     else: sys.exit(1)
 '''
@@ -216,74 +190,85 @@ class WorkflowTests(unittest.TestCase):
         (scripts / 'VERSION').write_text('export VERSION=1.30.0\nexport ORT_VERSION=1.30.0\nexport IMAGE_PREFIX=kibaes/onnxruntime-server\n')
         return project
 
-    def prepare(self, mode=''):
+    def build(self, args='', mode=''):
         project = self.build_workspace()
-        r = self.run_bash('bash deploy/build-docker/build.sh --prepare', mode, project)
-        receipt = project / ('deploy/build-docker/out/release-1.30.0-' + '1' * 40) / 'receipt.json'
-        return project, r, receipt
+        return self.run_bash(f'bash deploy/build-docker/build.sh {args}', mode, project)
 
-    def test_all_tests_finish_before_candidate_upload(self):
-        _, r, receipt = self.prepare()
+    def test_release_uses_expected_tags_and_platforms_after_all_tests(self):
+        r = self.build()
         self.assertEqual(r.returncode, 0, r.stderr)
-        self.assertEqual(len(json.loads(receipt.read_text())['images']), 3)
         calls = self.calls()
-        tests = [i for i,c in enumerate(calls) if c[:2] == ['docker','run']]
-        uploads = [i for i,c in enumerate(calls) if '--push' in c]
+        tests = [i for i, c in enumerate(calls) if c[:2] == ['docker', 'run']]
+        uploads = [i for i, c in enumerate(calls) if '--push' in c]
         self.assertEqual(len(tests), 3)
+        self.assertEqual(len(uploads), 3)
         self.assertLess(max(tests), min(uploads))
-        self.assertTrue(all(any(':candidate-' in arg for arg in calls[i]) for i in uploads))
+        for i, variant in zip(uploads, ('linux-cpu', 'linux-cuda12', 'linux-cuda13')):
+            c = calls[i]
+            self.assertEqual(c[c.index('-t') + 1], f'kibaes/onnxruntime-server:1.30.0-{variant}')
+            expected = 'linux/amd64,linux/arm64' if variant == 'linux-cpu' else 'linux/amd64'
+            self.assertEqual(c[c.index('--platform') + 1], expected)
         self.assertNotIn('--gpus', calls[tests[0]])
         self.assertIn('--gpus', calls[tests[1]])
-        self.assertEqual(len([c for c in calls if c[:3] == ['docker','image','save']]), 3)
+        self.assertIn('--gpus', calls[tests[2]])
 
-    def test_invalid_registry_digest_prevents_receipt(self):
-        _, r, receipt = self.prepare('registry-invalid-digest')
-        self.assertNotEqual(r.returncode, 0)
-        self.assertFalse(receipt.exists())
-
-    def test_test_failure_prevents_all_uploads(self):
-        _, r, receipt = self.prepare('test-fail')
-        self.assertNotEqual(r.returncode, 0)
-        self.assertFalse(receipt.exists())
-        self.assertFalse(any('--push' in c for c in self.calls()))
-
-    def test_untested_candidate_cannot_get_receipt(self):
-        _, r, receipt = self.prepare('config-mismatch')
-        self.assertNotEqual(r.returncode, 0)
-        self.assertFalse(receipt.exists())
-
-    def test_missing_inference_output_prevents_uploads(self):
-        _, r, receipt = self.prepare('missing-output')
-        self.assertNotEqual(r.returncode, 0)
-        self.assertFalse(receipt.exists())
-        self.assertFalse(any('--push' in c for c in self.calls()))
-
-    def test_publish_tag_conflict_and_auth_failure_do_not_write(self):
-        project, r, receipt = self.prepare()
+    def test_local_build_runs_tests_without_git_or_uploads(self):
+        r = self.build('--local', 'git-unavailable')
         self.assertEqual(r.returncode, 0, r.stderr)
-        for mode in ('tag-conflict','registry-fail','registry-not-found'):
-            r = self.run_bash(f'bash deploy/build-docker/build.sh --publish="{receipt}"', mode, project)
-            self.assertNotEqual(r.returncode, 0)
-        self.assertFalse(any(c[:4] == ['docker','buildx','imagetools','create'] for c in self.calls()))
+        calls = self.calls()
+        self.assertEqual(len([c for c in calls if '--load' in c]), 3)
+        self.assertEqual(len([c for c in calls if c[:2] == ['docker', 'run']]), 3)
+        self.assertFalse(any('--push' in c or 'imagetools' in c for c in calls))
+        self.assertFalse(any(c[0] == 'git' for c in calls))
 
-    def test_partial_publish_can_resume_same_digests(self):
-        project, r, receipt = self.prepare()
+    def test_dry_run_prints_actual_release_commands_without_running_them(self):
+        r = self.build('--dry-run')
         self.assertEqual(r.returncode, 0, r.stderr)
-        r = self.run_bash(f'bash deploy/build-docker/build.sh --publish="{receipt}"', 'partial-publish', project)
-        self.assertNotEqual(r.returncode, 0)
-        self.assertEqual(len(json.loads((self.root/'published.json').read_text())), 1)
-        r = self.run_bash(f'bash deploy/build-docker/build.sh --publish="{receipt}"', cwd=project)
-        self.assertEqual(r.returncode, 0, r.stderr)
-        self.assertEqual(len(json.loads((self.root/'published.json').read_text())), 3)
+        self.assertFalse((self.root / 'calls').exists())
+        self.assertEqual(r.stdout.count('--push'), 3)
+        self.assertIn('-t kibaes/onnxruntime-server:1.30.0-linux-cpu', r.stdout)
+        self.assertNotIn('candidate-', r.stdout)
 
-    def test_publish_mismatched_tree_cannot_write(self):
-        project, r, receipt = self.prepare()
-        data=json.loads(receipt.read_text())
-        data['tree']='3'*40
-        receipt.write_text(json.dumps(data))
-        r = self.run_bash(f'bash deploy/build-docker/build.sh --publish="{receipt}"', cwd=project)
+    def test_local_dry_run_has_no_push_commands(self):
+        r = self.build('--local --dry-run')
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertNotIn('--push', r.stdout)
+        self.assertFalse((self.root / 'calls').exists())
+
+    def test_target_selection(self):
+        project = self.build_workspace()
+        for target, variants in (('cpu', ['linux-cpu']), ('cuda', ['linux-cuda12', 'linux-cuda13'])):
+            with self.subTest(target=target):
+                (self.root / 'calls').unlink(missing_ok=True)
+                r = self.run_bash(f'bash deploy/build-docker/build.sh --target={target}', cwd=project)
+                self.assertEqual(r.returncode, 0, r.stderr)
+                uploads = [c for c in self.calls() if '--push' in c]
+                self.assertEqual([c[c.index('-t') + 1] for c in uploads],
+                                 [f'kibaes/onnxruntime-server:1.30.0-{v}' for v in variants])
+
+    def test_local_failures_prevent_all_uploads(self):
+        project = self.build_workspace()
+        for mode in ('build-fail', 'test-fail', 'missing-output'):
+            with self.subTest(mode=mode):
+                (self.root / 'calls').unlink(missing_ok=True)
+                r = self.run_bash('bash deploy/build-docker/build.sh', mode, project)
+                self.assertNotEqual(r.returncode, 0)
+                self.assertFalse(any('--push' in c for c in self.calls()))
+
+    def test_push_failure_stops_remaining_uploads(self):
+        r = self.build(mode='push-fail')
         self.assertNotEqual(r.returncode, 0)
-        self.assertFalse(any(c[:4] == ['docker','buildx','imagetools','create'] for c in self.calls()))
+        uploads = [c for c in self.calls() if '--push' in c]
+        self.assertEqual(len(uploads), 2)
+        self.assertTrue(uploads[-1][uploads[-1].index('-t') + 1].endswith('linux-cuda12'))
+
+    def test_unknown_or_removed_options_do_not_run_commands(self):
+        project = self.build_workspace()
+        for arg in ('--target=typo', '--prepare', '--publish=receipt.json'):
+            with self.subTest(arg=arg):
+                r = self.run_bash(f'bash deploy/build-docker/build.sh {arg}', cwd=project)
+                self.assertNotEqual(r.returncode, 0)
+                self.assertFalse((self.root / 'calls').exists())
 
     def test_version_update_separates_server_and_runtime(self):
         project = self.root / 'project'
