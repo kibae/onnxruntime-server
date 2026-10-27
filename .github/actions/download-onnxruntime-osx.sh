@@ -7,9 +7,10 @@ IFS=$'\t' read -r NAME URL DIGEST <<< "$META"
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
 ort_download "$URL" "$TMP/ort.tgz" "$DIGEST"
-mkdir "$TMP/runtime"
-tar -xzf "$TMP/ort.tgz" -C "$TMP/runtime" --strip-components=2
-test -f "$TMP/runtime/include/onnxruntime_cxx_api.h"
-test -f "$TMP/runtime/lib/libonnxruntime.dylib"
+# Preserve the archive root: upstream archives may include a leading ./.
+tar -xzf "$TMP/ort.tgz" -C "$TMP"
+RUNTIME="$TMP/onnxruntime-osx-arm64-${ORT_TARGET}"
+test -f "$RUNTIME/include/onnxruntime_cxx_api.h"
+test -f "$RUNTIME/lib/libonnxruntime.dylib"
 test ! -e /usr/local/onnxruntime || { echo 'ONNX Runtime destination already exists' >&2; exit 1; }
-sudo mv "$TMP/runtime" /usr/local/onnxruntime
+sudo mv "$RUNTIME" /usr/local/onnxruntime
