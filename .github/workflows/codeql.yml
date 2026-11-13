@@ -29,7 +29,7 @@ jobs:
       matrix:
         include:
           - language: c-cpp
-            build-mode: autobuild
+            build-mode: manual
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -54,6 +54,21 @@ jobs:
         with:
           languages: ${{ matrix.language }}
           build-mode: ${{ matrix.build-mode }}
+
+      - name: Build with pinned ONNX Runtime
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libboost-all-dev libssl-dev libgtest-dev
+          mkdir -p "$RUNNER_TEMP/no-pkgconfig"
+          PKG_CONFIG_PATH="" PKG_CONFIG_LIBDIR="$RUNNER_TEMP/no-pkgconfig" \
+          cmake -S . -B build-codeql -DCMAKE_BUILD_TYPE=Release \
+            -DONNX_RUNTIME_WITH_CUDA_PROVIDER=OFF \
+            -DONNX_RUNTIME_INCLUDE_DIRS=/usr/local/onnxruntime/include \
+            -DONNX_RUNTIME_LIBRARY=/usr/local/onnxruntime/lib/libonnxruntime.so \
+            -DONNX_RUNTIME_LIBRARY_DIRS=/usr/local/onnxruntime/lib \
+            -DONNX_RUNTIME_LIBRARIES=/usr/local/onnxruntime/lib/libonnxruntime.so
+          cmake --build build-codeql --parallel 2
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4
