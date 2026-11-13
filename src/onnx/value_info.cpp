@@ -71,6 +71,10 @@ const char *Orts::onnx::value_info::type_name(const ONNXTensorElementDataType el
 		return "float8e8m0";
 	case ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT4E2M1:
 		return "float4e2m1";
+	case ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT6E2M3:
+		return "float6e2m3";
+	case ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT6E3M2:
+		return "float6e3m2";
 	case ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT16:
 		return "float16";
 	case ONNX_TENSOR_ELEMENT_DATA_TYPE_DOUBLE: // maps to c type double
