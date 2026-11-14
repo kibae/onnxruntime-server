@@ -63,6 +63,8 @@ TEST(unit_test_value_info, TypeNames) {
 		{ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT8E4M3FNUZ, "float8e4m3fnuz"},
 		{ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT8E8M0, "float8e8m0"},
 		{ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT4E2M1, "float4e2m1"},
+		{ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT6E2M3, "float6e2m3"},
+		{ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT6E3M2, "float6e3m2"},
 		{ONNX_TENSOR_ELEMENT_DATA_TYPE_COMPLEX64, "complex64"},
 		{ONNX_TENSOR_ELEMENT_DATA_TYPE_COMPLEX128, "complex128"},
 	};
@@ -300,4 +302,14 @@ TEST(unit_test_value_info, ComplexNotConstructibleInOrt127) {
 			mem, c128, sizeof(c128), shape.data(), shape.size(), ONNX_TENSOR_ELEMENT_DATA_TYPE_COMPLEX128
 		)
 	);
+}
+
+// ORT 1.32 exposes float6 enum names but cannot allocate these tensor types yet.
+// Keep this tripwire so runtime support triggers a review of decoding and fixtures.
+TEST(unit_test_value_info, Float6RuntimeSupport) {
+	Ort::AllocatorWithDefaultOptions allocator;
+	const int64_t shape[] = {4};
+	for (auto type : {ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT6E2M3, ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT6E3M2}) {
+		EXPECT_THROW(Ort::Value::CreateTensor(allocator, shape, 1, type), Ort::Exception);
+	}
 }
