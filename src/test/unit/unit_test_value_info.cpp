@@ -272,6 +272,11 @@ TEST(unit_test_value_info, Int2) {
 // Shape handling and the complex limitation.
 // ---------------------------------------------------------------------------------------------------
 
+TEST(unit_test_value_info, ScalarShape) {
+	auto v = decode_typed<float>(ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT, {}, {10.0f});
+	EXPECT_EQ(v, json::array_t{10.0});
+}
+
 // values_fit_shape must nest the flat data according to the tensor's dimensions.
 TEST(unit_test_value_info, MultiDimensionalShape) {
 	auto v = decode_typed<float>(ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT, {2, 2}, {1.0f, 2.0f, 3.0f, 4.0f});

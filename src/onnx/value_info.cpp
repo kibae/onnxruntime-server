@@ -95,10 +95,10 @@ const char *Orts::onnx::value_info::type_name(const ONNXTensorElementDataType el
 }
 
 json::array_t values_fit_shape(json::array_t &values, std::vector<int64_t> &shape, size_t depth) {
-	depth--;
-	if (depth <= 0)
+	if (depth <= 1)
 		return values;
 
+	--depth;
 	auto dim = shape[depth];
 	json::array_t result;
 

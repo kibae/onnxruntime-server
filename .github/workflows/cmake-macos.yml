@@ -65,7 +65,7 @@ jobs:
         uses: actions/cache/restore@v5
         with:
           path: test/fixture
-          key: test-fixtures-v1
+          key: test-fixtures-v2
           fail-on-cache-miss: true
 
       - name: Test
