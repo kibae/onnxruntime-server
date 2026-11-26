@@ -191,17 +191,17 @@ server neither adds to it nor changes its default.
 
 - Docker hub: [kibaes/onnxruntime-server](https://hub.docker.com/r/kibaes/onnxruntime-server)
     - [
-      `1.32.0-linux-cuda13`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cuda13.dockerfile)
+      `1.32.0a-linux-cuda13`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cuda13.dockerfile)
       amd64(CUDA 13.x, cuDNN 9.x)
     - [
-      `1.32.0-linux-cuda12`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cuda12.dockerfile)
+      `1.32.0a-linux-cuda12`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cuda12.dockerfile)
       amd64(CUDA 12.x, cuDNN 9.x)
     - [
-      `1.32.0-linux-cpu`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cpu.dockerfile)
+      `1.32.0a-linux-cpu`](https://github.com/kibae/onnxruntime-server/blob/main/deploy/build-docker/linux-cpu.dockerfile)
       amd64, arm64
 
 ```shell
-DOCKER_IMAGE=kibaes/onnxruntime-server:1.32.0-linux-cuda13 # or 1.32.0-linux-cuda12 or 1.32.0-linux-cpu
+DOCKER_IMAGE=kibaes/onnxruntime-server:1.32.0a-linux-cuda13 # or 1.32.0a-linux-cuda12 or 1.32.0a-linux-cpu
 
 docker pull ${DOCKER_IMAGE}
 
