@@ -14,6 +14,12 @@
 `VERSION` records the server image version and `ORT_VERSION` pins the upstream
 runtime used by both Docker and CI. Downloads never select `latest`.
 
+For ORT 1.32.0, CPU builds use the native SDK in Microsoft's
+[NuGet package](https://www.nuget.org/packages/Microsoft.ML.OnnxRuntime/1.32.0).
+The build script supplies each CUDA SDK from the matching 1.32.0 server image by
+digest. Only the runtime directory is copied. The server is compiled from the
+current checkout for all three variants.
+
 The tags retain the existing format: `kibaes/onnxruntime-server:<version>-linux-cpu`,
 `<version>-linux-cuda12`, and `<version>-linux-cuda13`. The script prints these tags
 before building, and prints each command before executing it.

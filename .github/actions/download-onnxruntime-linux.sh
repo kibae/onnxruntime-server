@@ -2,13 +2,19 @@
 set -euo pipefail
 source "$(dirname "$0")/../../deploy/build-docker/release-assets.sh"
 ORT_TARGET=$(ort_version "${1:-}")
-META=$(ort_asset "$ORT_TARGET" "onnxruntime-linux-x64-${ORT_TARGET}.tgz")
-IFS=$'\t' read -r NAME URL DIGEST <<< "$META"
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
-ort_download "$URL" "$TMP/ort.tgz" "$DIGEST"
-tar -xzf "$TMP/ort.tgz" -C "$TMP"
-ROOT="$TMP/${NAME%.tgz}"
+
+if [ "$ORT_TARGET" = 1.32.0 ]; then
+    ort_nuget_cpu_1320 linux-x64 "$TMP"
+    ROOT="$TMP/runtime"
+else
+    META=$(ort_asset "$ORT_TARGET" "onnxruntime-linux-x64-${ORT_TARGET}.tgz")
+    IFS=$'\t' read -r NAME URL DIGEST <<< "$META"
+    ort_download "$URL" "$TMP/ort.tgz" "$DIGEST"
+    tar -xzf "$TMP/ort.tgz" -C "$TMP"
+    ROOT="$TMP/${NAME%.tgz}"
+fi
 test -f "$ROOT/include/onnxruntime_cxx_api.h"
 test -f "$ROOT/lib/libonnxruntime.so"
 test "$(tr -d '[:space:]' < "$ROOT/VERSION_NUMBER")" = "$ORT_TARGET"

@@ -39,11 +39,26 @@ run() {
     if [ "$DRY_RUN" = 0 ]; then "$@"; fi
 }
 
+build_image() {
+    local variant="$1" platforms="$2" output="$3" digest=""
+    local context=()
+    if [ "$ORT_VERSION" = 1.32.0 ]; then
+        case "$variant" in
+            linux-cuda12) digest=6248d0503bc47e14e994beeaec1944fd7b49886527003c7eaa32e620e882c09d ;;
+            linux-cuda13) digest=47994d7c804844830fb35d65025ab5aa0020e96f3d972c61149375bbf1ef1294 ;;
+        esac
+    fi
+    if [ -n "$digest" ]; then
+        context=(--build-context "ort-sdk=docker-image://kibaes/onnxruntime-server@sha256:$digest")
+    fi
+    run docker buildx build "${context[@]}" --platform "$platforms" -t "$IMAGE_PREFIX:$VERSION-$variant" \
+        -f "deploy/build-docker/$variant.dockerfile" "$output" .
+}
+
 # Complete every selected local test before starting any upload.
 for variant in "${VARIANTS[@]}"; do
     image="$IMAGE_PREFIX:$VERSION-$variant"
-    run docker buildx build --platform linux/amd64 -t "$image" \
-        -f "deploy/build-docker/$variant.dockerfile" --load .
+    build_image "$variant" linux/amd64 --load
     cuda=0; [ "$variant" = linux-cpu ] || cuda=1
     run bash deploy/build-docker/docker-image-test.sh "$image" "$cuda"
 done
@@ -53,6 +68,5 @@ for variant in "${VARIANTS[@]}"; do
     image="$IMAGE_PREFIX:$VERSION-$variant"
     platforms=linux/amd64
     [ "$variant" != linux-cpu ] || platforms=linux/amd64,linux/arm64
-    run docker buildx build --platform "$platforms" -t "$image" \
-        -f "deploy/build-docker/$variant.dockerfile" --push .
+    build_image "$variant" "$platforms" --push
 done

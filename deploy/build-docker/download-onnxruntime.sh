@@ -8,7 +8,12 @@ ORT_TARGET=$(ort_version "${3:-}")
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
 
-if META=$(ort_asset "$ORT_TARGET" "onnxruntime-${OS}-${ARCH}-${ORT_TARGET}.tgz"); then
+if [[ "$ORT_TARGET" = 1.32.0 && "$OS" = linux && ( "$ARCH" = x64 || "$ARCH" = aarch64 ) ]]; then
+    rid="linux-x64"
+    [ "$ARCH" != aarch64 ] || rid="linux-arm64"
+    ort_nuget_cpu_1320 "$rid" "$TMP"
+    ROOT="$TMP/runtime"
+elif META=$(ort_asset "$ORT_TARGET" "onnxruntime-${OS}-${ARCH}-${ORT_TARGET}.tgz"); then
     IFS=$'\t' read -r NAME URL DIGEST <<< "$META"
     ort_download "$URL" "$TMP/ort.tgz" "$DIGEST"
     tar -xzf "$TMP/ort.tgz" -C "$TMP"

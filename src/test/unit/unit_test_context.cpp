@@ -2,6 +2,7 @@
 // Created by Kibae Shin on 2023/09/02.
 //
 #include <cmath>
+#include <fstream>
 
 #include "../../onnxruntime_server.hpp"
 #include "../test_common.hpp"
@@ -26,14 +27,19 @@ TEST(test_onnxruntime_server_context, SimpleModelTest) {
 
 TEST(test_onnxruntime_server_context, ScalarOutputModel) {
 	Orts::onnx::session_key key("sample", "scalar");
-	auto model_path = model_root / "sample" / "scalar" / "model.onnx";
+	auto fixture = model_root / "sample" / "scalar";
+	auto model_path = fixture / "model.onnx";
 	auto session = std::make_shared<Orts::onnx::session>(key, model_path.string());
-	Orts::onnx::execution::context ctx(session, R"({"x":[[1,2],[3,4]]})");
+	std::ifstream input((fixture / "input.json").string());
+	std::ifstream expected((fixture / "output.json").string());
+	ASSERT_TRUE(input.is_open());
+	ASSERT_TRUE(expected.is_open());
+	Orts::onnx::execution::context ctx(session, json::parse(input).dump());
 
 	auto result = ctx.run();
 	ASSERT_EQ(result.size(), 1);
 	ASSERT_TRUE(result[0].GetTensorTypeAndShapeInfo().GetShape().empty());
-	EXPECT_EQ(ctx.tensors_to_json(result), R"({"y":[10.0]})"_json);
+	EXPECT_EQ(ctx.tensors_to_json(result), json::parse(expected));
 }
 
 TEST(test_onnxruntime_server_context, SimpleModelBatchTest) {
