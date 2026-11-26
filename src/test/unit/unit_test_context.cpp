@@ -24,6 +24,18 @@ TEST(test_onnxruntime_server_context, SimpleModelTest) {
 	ASSERT_GT(json["output"][0], 0);
 }
 
+TEST(test_onnxruntime_server_context, ScalarOutputModel) {
+	Orts::onnx::session_key key("sample", "scalar");
+	auto model_path = model_root / "sample" / "scalar" / "model.onnx";
+	auto session = std::make_shared<Orts::onnx::session>(key, model_path.string());
+	Orts::onnx::execution::context ctx(session, R"({"x":[[1,2],[3,4]]})");
+
+	auto result = ctx.run();
+	ASSERT_EQ(result.size(), 1);
+	ASSERT_TRUE(result[0].GetTensorTypeAndShapeInfo().GetShape().empty());
+	EXPECT_EQ(ctx.tensors_to_json(result), R"({"y":[10.0]})"_json);
+}
+
 TEST(test_onnxruntime_server_context, SimpleModelBatchTest) {
 	Orts::onnx::session_key key("sample", "1");
 	auto session = std::make_shared<Orts::onnx::session>(key, model1_path.string());

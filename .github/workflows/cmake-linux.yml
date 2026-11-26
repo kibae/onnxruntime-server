@@ -28,7 +28,7 @@ jobs:
         uses: actions/cache/restore@v5
         with:
           path: test/fixture
-          key: test-fixtures-v1
+          key: test-fixtures-v2
           lookup-only: true
 
       - name: Download assets(models)
@@ -42,7 +42,7 @@ jobs:
         uses: actions/cache/save@v5
         with:
           path: test/fixture
-          key: test-fixtures-v1
+          key: test-fixtures-v2
 
   prepare-apt:
     if: ${{ !contains(github.event.pull_request.labels.*.name, 'documentation') }}
@@ -158,7 +158,7 @@ jobs:
         uses: actions/cache/restore@v5
         with:
           path: test/fixture
-          key: test-fixtures-v1
+          key: test-fixtures-v2
           fail-on-cache-miss: true
 
       - name: Test
