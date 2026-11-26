@@ -56,3 +56,21 @@ ort_download() {
         }
     fi
 }
+
+# The 1.32.0 GitHub release assets are unavailable. Install the same release
+# from Microsoft's CPU NuGet package, including the native loader's library name.
+ort_nuget_cpu_1320() {
+    local rid="$1" work="$2" sdk="$2/runtime"
+    local pkg=microsoft.ml.onnxruntime
+    ort_download "https://api.nuget.org/v3-flatcontainer/$pkg/1.32.0/$pkg.1.32.0.nupkg" "$work/ort.nupkg" \
+        sha256:a9150bc2992cbbb6722070da9910e1ffa989a8bfc67bdd5bb8e745ca755641db
+    mkdir -p "$sdk/include" "$sdk/lib"
+    unzip -qj "$work/ort.nupkg" 'build/native/include/*' -d "$sdk/include"
+    unzip -qj "$work/ort.nupkg" "runtimes/$rid/native/*" -d "$sdk/lib"
+    unzip -qj "$work/ort.nupkg" LICENSE ThirdPartyNotices.txt Privacy.md -d "$sdk"
+    case "$rid" in
+        linux-*) ln -s libonnxruntime.so "$sdk/lib/libonnxruntime.so.1" ;;
+        osx-arm64) ln -s libonnxruntime.dylib "$sdk/lib/libonnxruntime.1.dylib" ;;
+    esac
+    echo 1.32.0 > "$sdk/VERSION_NUMBER"
+}

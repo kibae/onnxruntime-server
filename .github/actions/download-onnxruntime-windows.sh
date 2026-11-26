@@ -3,14 +3,20 @@ set -euo pipefail
 export ORT_JSON_PYTHON=python
 source "$(dirname "$0")/../../deploy/build-docker/release-assets.sh"
 ORT_TARGET=$(ort_version "${1:-}")
-META=$(ort_asset "$ORT_TARGET" "onnxruntime-win-x64-${ORT_TARGET}.zip" \
-    "onnxruntime-win-x64-gpu_cuda12-${ORT_TARGET}.zip" "onnxruntime-win-x64-gpu-${ORT_TARGET}.zip")
-IFS=$'\t' read -r NAME URL DIGEST <<< "$META"
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
-ort_download "$URL" "$TMP/ort.zip" "$DIGEST"
-unzip -q "$TMP/ort.zip" -d "$TMP"
-ROOT="$TMP/${NAME%.zip}"
+
+if [ "$ORT_TARGET" = 1.32.0 ]; then
+    ort_nuget_cpu_1320 win-x64 "$TMP"
+    ROOT="$TMP/runtime"
+else
+    META=$(ort_asset "$ORT_TARGET" "onnxruntime-win-x64-${ORT_TARGET}.zip" \
+        "onnxruntime-win-x64-gpu_cuda12-${ORT_TARGET}.zip" "onnxruntime-win-x64-gpu-${ORT_TARGET}.zip")
+    IFS=$'\t' read -r NAME URL DIGEST <<< "$META"
+    ort_download "$URL" "$TMP/ort.zip" "$DIGEST"
+    unzip -q "$TMP/ort.zip" -d "$TMP"
+    ROOT="$TMP/${NAME%.zip}"
+fi
 test -f "$ROOT/include/onnxruntime_cxx_api.h"
 test -f "$ROOT/lib/onnxruntime.dll"
 test "$(tr -d '[:space:]' < "$ROOT/VERSION_NUMBER")" = "$ORT_TARGET"
